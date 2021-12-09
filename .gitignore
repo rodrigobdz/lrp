@@ -138,3 +138,13 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+##################
+# Customizations #
+##################
+.vscode
+
+# Original lrp-tutorial dirs
+params/
+data/
+
