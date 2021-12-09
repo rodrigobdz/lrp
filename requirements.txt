@@ -1,0 +1,6 @@
+ipykernel==6.6.0
+numpy==1.21.4
+matplotlib==3.5.0
+torch==1.10.0
+torchvision==0.11.1
+opencv-python==4.5.4.60
