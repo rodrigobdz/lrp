@@ -6,6 +6,7 @@ import numpy as np
 ILSVRC2012_MEAN = [0.485, 0.456, 0.406]
 ILSVRC2012_STD = [0.229, 0.224, 0.225]
 
+
 # Source: https://github.com/chr5tphr/zennit/blob/cc9ac0f3016e1b842f2c60e8986c794b2ae7096e/share/example/feed_forward.py#L32-L38
 class BatchNormalize:
     def __init__(self, mean, std):
@@ -36,6 +37,8 @@ def load_normalized_img(path):
 # Custom function
 # Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and
 # zennit
+
+
 def img_to_tensor(img):
     # reshape converts row vectors to column vectors
     # {mean and std have shape torch.Size([1, 3, 1, 1, 1])
