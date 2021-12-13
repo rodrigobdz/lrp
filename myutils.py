@@ -45,8 +45,8 @@ def img_to_tensor(img):
 
     # Mean and std are calculated from the dataset ImageNet
     # https://github.com/Cadene/pretrained-models.pytorch/blob/8aae3d8f1135b6b13fed79c1d431e3449fdbf6e0/pretrainedmodels/models/torchvision_models.py#L64-L65
-    mean = torch.Tensor(ILSVRC2012_MEAN).reshape(1, -1, 1, 1)
-    std = torch.Tensor(ILSVRC2012_STD).reshape(1, -1, 1, 1)
+    # mean = torch.Tensor(ILSVRC2012_MEAN).reshape(1, -1, 1, 1)
+    # std = torch.Tensor(ILSVRC2012_STD).reshape(1, -1, 1, 1)
 
     # X has shape (1, 3, 224, 224)
     # Normalize X by subtracting mean and dividing by standard deviation
