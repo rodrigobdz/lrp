@@ -2,9 +2,9 @@ import torch
 
 
 def stabilize(input, epsilon=1e-6):
-    '''Stabilize input for safe division.
-    '''
+    '''Stabilize input for safe division.'''
     return input + epsilon
+
 
 # Source: https://github.com/chr5tphr/zennit/blob/6251a9e17aa31c3381799de92f92b1d259b392b2/zennit/core.py#L45-L90
 # Without require_params and context manager

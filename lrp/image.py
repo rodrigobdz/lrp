@@ -1,6 +1,17 @@
+r'''Visualization functions and pre-processing of input data
+'''
+
+__author__ = 'Rodrigo Bermudez Schettino'
+__credits__ = ['Rodrigo Bermudez Schettino']
+__maintainer__ = 'Rodrigo Bermudez Schettino'
+__email__ = 'rodrigobdz@tu-berlin.de'
+__status__ = 'Development'
+
+
 import cv2
 import torch
-import numpy as np
+import numpy
+from matplotlib import pyplot as plt
 
 # Values from lrp-tutorial and zennit
 ILSVRC2012_MEAN = [0.485, 0.456, 0.406]
@@ -32,7 +43,8 @@ def load_normalized_img(path):
 
     # img.shape is (224, 224, 3), where 3 corresponds to RGB channels
     # Divide by 255 (max. RGB value) to normalize pixel values to [0,1]
-    return img/255.0
+    return img / 255.0
+
 
 # Custom function
 # Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and
@@ -50,6 +62,23 @@ def img_to_tensor(img):
 
     # X has shape (1, 3, 224, 224)
     # Normalize X by subtracting mean and dividing by standard deviation
-    X = ILSVRC2012_BatchNormalize()(torch.FloatTensor(img[np.newaxis].transpose(
-        [0, 3, 1, 2])*1))
+    X = ILSVRC2012_BatchNormalize()(
+        torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
+    )
     return X
+
+
+def heatmap(R, sx, sy):
+
+    b = 10 * ((numpy.abs(R) ** 3.0).mean() ** (1.0 / 3))
+
+    from matplotlib.colors import ListedColormap
+
+    my_cmap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
+    my_cmap[:, 0:3] *= 0.85
+    my_cmap = ListedColormap(my_cmap)
+    plt.figure(figsize=(sx, sy))
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    plt.axis('off')
+    plt.imshow(R, cmap=my_cmap, vmin=-b, vmax=b, interpolation='nearest')
+    plt.show()
