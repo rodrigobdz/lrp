@@ -11,30 +11,54 @@ __status__ = 'Development'
 import cv2
 import torch
 import numpy
+from typing import List
 from matplotlib import pyplot as plt
-
-# Values from lrp-tutorial and zennit
-ILSVRC2012_MEAN = [0.485, 0.456, 0.406]
-ILSVRC2012_STD = [0.229, 0.224, 0.225]
+from matplotlib.colors import ListedColormap
 
 
-# Source: https://github.com/chr5tphr/zennit/blob/cc9ac0f3016e1b842f2c60e8986c794b2ae7096e/share/example/feed_forward.py#L32-L38
-class BatchNormalize:
-    def __init__(self, mean, std):
+class StandardScoreNormalization:
+    r'''Normalize matrix by calculating standard score, i.e., subtracting mean and dividing by standard deviation of the dataset.
+
+    Source: https://github.com/chr5tphr/zennit/blob/cc9ac0f3016e1b842f2c60e8986c794b2ae7096e/share/example/feed_forward.py#L32-L38
+    '''
+
+    def __init__(self, mean: List[float], std: List[float]) -> None:
+        r'''Convert mean and standard deviation to tensors
+
+        :param mean: Mean of the dataset
+        :param std: Standard deviation of the dataset
+        '''
         self.mean = torch.tensor(mean)[None, :, None, None]
         self.std = torch.tensor(std)[None, :, None, None]
 
-    def __call__(self, tensor):
-        return (tensor - self.mean) / self.std
+    def __call__(self, matrix: torch.Tensor) -> torch.Tensor:
+        r'''Caclculate standard score
+
+        :param matrix: Matrix to be normalized
+        :returns: Normalized matrix
+        '''
+        return (matrix - self.mean) / self.std
 
 
-class ILSVRC2012_BatchNormalize(BatchNormalize):
+class ILSVRC2012_BatchNormalize(StandardScoreNormalization):
+    r'''Normalize batch of images from ILSVRC2012 dataset
+
+    Mean and std are calculated from the dataset ImageNet
+    https://github.com/Cadene/pretrained-models.pytorch/blob/8aae3d8f1135b6b13fed79c1d431e3449fdbf6e0/pretrainedmodels/models/torchvision_models.py#L64-L65
+    '''
+
     def __init__(self):
-        super().__init__(mean=ILSVRC2012_MEAN, std=ILSVRC2012_STD)
+        super().__init__(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
-# Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb
-def load_normalized_img(path):
+def load_normalized_img(path: str) -> numpy.array:
+    r'''Load image and normalize pixel values to [0, 1]
+
+    Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb
+
+    :param path: Path to the image
+    :returns: Normalized image
+    '''
     # Returns a numpy array in BGR color space, not RGB
     img = cv2.imread(path)
 
@@ -46,39 +70,37 @@ def load_normalized_img(path):
     return img / 255.0
 
 
-# Custom function
-# Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and
-# zennit
+def img_to_tensor(img: numpy.array) -> torch.Tensor:
+    r'''Convert image as numpy.array to tensor
 
+    Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and zennit
 
-def img_to_tensor(img):
-    # reshape converts row vectors to column vectors
-    # {mean and std have shape torch.Size([1, 3, 1, 1, 1])
-
-    # Mean and std are calculated from the dataset ImageNet
-    # https://github.com/Cadene/pretrained-models.pytorch/blob/8aae3d8f1135b6b13fed79c1d431e3449fdbf6e0/pretrainedmodels/models/torchvision_models.py#L64-L65
-    # mean = torch.Tensor(ILSVRC2012_MEAN).reshape(1, -1, 1, 1)
-    # std = torch.Tensor(ILSVRC2012_STD).reshape(1, -1, 1, 1)
-
-    # X has shape (1, 3, 224, 224)
-    # Normalize X by subtracting mean and dividing by standard deviation
-    X = ILSVRC2012_BatchNormalize()(
+    :param img: Image to be converted
+    :returns: Tensor with image data
+    '''
+    normalized_img = ILSVRC2012_BatchNormalize()(
         torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
     )
-    return X
+    return normalized_img
 
 
-def heatmap(R, sx, sy):
+def heatmap(relevance_scores: numpy.array, width: float, height: float):
+    r'''Plot heatmap of relevance scores
 
-    b = 10 * ((numpy.abs(R) ** 3.0).mean() ** (1.0 / 3))
+    :param relevance_scores: Relevance scores in pixel layer only
+    :param width: Size of the image in x-direction
+    :param height: Size of the image in y-direction
+    '''
+    abs_bound = 10 * ((numpy.abs(relevance_scores) ** 3.0).mean() ** (1.0 / 3))
 
-    from matplotlib.colors import ListedColormap
+    cmap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
+    cmap[:, 0:3] *= 0.85
+    cmap = ListedColormap(cmap)
 
-    my_cmap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
-    my_cmap[:, 0:3] *= 0.85
-    my_cmap = ListedColormap(my_cmap)
-    plt.figure(figsize=(sx, sy))
+    plt.figure(figsize=(width, height))
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     plt.axis('off')
-    plt.imshow(R, cmap=my_cmap, vmin=-b, vmax=b, interpolation='nearest')
+    plt.imshow(relevance_scores, cmap=cmap, vmin=-abs_bound,
+               vmax=abs_bound, interpolation='nearest')
+
     plt.show()

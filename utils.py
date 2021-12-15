@@ -2,9 +2,7 @@
 
 import numpy
 import copy
-import matplotlib
 from matplotlib import pyplot as plt
-import torch
 import torch.nn as nn
 
 # --------------------------------------
