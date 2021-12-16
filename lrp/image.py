@@ -1,9 +1,9 @@
 r'''Visualization functions and pre-processing of input data
 '''
 
-__author__ = 'Rodrigo Bermudez Schettino'
-__credits__ = ['Rodrigo Bermudez Schettino']
-__maintainer__ = 'Rodrigo Bermudez Schettino'
+__author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
+__credits__ = ['Rodrigo Bermudez Schettino (TU Berlin)']
+__maintainer__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __email__ = 'rodrigobdz@tu-berlin.de'
 __status__ = 'Development'
 
