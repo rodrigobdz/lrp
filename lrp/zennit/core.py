@@ -1,4 +1,4 @@
-r'''Imported methods from zennit framework with customizations.
+r'''Imported methods from zennit's core.py with customizations.
 '''
 
 
@@ -46,3 +46,27 @@ def mod_params(module: torch.nn.Module, modifier: Callable, param_keys: List[str
         if param is not None:
             # Changed order of param and name in lambda func modifier call
             setattr(module, key, torch.nn.Parameter(modifier(key, param.data)))
+
+
+def collect_leaves(module: torch.nn.Module) -> List[torch.nn.Module]:
+    '''Generator function to collect all leaf modules of a module.
+
+    Parameters
+    ----------
+    module: obj:`torch.nn.Module`
+        A module for which the leaves will be collected.
+
+    Yields
+    ------
+    leaf: obj:`torch.nn.Module`
+        Either a leaf of the module structure, or the module itself if it has no children.
+    '''
+    is_leaf = True
+
+    children = module.children()
+    for child in children:
+        is_leaf = False
+        for leaf in collect_leaves(child):
+            yield leaf
+    if is_leaf:
+        yield module

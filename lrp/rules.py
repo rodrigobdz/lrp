@@ -12,10 +12,10 @@ __status__ = 'Development'
 import copy
 import torch
 from typing import Callable, List, Tuple
-from .custom_zennit import mod_params, stabilize
+from .zennit import core as zennit_core
 
 
-class _LrpRule(torch.nn.Module):
+class LrpRule(torch.nn.Module):
     r'''Base class for LRP rules'''
 
     def __init__(
@@ -37,7 +37,7 @@ class _LrpRule(torch.nn.Module):
             copy_layer = getattr(self, layer_name)
 
             # Modify the parameters of the new layer
-            mod_params(copy_layer, param_mod)
+            zennit_core.mod_params(copy_layer, param_mod)
 
     def forward_mod_gradient(
         self, z: torch.Tensor, output: torch.Tensor
@@ -48,10 +48,10 @@ class _LrpRule(torch.nn.Module):
         :param z: Input to the layer
         :return: result of original forward function
         '''
-        return z * (output / stabilize(z)).detach()
+        return z * (output / zennit_core.stabilize(z)).detach()
 
 
-class _LrpGenericRule(_LrpRule):
+class _LrpGenericRule(LrpRule):
     r'''Generic LRP rule
 
     Source: 10.2 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
@@ -118,7 +118,7 @@ class LrpGammaRule(_LrpGenericRule):
         super().__init__(layer, epsilon=0, gamma=gamma)
 
 
-class LrpZBoxRule(_LrpRule):
+class LrpZBoxRule(LrpRule):
     r'''LRP-Z-Box rule
     Source: Algorithm 7 in Appendix B section A. in https://arxiv.org/abs/2003.07631v1
     '''
