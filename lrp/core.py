@@ -1,4 +1,4 @@
-r'''Composite Layer-wise Relevance propagation using rules defined by layer
+r'''Composite Layer-wise Relevance Propagation using rules defined by layer
 '''
 
 
