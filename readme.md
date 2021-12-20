@@ -50,4 +50,4 @@ This implementation is based on insights from:
 
 ## License
 
-[MIT](LICENSE) © [rodrigobdz](https://rodrigobdz.github.io/).
+[MIT](LICENSE) © [rodrigobdz](https://github.com/rodrigobdz/).
