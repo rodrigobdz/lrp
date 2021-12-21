@@ -113,8 +113,3 @@ class Activation(metaclass=SubclassMeta):
         torch.nn.modules.activation.Tanhshrink,
         torch.nn.modules.activation.Threshold,
     )
-
-
-class LayerType(metaclass=SubclassMeta):
-    '''Type definition for layers.'''
-    __subclass__ = (Linear, BatchNorm, AvgPool, Activation)
