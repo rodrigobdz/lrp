@@ -13,7 +13,7 @@ from typing import Union, Dict, List, Tuple, Optional
 import torch
 from . import rules
 from . import builtin
-from .image import heatmap
+from .image import _heatmap
 
 
 class LRP:
@@ -117,4 +117,4 @@ class LRP:
         :param width: Width of heatmap
         :param height: Height of heatmap
         '''
-        heatmap(self.R[0].sum(dim=0).detach().numpy(), width, height)
+        return _heatmap(self.R[0].sum(dim=0).detach().numpy(), width, height)
