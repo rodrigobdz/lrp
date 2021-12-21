@@ -102,6 +102,7 @@ class LrpEpsilonRule(_LrpGenericRule):
     def __init__(self, layer: torch.nn.Module, epsilon: float) -> None:
         r'''
         :param layer: Layer to be modified
+        :param epsilon: Epsilon value for LRP rule with same name
         '''
         super().__init__(layer, epsilon, gamma=0)
 
@@ -114,6 +115,7 @@ class LrpGammaRule(_LrpGenericRule):
     def __init__(self, layer: torch.nn.Module, gamma: float) -> None:
         r'''
         :param layer: Layer to be modified
+        :param gamma: Gamma value for LRP rule with same name
         '''
         super().__init__(layer, epsilon=0, gamma=gamma)
 
@@ -131,6 +133,10 @@ class LrpZBoxRule(LrpRule):
         Excerpt from the paper:
         "The functions f1+ and f1− are forward passes on copies of the first layer whose parameters
         have been processed by the functions max(0, ·) and min(0, ·) respectively."
+
+        :param layer: Layer to be modified
+        :param low: Tensor with lowest pixel values in the image
+        :param high: Tensors with highest pixel values in the image
         '''
         param_modifiers = [
             ('low_layer', lambda _, param: param.clamp(min=0)),
@@ -148,8 +154,9 @@ class LrpZBoxRule(LrpRule):
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         r'''Forward passes on layer and low and high layers
+
+        :param X: Input to the layer
         '''
-        # Forward passes on all layers
         output: torch.Tensor = self.layer.forward(X)
         z_low: torch.Tensor = self.low_layer.forward(self.low)
         z_high: torch.Tensor = self.high_layer.forward(self.high)

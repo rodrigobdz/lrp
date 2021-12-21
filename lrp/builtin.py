@@ -32,7 +32,7 @@ def rsetattr(obj: object, name: str, value: Any, sep: str = '.') -> None:
     :param value: Value to be assigned to the attribute
     '''
     # Count recursion level in name
-    n = name.count(sep)
+    n: int = name.count(sep)
 
     # If the attribute is not nested, use setattr
     if n == 0:

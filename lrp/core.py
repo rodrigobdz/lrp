@@ -9,8 +9,8 @@ __email__ = 'rodrigobdz@tu-berlin.de'
 __status__ = 'Development'
 
 
+from typing import Union, Dict, List, Tuple, Optional
 import torch
-from typing import Union, Dict, List, Tuple
 from . import rules
 from . import builtin
 from .image import heatmap
@@ -28,7 +28,7 @@ class LRP:
         self.model.eval()
         self.name_map: List[Tuple[List[str], rules.LrpRule,
                                   Dict[str, Union[torch.Tensor, float]]]] = []
-        self.R = None
+        self.R: Optional[torch.Tensor] = None
 
     def convert_layers(self, name_map:
                        List[
@@ -67,7 +67,7 @@ class LRP:
             # Apply rule to named layer
             builtin.rsetattr(self.model, name, lrp_layer)
 
-    def mapping(self, name: str) -> Tuple[rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]:
+    def mapping(self, name: str) -> Optional[Tuple[rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]]:
         r'''Get LRP rule and parameters for layer with given name
 
         :param name: Layer name
@@ -82,6 +82,9 @@ class LRP:
 
     def relevance(self, X: torch.Tensor) -> torch.Tensor:
         r'''Compute relevance for input X by applying Gradient*Input
+
+        Source: "Algorithm 8 LRP implementation based on forward hooks" in
+        "Toward Interpretable Machine Learning: Transparent Deep Neural Networks and Beyond"
 
         :param X: Input to be explained
         :returns: Relevance for input X
@@ -101,8 +104,6 @@ class LRP:
         low: torch.Tensor = first_layer.low
         high: torch.Tensor = first_layer.high
 
-        print(f'Absolute sum of attribution {X.grad.abs().sum().item()}')
-
         # Calculate gradients
         c1, c2, c3 = X.grad, low.grad, high.grad
 
@@ -110,7 +111,7 @@ class LRP:
         self.R = X * c1 + low * c2 + high * c3
         return self.R
 
-    def visualize(self, width: int = 4, height: int = 4) -> torch.Tensor:
+    def heatmap(self, width: int = 4, height: int = 4) -> torch.Tensor:
         r'''Create heatmap of relevance
 
         :param width: Width of heatmap

@@ -1,9 +1,13 @@
-# Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/utils.py
+r'''Utils from lrp-tutorial with custom modifications
+Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/utils.py
+'''
+
 
 import numpy
 import copy
-from matplotlib import pyplot as plt
+import matplotlib
 import torch.nn as nn
+from matplotlib import pyplot as plt
 
 # --------------------------------------
 # Load parameters
@@ -30,7 +34,7 @@ def loaddata():
 # --------------------------------------
 
 
-def heatmap(R, sx, sy):
+def heatmap(R, sx, sy, plot=True):
 
     b = 10*((numpy.abs(R)**3.0).mean()**(1.0/3))
 
@@ -38,11 +42,24 @@ def heatmap(R, sx, sy):
     my_cmap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
     my_cmap[:, 0:3] *= 0.85
     my_cmap = ListedColormap(my_cmap)
-    plt.figure(figsize=(sx, sy))
+    fig = plt.figure(figsize=(sx, sy))
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     plt.axis('off')
     plt.imshow(R, cmap=my_cmap, vmin=-b, vmax=b, interpolation='nearest')
-    plt.show()
+
+    if plot:
+        plt.show()
+
+    # Convert heatmap to image stored in numpy array
+    fig.canvas.draw()
+    data = numpy.frombuffer(fig.canvas.tostring_rgb(), dtype=numpy.uint8)
+    w, h = fig.canvas.get_width_height()
+    heatmap_img = data.reshape((int(h), int(w), -1))
+
+    # Close figure
+    matplotlib.pyplot.close(fig)
+
+    return heatmap_img
 
 
 def digit(X, sx, sy):
