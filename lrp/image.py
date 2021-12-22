@@ -11,44 +11,9 @@ __status__ = 'Development'
 import cv2
 import torch
 import numpy
-from typing import List
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
-
-
-class StandardScoreNormalization:
-    r'''Normalize matrix by calculating standard score, i.e., subtracting mean and dividing by standard deviation of the dataset.
-
-    Source: https://github.com/chr5tphr/zennit/blob/cc9ac0f3016e1b842f2c60e8986c794b2ae7096e/share/example/feed_forward.py#L32-L38
-    '''
-
-    def __init__(self, mean: List[float], std: List[float]) -> None:
-        r'''Convert mean and standard deviation to tensors
-
-        :param mean: Mean of the dataset
-        :param std: Standard deviation of the dataset
-        '''
-        self.mean = torch.tensor(mean)[None, :, None, None]
-        self.std = torch.tensor(std)[None, :, None, None]
-
-    def __call__(self, matrix: torch.Tensor) -> torch.Tensor:
-        r'''Calculate standard score
-
-        :param matrix: Matrix to be normalized
-        :returns: Normalized matrix
-        '''
-        return (matrix - self.mean) / self.std
-
-
-class ILSVRC2012_BatchNormalize(StandardScoreNormalization):
-    r'''Normalize batch of images from ILSVRC2012 dataset
-
-    Mean and std are calculated from the dataset ImageNet
-    https://github.com/Cadene/pretrained-models.pytorch/blob/8aae3d8f1135b6b13fed79c1d431e3449fdbf6e0/pretrainedmodels/models/torchvision_models.py#L64-L65
-    '''
-
-    def __init__(self):
-        super().__init__(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+from . import norm
 
 
 def load_normalized_img(path: str) -> numpy.array:
@@ -66,8 +31,8 @@ def load_normalized_img(path: str) -> numpy.array:
     img = img[..., ::-1]
 
     # img.shape is (224, 224, 3), where 3 corresponds to RGB channels
-    # Divide by 255 (max. RGB value) to normalize pixel values to [0,1]
-    return img / 255.0
+
+    return norm.normalize_rgb_img(img)
 
 
 def img_to_tensor(img: numpy.array) -> torch.Tensor:
@@ -78,7 +43,7 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
     :param img: Image to be converted
     :returns: Tensor with image data
     '''
-    normalized_img = ILSVRC2012_BatchNormalize()(
+    normalized_img = norm.ILSVRC2012_BatchNorm()(
         torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
     )
     return normalized_img
