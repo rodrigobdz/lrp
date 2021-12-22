@@ -8,6 +8,7 @@ __email__ = 'rodrigobdz@tu-berlin.de'
 __status__ = 'Development'
 
 
+from matplotlib.figure import Figure
 import cv2
 import torch
 import numpy
@@ -48,23 +49,30 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
     return normalized_img
 
 
-def plot_heatmap(relevance_scores: numpy.array, width: float, height: float, fig: Figure = plt, show_plot: bool = True) -> None:
+def plot_heatmap(relevance_scores: numpy.array, width: float, height: float,
+                 fig: Figure = plt, show_plot: bool = True, dpi: float = 100) -> None:
     r'''Plot heatmap of relevance scores
 
     :param relevance_scores: Relevance scores in pixel layer only
     :param width: Size of the image in x-direction
     :param height: Size of the image in y-direction
+
+    :param fig: Figure to plot on
+    :param show_plot: Show plot or not
     '''
+    CMAP: ListedColormap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
+    CMAP[:, 0:3] *= 0.85
+    CMAP = ListedColormap(CMAP)
+
     abs_bound = 10 * ((numpy.abs(relevance_scores) ** 3.0).mean() ** (1.0 / 3))
 
-    cmap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
-    cmap[:, 0:3] *= 0.85
-    cmap = ListedColormap(cmap)
+    if fig is plt:
+        fig.figure(figsize=(width, height), dpi=dpi)
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-    plt.figure(figsize=(width, height))
-    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    plt.axis('off')
-    plt.imshow(relevance_scores, cmap=cmap, vmin=-abs_bound,
+    fig.axis('off')
+    fig.imshow(relevance_scores, cmap=CMAP, vmin=-abs_bound,
                vmax=abs_bound, interpolation='nearest')
 
-    plt.show()
+    if show_plot:
+        plt.show()
