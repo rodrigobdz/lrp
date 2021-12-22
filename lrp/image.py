@@ -29,7 +29,6 @@ def load_normalized_img(path: str) -> numpy.array:
 
     # Convert from BGR to RGB color space
     img = img[..., ::-1]
-
     # img.shape is (224, 224, 3), where 3 corresponds to RGB channels
 
     return norm.normalize_rgb_img(img)
@@ -49,7 +48,7 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
     return normalized_img
 
 
-def heatmap(relevance_scores: numpy.array, width: float, height: float):
+def plot_heatmap(relevance_scores: numpy.array, width: float, height: float, fig: Figure = plt, show_plot: bool = True) -> None:
     r'''Plot heatmap of relevance scores
 
     :param relevance_scores: Relevance scores in pixel layer only

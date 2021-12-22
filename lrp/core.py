@@ -14,7 +14,7 @@ import torch
 import copy
 from . import rules
 from . import builtin
-from .image import heatmap as _heatmap
+from .image import plot_heatmap
 
 
 class LRP:
@@ -123,4 +123,4 @@ class LRP:
         :param width: Width of heatmap
         :param height: Height of heatmap
         '''
-        return _heatmap(self.R[0].sum(dim=0).detach().numpy(), width, height)
+        return plot_heatmap(self.R[0].sum(dim=0).detach().numpy(), width, height)
