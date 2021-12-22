@@ -32,7 +32,7 @@ class StandardScoreNormalization:
         self.std = torch.tensor(std)[None, :, None, None]
 
     def __call__(self, matrix: torch.Tensor) -> torch.Tensor:
-        r'''Caclculate standard score
+        r'''Calculate standard score
 
         :param matrix: Matrix to be normalized
         :returns: Normalized matrix
