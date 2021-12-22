@@ -17,8 +17,8 @@ Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
    # Activate venv
    source lrp-env/bin/activate
 
-   # Install dependencies defined in requirements.txt
-   python3 -m pip install --requirement requirements.txt
+   # Install dependencies in editable mode
+   python3 -m pip install --editable .
    ```
 
 ## Usage

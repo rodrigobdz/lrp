@@ -13,7 +13,7 @@ from typing import Union, Dict, List, Tuple, Optional
 import torch
 from . import rules
 from . import builtin
-from .image import _heatmap
+from .image import heatmap as _heatmap
 
 
 class LRP:
