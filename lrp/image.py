@@ -47,7 +47,7 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
 
 
 def plot_heatmap(relevance_scores: numpy.array, width: float, height: float,
-                 fig: Figure = plt, show_plot: bool = True, dpi: float = 100) -> None:
+                 fig: Figure = plt, show_plot: bool = True, dpi: float = 100.0) -> None:
     r'''Plot heatmap of relevance scores
 
     :param relevance_scores: Relevance scores in pixel layer only
