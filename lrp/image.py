@@ -43,10 +43,7 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
     :param img: Image to be converted
     :returns: Tensor with image data
     '''
-    normalized_img = norm.ILSVRC2012_BatchNorm()(
-        torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
-    )
-    return normalized_img
+    return torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
 
 
 def plot_heatmap(relevance_scores: numpy.array, width: float, height: float,
