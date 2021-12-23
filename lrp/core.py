@@ -12,9 +12,7 @@ __status__ = 'Development'
 from typing import Union, Dict, List, Tuple, Optional
 import torch
 import copy
-from . import rules
-from . import builtin
-from .image import plot_heatmap
+from . import rules, builtin, plot
 
 
 class LRP:
@@ -125,4 +123,4 @@ class LRP:
         :param width: Width of heatmap
         :param height: Height of heatmap
         '''
-        return plot_heatmap(R[0].sum(dim=0).detach().numpy(), width, height)
+        return plot.heatmap(R[0].sum(dim=0).detach().numpy(), width, height)

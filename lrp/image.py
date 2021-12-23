@@ -1,4 +1,4 @@
-r'''Visualization functions and pre-processing of input data
+r'''Image pre-processing and handling
 '''
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -44,32 +44,3 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
     :returns: Tensor with image data
     '''
     return torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
-
-
-def plot_heatmap(relevance_scores: numpy.array, width: float, height: float,
-                 fig: Figure = plt, show_plot: bool = True, dpi: float = 100.0) -> None:
-    r'''Plot heatmap of relevance scores
-
-    :param relevance_scores: Relevance scores in pixel layer only
-    :param width: Size of the image in x-direction
-    :param height: Size of the image in y-direction
-
-    :param fig: Figure to plot on
-    :param show_plot: Show plot or not
-    '''
-    CMAP: ListedColormap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
-    CMAP[:, 0:3] *= 0.85
-    CMAP = ListedColormap(CMAP)
-
-    abs_bound = 10 * ((numpy.abs(relevance_scores) ** 3.0).mean() ** (1.0 / 3))
-
-    if fig is plt:
-        fig.figure(figsize=(width, height), dpi=dpi)
-        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-
-    fig.axis('off')
-    fig.imshow(relevance_scores, cmap=CMAP, vmin=-abs_bound,
-               vmax=abs_bound, interpolation='nearest')
-
-    if show_plot:
-        plt.show()
