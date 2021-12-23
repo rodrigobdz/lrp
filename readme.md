@@ -19,6 +19,8 @@ Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
 
    # Install dependencies in editable mode
    python3 -m pip install --editable .
+   # Alternatively, to install development dependencies, use the following command instead:
+   # python -m pip install --editable .[dev]
    ```
 
 ## Usage
