@@ -32,7 +32,10 @@ class StandardScoreNorm:
 
 
 class ILSVRC2012_BatchNorm(StandardScoreNorm):
-    r'''Normalize batch of images from ILSVRC2012 dataset
+    r'''Normalize batch of images from the ImageNet Large Scale Visual Recognition Challenge (ILSVRC) 2012-2017 image
+    classification and localization dataset.
+
+    Further reading: https://image-net.org/challenges/LSVRC/2012/index.php
 
     Mean and std are calculated from the dataset ImageNet
     https://github.com/Cadene/pretrained-models.pytorch/blob/8aae3d8f1135b6b13fed79c1d431e3449fdbf6e0/pretrainedmodels/models/torchvision_models.py#L64-L65

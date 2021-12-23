@@ -117,10 +117,12 @@ class LRP:
         self.R = X * c1 + low * c2 + high * c3
         return self.R
 
-    def heatmap(self, width: int = 4, height: int = 4) -> torch.Tensor:
+    @staticmethod
+    def heatmap(R: torch.Tensor, width: int = 4, height: int = 4) -> None:
         r'''Create heatmap of relevance
 
+        :param R: Relevance tensor
         :param width: Width of heatmap
         :param height: Height of heatmap
         '''
-        return plot_heatmap(self.R[0].sum(dim=0).detach().numpy(), width, height)
+        return plot_heatmap(R[0].sum(dim=0).detach().numpy(), width, height)
