@@ -10,6 +10,7 @@ __status__ = 'Development'
 
 
 from typing import Callable, Dict, List, Tuple, Union
+from pathlib import Path
 import os.path
 import pickle
 import torch
@@ -59,7 +60,7 @@ class Experiments:
         if os.path.isfile(cache_filename):
             print('Using cached results')
             # Load cached results
-            with open(f'{self.output_dir_path}/results.pickle', 'rb') as f:
+            with open(cache_filename, 'rb') as f:
                 return pickle.load(f)
 
         results: List[Tuple[float, torch.Tensor]] = [None]*len(hyperparams)
@@ -81,6 +82,9 @@ class Experiments:
             results[i] = (hyperparam_val, R)
 
         # Cache results
+        #
+        # Create intermediate directories if necessary
+        Path(self.output_dir_path).mkdir(parents=True, exist_ok=True)
         with open(cache_filename, 'wb') as f:
             pickle.dump(results, f)
 
