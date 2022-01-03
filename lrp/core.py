@@ -93,25 +93,37 @@ class LRP:
         self.model.zero_grad()
         X.requires_grad = True
 
+        # Set default values for relevance, in case ZBoxrule is not used
+        low = high = c2 = c3 = 0
+
         # Vars to retrieve gradients from first layer
         first_layer: torch.nn.Module = self.model.features[0]
-        low: torch.Tensor = first_layer.low
-        high: torch.Tensor = first_layer.high
+
+        if isinstance(first_layer, rules.LrpZBoxRule):
+            # Access high and low copy layers in first layer
+            low: torch.Tensor = first_layer.low
+            high: torch.Tensor = first_layer.high
+
+            # Reset stored gradients
+            low.grad = None
+            high.grad = None
 
         # Reset stored gradients
         X.grad = None
-        low.grad = None
-        high.grad = None
 
         # Compute explanation
         # Stores value of gradient in X.grad
         # [0].max() retrieves the maximum activation/relevance in the first layer
         self.model.forward(X)[0].max().backward()
 
-        # Calculate gradients
-        c1, c2, c3 = X.grad, low.grad, high.grad
+        if isinstance(first_layer, rules.LrpZBoxRule):
+            # Compute gradients
+            c2, c3 = low.grad, high.grad
 
-        # Calculate relevance
+        # Compute input gradient
+        c1 = X.grad
+
+        # Compute relevance
         self.R = X * c1 + low * c2 + high * c3
         return self.R
 
