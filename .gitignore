@@ -144,4 +144,4 @@ cython_debug/
 ##################
 .vscode
 *venv/
-artifacts
+artifacts*/
