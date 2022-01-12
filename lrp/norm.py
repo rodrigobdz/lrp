@@ -31,14 +31,14 @@ class StandardScoreNorm:
         return (matrix - self.mean) / self.std
 
 
-class ILSVRC2012_BatchNorm(StandardScoreNorm):
+class ImageNetNorm(StandardScoreNorm):
     r'''Normalize batch of images from the ImageNet Large Scale Visual Recognition Challenge (ILSVRC) 2012-2017 image
     classification and localization dataset.
 
     Further reading: https://image-net.org/challenges/LSVRC/2012/index.php
 
     Mean and std are calculated from the dataset ImageNet
-    https://github.com/Cadene/pretrained-models.pytorch/blob/8aae3d8f1135b6b13fed79c1d431e3449fdbf6e0/pretrainedmodels/models/torchvision_models.py#L64-L65
+    https://github.com/pytorch/examples/blob/42e5b996718797e45c46a25c55b031e6768f8440/imagenet/main.py#L92-L93
     '''
 
     def __init__(self) -> Callable[[torch.Tensor], torch.Tensor]:
