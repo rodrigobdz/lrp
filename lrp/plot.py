@@ -9,7 +9,7 @@ __email__ = 'rodrigobdz@tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Any, List, Tuple, Callable
+from typing import Any, List, Tuple, Callable, Optional
 import numpy
 import torch
 from matplotlib.colors import ListedColormap
@@ -53,6 +53,7 @@ def grid(results: List[Tuple[float, torch.Tensor]],
          filename: str,
          gridsize: Tuple[int, int],
          param_name: str,
+         transform: Optional[Callable] = None,
          param_print: Callable[[Any], Any] = lambda p: p,
          figsize: List[int] = [10, 10],
          alpha: float = 0.2) -> None:
@@ -95,7 +96,12 @@ def grid(results: List[Tuple[float, torch.Tensor]],
                          show_plot=False, dpi=dpi)
 
         # Plot reference image
-        axi.imshow(image, alpha=alpha)
+        if transform:
+            # Convert from NCHW to NHWC format.
+            img_nhwc = transform(image).numpy().transpose(1, 2, 0)
+            axi.imshow(img_nhwc, alpha=alpha)
+        else:
+            axi.imshow(image, alpha=alpha)
 
         # Hide axis
         axi.axis('off')
