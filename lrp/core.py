@@ -125,7 +125,7 @@ class LRP:
 
         # Compute relevance
         self.R = X * c1 + low * c2 + high * c3
-        return self.R
+        return self.R.detach()
 
     @staticmethod
     def heatmap(R: torch.Tensor, width: int = 4, height: int = 4) -> None:
