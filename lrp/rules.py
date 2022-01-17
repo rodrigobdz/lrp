@@ -27,7 +27,7 @@ class LrpRule(torch.nn.Module):
                 A new layer will be created for each layer_name with modifier applied
         '''
         super().__init__()
-        self.layer = layer
+        self.layer: torch.nn.Module = layer
 
         for layer_name, param_mod in param_modifiers:
             # Create new layer
@@ -64,10 +64,10 @@ class _LrpGenericRule(LrpRule):
         :param epsilon: Epsilon value for LRP rule with same name
         :param gamma: Gamma value for LRP rule with same name
         '''
-        param_modifiers = [
+        param_modifiers: List[Tuple[str, Callable]] = [
             ('copy_layer', lambda _, param: param + gamma * param.clamp(min=0))
         ]
-        self.epsilon = epsilon
+        self.epsilon: float = epsilon
         super().__init__(layer, param_modifiers)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
@@ -145,8 +145,8 @@ class LrpZBoxRule(LrpRule):
 
         super().__init__(layer, param_modifiers)
 
-        self.low = low
-        self.high = high
+        self.low: torch.Tensor = low
+        self.high: torch.Tensor = high
 
         # Enable gradient computation
         self.low.requires_grad = True
