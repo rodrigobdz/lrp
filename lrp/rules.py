@@ -48,13 +48,13 @@ class LrpRule(torch.nn.Module):
         :param z: Input to the layer
         :return: result of original forward function
         '''
-        # Heuristic used in lrp-tutorial stabilizes both z occurrences (numerator and denominator):
+        # Heuristic used in lrp-tutorial stabilizes both z occurrences (multiplier and denominator):
         # return zennit_core.stabilize(z) * (output / zennit_core.stabilize(z)).detach()
 
         # Without any heuristic to enforce 0/0 = 0, NaN may occur:
-        return z * (output / z).detach()
+        # return z * (output / z).detach()
 
-        # return z * (output / zennit_core.stabilize(z)).detach()
+        return z * (output / zennit_core.stabilize(z)).detach()
 
 
 class _LrpGenericRule(LrpRule):
