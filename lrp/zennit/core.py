@@ -22,10 +22,10 @@ def stabilize(dividend: torch.Tensor, epsilon: float = 1e-6):
     :returns: Non-zero value
     '''
     # Numerical instability happens if no heuristic is used, as shown here:
-    return dividend + epsilon
+    # return dividend + epsilon
 
     # Heuristic to avoid division by zero and scale epsilon according to dividend's magnitude
-    # return dividend + ((dividend == 0.).to(dividend) + dividend.sign()) * epsilon
+    return dividend + ((dividend == 0.).to(dividend) + dividend.sign()) * epsilon
 
 
 def mod_params(module: torch.nn.Module, modifier: Callable, param_keys: List[str] = None):
