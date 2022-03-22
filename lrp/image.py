@@ -40,7 +40,7 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
 
     Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and zennit
     Add new axis to simulate batch dimension of size 1.
-    Coinvert from NHWC to NCHW format using transpose.
+    Convert from NHWC to NCHW format using transpose.
     Set the data type to float.
 
     Meaning of NCHW format:
