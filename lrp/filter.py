@@ -23,9 +23,11 @@ class LayerFilter:
         :param model: Model to filter layers from
         '''
         # Collect all layers by name
-        self.name_lookup: Dict[str, torch.nn.Module] = {module: name for name, module in model.named_modules()}
+        self.name_lookup: Dict[str, torch.nn.Module] = {
+            module: name for name, module in model.named_modules()}
         # Model layers in sequential order
-        self.layers: List[Tuple[int, torch.nn.Module]] = list(enumerate(collect_leaves(model)))
+        self.layers: List[Tuple[int, torch.nn.Module]] = list(
+            enumerate(collect_leaves(model)))
 
     def set_target_types(self, target_types: Tuple[type]) -> None:
         r'''Set the types of layers to filter.
@@ -46,4 +48,3 @@ class LayerFilter:
         allowed_types = target_types or self.target_types
 
         return [self.name_lookup[module] for n, module in self.layers if cond(n) and isinstance(module, allowed_types)]
-
