@@ -13,58 +13,14 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Optional, Generator, Callable, List, Tuple
-from abc import ABC, abstractmethod
-from matplotlib import pyplot as plt
-
 import torch
-import numpy
 import logging
 import sys
 
-
-class RandomNumberGenerator(ABC):
-    r'''
-    Base random number generator class. Acts as interface for number generator classes.
-    '''
-
-    def __init__(self,
-                 seed: int = 42):
-        '''
-        Constructor
-
-        :param seed: Seed for the random number generator.
-        '''
-        self.generator: Generator = numpy.random.default_rng(seed=seed)
-
-    @abstractmethod
-    def draw(self) -> float:
-        r'''
-        Draws a random number from the distribution.
-        '''
-
-
-class UniformRNG(RandomNumberGenerator):
-    r'''
-    Uniform random number generator class.
-    '''
-
-    def draw(self, lower: float = -1.0, upper: float = 1.0, size: int = 1) -> float:
-        r'''
-        Draws a random number from the distribution.
-
-        :param lower: Lower bound of the distribution.
-        :param upper: Upper bound of the distribution.
-        :param size: Number of random numbers to draw.
-
-        :returns: A random number from the uniform distribution.
-        '''
-        return self.generator.uniform(lower, upper, size)
-
-
-class PixelFlippingObjectives:
-    r'''Objectives for Pixel-Flipping Algorithm.'''
-    MORF: str = 'Most Relevant First'
+from typing import Optional, Generator, Callable, List, Tuple
+from matplotlib import pyplot as plt
+from .objectives import PixelFlippingObjectives
+from .random_number_generators import RandomNumberGenerator, UniformRNG
 
 
 class PixelFlipping:
