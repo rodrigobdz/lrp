@@ -103,8 +103,7 @@ class PixelFlipping:
     def __call__(self,
                  X: torch.Tensor,
                  relevance_scores: torch.Tensor,
-                 f: Callable[[torch.Tensor], float],
-                 g: Callable[[torch.Tensor], torch.Tensor]
+                 f: Callable[[torch.Tensor], float]
                  ) -> torch.Tensor:
         r'''Flip pixels of input according to the relevance scores.
 
@@ -120,10 +119,6 @@ class PixelFlipping:
         # pixel-flipping operations.
         flipped_input: torch.Tensor = X.detach().clone()
         flipped_input.requires_grad = False
-
-        # FIXME: Delete!
-        relevance_scores: torch.Tensor = relevance_scores.detach().clone()
-        relevance_scores.requires_grad = False
 
         # Get initial classification score.
         self.class_prediction_scores.append(f(flipped_input))
@@ -143,8 +138,6 @@ class PixelFlipping:
             self.logger.debug(
                 f'Classification score: {self.class_prediction_scores[-1]}')
 
-            # FIXME: Delete. Relevance scores should not be updated.
-            relevance_scores = g(flipped_input)
             # yield flipped_input, self.class_prediction_scores[-1]
         return flipped_input
 
