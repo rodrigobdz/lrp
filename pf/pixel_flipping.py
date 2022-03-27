@@ -126,6 +126,43 @@ class PixelFlipping:
 
         PixelFlipping._loop(pixel_flipping_generator)
 
+    @staticmethod
+    def _loop(generator) -> None:
+        r'''Loop over a generator without retrieving any values.
+
+        :param generator: Generator to loop over.
+        '''
+        for _ in generator:
+            pass
+
+    @staticmethod
+    def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> Generator[torch.Tensor, None, None]:
+        r'''Generator function that sorts relevance scores in order defined by objective.
+
+        :param relevance_scores: Relevance scores.
+        :param objective: Sorting order for relevance scores.
+
+        :yields: Mask to flip pixels/patches input in order specified by objective based on relevance scores.
+        '''
+
+        # Controls the sorting order (ascending or descending).
+        descending: bool = False
+
+        # Objective 'Most Relevant First' (MORF) refers to descending order.
+        if objective == PixelFlippingObjectives.MORF:
+            descending = True
+
+        # Sort relevance scores according to objective
+        sorted_values, _ = relevance_scores[0].flatten().sort(
+            descending=descending, stable=True)
+
+        for threshold_value in sorted_values:
+            # Create mask to flip pixels/patches in input located at the index of the
+            # threshold value in the sorted relevance scores.
+            mask: torch.Tensor = relevance_scores[0] == threshold_value
+
+            yield mask
+
     def _generator(self,
                    input: torch.Tensor,
                    relevance_scores: torch.Tensor,
@@ -146,7 +183,7 @@ class PixelFlipping:
         '''
 
         # Deep copy input to avoid in-place modifications.
-        # Detach X from computational graph to avoid computing gradient for the
+        # Detach input from computational graph to avoid computing gradient for the
         # pixel-flipping operations.
         flipped_input: torch.Tensor = input.detach().clone()
         flipped_input.requires_grad = False
@@ -157,11 +194,17 @@ class PixelFlipping:
         self.logger.debug(
             f'Initial classification score {self.class_prediction_scores[-1]}')
 
+        mask_generator: Generator[torch.Tensor, None,
+                                  None] = PixelFlipping._argsort(relevance_scores)
+
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
 
+            # Mask to select which pixels to flip.
+            mask: torch.Tensor = next(mask_generator)
+
             # Flip pixels
-            self._flip(flipped_input, relevance_scores)
+            self._flip(flipped_input, mask)
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -171,18 +214,9 @@ class PixelFlipping:
 
             yield flipped_input, self.class_prediction_scores[-1]
 
-    @staticmethod
-    def _loop(generator) -> None:
-        r'''Loop over a generator without retrieving any values.
-
-        :param generator: Generator to loop over.
-        '''
-        for _ in generator:
-            pass
-
     def _flip(self,
-              X: torch.Tensor,
-              relevance_scores: torch.Tensor
+              input: torch.Tensor,
+              mask: torch.Tensor
               ) -> None:
         r'''Flip pixels of input in-place according to the relevance scores.
 
@@ -193,23 +227,17 @@ class PixelFlipping:
         # Draw a random number.
         flip_value: float = self.ran_num_gen.draw()
 
-        # FIXME: Extract these lines to a function which should take
-        # the pixel-flipping objective into account.
-
-        # FIXME: Iterate sorted relevance scores instead of always selecting the same element (maximum).
-        # Get value of maximum relevance score
-        flip_threshold = torch.max(relevance_scores[0]).item()
-
-        # Mask with elements that equal to the maximum relevance score set to True, otherwise False.
-        # In practice, this is a representation of the indexes to flip.
-        max_rel_score_mask: torch.Tensor = relevance_scores[0] == flip_threshold
-
         # Debug: Compute indices selected for flipping in mask.
-        flip_indices = max_rel_score_mask.nonzero().flatten().tolist()
+        flip_indices = mask.nonzero().flatten().tolist()
         # Debug: Count how many elements are set to True—i.e., would be flipped.
-        flip_count: torch.Tensor = X[0][max_rel_score_mask].count_nonzero()
+        flip_count: torch.Tensor = input[0][mask].count_nonzero()
         self.logger.debug(
             f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} elements.')
+
+        # Error handling
+        if flip_count != 1:
+            self.logger.exception(
+                f'Flip count {flip_count} is not one. This means that the mask is flipping more than one element.')
 
         # Flip pixels/patch
         # Disable gradient computation for the pixel-flipping operations.
@@ -224,7 +252,9 @@ class PixelFlipping:
         :raises ValueError: If class prediction scores are empty.
         '''
 
+        # Error handling
         if not self.class_prediction_scores:
+            self.logger.exception('Executed plot() before calling __call__()')
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
