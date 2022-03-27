@@ -154,6 +154,10 @@ class PixelFlipping:
         # Draw a random number.
         flip_value: float = self.ran_num_gen.draw()
 
+        # FIXME: Extract these lines to a function which should take
+        # the pixel-flipping objective into account.
+
+        # FIXME: Iterate sorted relevance scores instead of always selecting the same element (maximum).
         # Get value of maximum relevance score
         flip_threshold = torch.max(relevance_scores[0]).item()
 
@@ -175,14 +179,15 @@ class PixelFlipping:
             X[0][relevance_scores[0] == flip_threshold] = flip_value
 
     def plot(self) -> None:
-        r'''Plot the updated prediction scores throughout the perturbation steps of the pixel-flipping algorithm to
-        visualize the accuracy of the explanation.
+        r'''Plot the updated prediction scores throughout the perturbation steps of
+        the pixel-flipping algorithm to visualize the accuracy of the explanation.
 
         :raises ValueError: If class prediction scores are empty.
         '''
 
         if not self.class_prediction_scores:
-            raise ValueError('No class prediction scores to plot.')
+            raise ValueError(
+                'No class prediction scores to plot. Please run pixel-flipping first.')
 
         plt.plot(self.class_prediction_scores)
         plt.show()
