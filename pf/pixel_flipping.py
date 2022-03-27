@@ -89,8 +89,11 @@ class PixelFlipping:
             stream=sys.stderr,
             format='%(levelname)-8s  %(message)s'
         )
+
+        # Init logger instance
+        self.logger = logging.getLogger(__name__)
+
         if verbose:
-            self.logger = logging.getLogger(__name__)
             self.logger.setLevel(logging.DEBUG)
 
         # Number of times to flip pixels/patches
