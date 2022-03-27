@@ -59,7 +59,7 @@ class UniformRNG(RandomNumberGenerator):
 
         :returns: A random number from the uniform distribution.
         '''
-        return self.generator.uniform(lower, upper)
+        return self.generator.uniform(lower, upper, size)
 
 
 class PixelFlippingObjectives:
