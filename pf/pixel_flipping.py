@@ -13,7 +13,7 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Optional, Generator, Callable, List
+from typing import Optional, Generator, Callable, List, Tuple
 from abc import ABC, abstractmethod
 from matplotlib import pyplot as plt
 
@@ -77,7 +77,12 @@ class PixelFlipping:
                  verbose: bool = False,
                  ran_num_gen: Optional[RandomNumberGenerator] = None
                  ) -> None:
-        r'''Constructor'''
+        r'''Constructor
+
+        :param perturbation_steps: Number of perturbation steps.
+        :param verbose: Whether to print debug messages.
+        :param ran_num_gen: Random number generator to use.
+        '''
 
         # # Code for patches
         # if len(size) >= 2:
@@ -106,15 +111,46 @@ class PixelFlipping:
     def __call__(self,
                  X: torch.Tensor,
                  relevance_scores: torch.Tensor,
-                 f: Callable[[torch.Tensor], float]
-                 ) -> torch.Tensor:
-        r'''Flip pixels of input according to the relevance scores.
+                 f: Callable[[torch.Tensor], float],
+                 should_loop: bool = True
+                 ) -> None:
+        r'''Run pixel-flipping algorithm.
+
+        :param X: Input to be explained.
+        :param relevance_scores: Relevance scores.
+        :param f: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param should_loop: Whether to loop over the generator or not.
+
+        :yields: Tuple of flipped input and updated classification score
+        after one perturbation step.
+        '''
+
+        pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
+            X, relevance_scores, f)
+
+        # Toggle to return generator or loop automatically over it.
+        if not should_loop:
+            return
+
+        PixelFlipping._loop(pixel_flipping_generator)
+
+    def _generator(self,
+                   X: torch.Tensor,
+                   relevance_scores: torch.Tensor,
+                   f: Callable[[torch.Tensor], float]
+                   ) -> Generator[Tuple[torch.Tensor, float], None, None]:
+        r'''Generator to flip pixels of input according to the relevance scores.
 
         :param X: Input to be explained.
         :param relevance_scores: Relevance scores.
         :param f: Classifier function to measure accuracy change in pixel-flipping iterations.
 
-        :returns: Flipped input.
+        :yields: Tuple of flipped input and updated classification score
+        after one perturbation step.
+
+        Generators are annotated in the format: Generator[YieldType, SendType, ReturnType],
+        therefore, SendType and ReturnType are set to None above.
+        Source: https://docs.python.org/3/library/typing.html
         '''
 
         # Deep copy input to avoid in-place modifications.
@@ -141,8 +177,16 @@ class PixelFlipping:
             self.logger.debug(
                 f'Classification score: {self.class_prediction_scores[-1]}')
 
-            # yield flipped_input, self.class_prediction_scores[-1]
-        return flipped_input
+            yield flipped_input, self.class_prediction_scores[-1]
+
+    @staticmethod
+    def _loop(generator) -> None:
+        r'''Loop over a generator without retrieving any values.
+
+        :param generator: Generator to loop over.
+        '''
+        for _ in generator:
+            pass
 
     def flip(self,
              X: torch.Tensor,
