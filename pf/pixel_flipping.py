@@ -109,14 +109,14 @@ class PixelFlipping:
         self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
 
     def __call__(self,
-                 X: torch.Tensor,
+                 input: torch.Tensor,
                  relevance_scores: torch.Tensor,
                  forward_pass: Callable[[torch.Tensor], float],
                  should_loop: bool = True
                  ) -> None:
         r'''Run pixel-flipping algorithm.
 
-        :param X: Input to be explained.
+        :param input: Input to be explained.
         :param relevance_scores: Relevance scores.
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
         :param should_loop: Whether to loop over the generator or not.
@@ -126,7 +126,7 @@ class PixelFlipping:
         '''
 
         pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
-            X, relevance_scores, forward_pass)
+            input, relevance_scores, forward_pass)
 
         # Toggle to return generator or loop automatically over it.
         if not should_loop:
@@ -135,13 +135,13 @@ class PixelFlipping:
         PixelFlipping._loop(pixel_flipping_generator)
 
     def _generator(self,
-                   X: torch.Tensor,
+                   input: torch.Tensor,
                    relevance_scores: torch.Tensor,
                    forward_pass: Callable[[torch.Tensor], float]
                    ) -> Generator[Tuple[torch.Tensor, float], None, None]:
         r'''Generator to flip pixels of input according to the relevance scores.
 
-        :param X: Input to be explained.
+        :param input: Input to be explained.
         :param relevance_scores: Relevance scores.
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
 
@@ -156,7 +156,7 @@ class PixelFlipping:
         # Deep copy input to avoid in-place modifications.
         # Detach X from computational graph to avoid computing gradient for the
         # pixel-flipping operations.
-        flipped_input: torch.Tensor = X.detach().clone()
+        flipped_input: torch.Tensor = input.detach().clone()
         flipped_input.requires_grad = False
 
         # Get initial classification score.
@@ -194,7 +194,7 @@ class PixelFlipping:
               ) -> None:
         r'''Flip pixels of input in-place according to the relevance scores.
 
-        :param X: Input to be flipped.
+        :param input: Input to be flipped.
         :param relevance_scores: Relevance scores.
         '''
 
@@ -223,7 +223,7 @@ class PixelFlipping:
         # Disable gradient computation for the pixel-flipping operations.
         # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
         with torch.no_grad():
-            X[0][relevance_scores[0] == flip_threshold] = flip_value
+            input[0][mask] = flip_value
 
     def plot(self) -> None:
         r'''Plot the updated prediction scores throughout the perturbation steps of
