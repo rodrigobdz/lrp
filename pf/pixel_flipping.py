@@ -111,14 +111,14 @@ class PixelFlipping:
     def __call__(self,
                  X: torch.Tensor,
                  relevance_scores: torch.Tensor,
-                 f: Callable[[torch.Tensor], float],
+                 forward_pass: Callable[[torch.Tensor], float],
                  should_loop: bool = True
                  ) -> None:
         r'''Run pixel-flipping algorithm.
 
         :param X: Input to be explained.
         :param relevance_scores: Relevance scores.
-        :param f: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
         :param should_loop: Whether to loop over the generator or not.
 
         :yields: Tuple of flipped input and updated classification score
@@ -126,7 +126,7 @@ class PixelFlipping:
         '''
 
         pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
-            X, relevance_scores, f)
+            X, relevance_scores, forward_pass)
 
         # Toggle to return generator or loop automatically over it.
         if not should_loop:
@@ -137,13 +137,13 @@ class PixelFlipping:
     def _generator(self,
                    X: torch.Tensor,
                    relevance_scores: torch.Tensor,
-                   f: Callable[[torch.Tensor], float]
+                   forward_pass: Callable[[torch.Tensor], float]
                    ) -> Generator[Tuple[torch.Tensor, float], None, None]:
         r'''Generator to flip pixels of input according to the relevance scores.
 
         :param X: Input to be explained.
         :param relevance_scores: Relevance scores.
-        :param f: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
 
         :yields: Tuple of flipped input and updated classification score
         after one perturbation step.
@@ -160,7 +160,7 @@ class PixelFlipping:
         flipped_input.requires_grad = False
 
         # Get initial classification score.
-        self.class_prediction_scores.append(f(flipped_input))
+        self.class_prediction_scores.append(forward_pass(flipped_input))
 
         self.logger.debug(
             f'Initial classification score {self.class_prediction_scores[-1]}')
@@ -169,10 +169,10 @@ class PixelFlipping:
             self.logger.debug(f'Step {i}')
 
             # Flip pixels
-            self.flip(flipped_input, relevance_scores)
+            self._flip(flipped_input, relevance_scores)
 
             # Measure classification accuracy change
-            self.class_prediction_scores.append(f(flipped_input))
+            self.class_prediction_scores.append(forward_pass(flipped_input))
 
             self.logger.debug(
                 f'Classification score: {self.class_prediction_scores[-1]}')
@@ -188,10 +188,10 @@ class PixelFlipping:
         for _ in generator:
             pass
 
-    def flip(self,
-             X: torch.Tensor,
-             relevance_scores: torch.Tensor
-             ) -> None:
+    def _flip(self,
+              X: torch.Tensor,
+              relevance_scores: torch.Tensor
+              ) -> None:
         r'''Flip pixels of input in-place according to the relevance scores.
 
         :param X: Input to be flipped.
