@@ -168,14 +168,16 @@ class PixelFlipping:
         # In practice, this is a representation of the indexes to flip.
         max_rel_score_mask: torch.Tensor = relevance_scores[0] == flip_threshold
 
+        # Debug: Compute indices selected for flipping in mask.
         flip_indices = max_rel_score_mask.nonzero().flatten().tolist()
-
-        # Count how many elements are set to True—i.e., would be flipped.
+        # Debug: Count how many elements are set to True—i.e., would be flipped.
         flip_count: torch.Tensor = X[0][max_rel_score_mask].count_nonzero()
-
         self.logger.debug(
             f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} elements.')
 
+        # Flip pixels/patch
+        # Disable gradient computation for the pixel-flipping operations.
+        # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
         with torch.no_grad():
             X[0][relevance_scores[0] == flip_threshold] = flip_value
 
