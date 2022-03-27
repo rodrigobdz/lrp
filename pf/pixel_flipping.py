@@ -23,13 +23,6 @@ import logging
 import sys
 
 
-# logging.warning('warning')
-# logging.debug('debug')
-# logging.info('info')
-# logging.critical('critical')
-# logging.exception('exception')
-
-
 class RandomNumberGenerator(ABC):
     r'''
     Base random number generator class. Acts as interface for number generator classes.
@@ -69,6 +62,11 @@ class UniformRNG(RandomNumberGenerator):
         return self.generator.uniform(lower, upper)
 
 
+class PixelFlippingObjectives:
+    r'''Objectives for Pixel-Flipping Algorithm.'''
+    MORF: str = 'Most Relevant First'
+
+
 class PixelFlipping:
     r'''Pixel-Flipping Algorithm.'''
 
@@ -84,12 +82,6 @@ class PixelFlipping:
         :param ran_num_gen: Random number generator to use.
         '''
 
-        # # Code for patches
-        # if len(size) >= 2:
-        #     raise ValueError(
-        #         f'Size must be a tuple of length 1 or 2, got {len(size)}.')
-
-        # self.size: Tuple[int, int] = size
         logging.basicConfig(
             stream=sys.stderr,
             format='%(levelname)-8s  %(message)s'
@@ -238,38 +230,3 @@ class PixelFlipping:
 
         plt.plot(self.class_prediction_scores)
         plt.show()
-
-# TODO: Corroborar dim val.
-# sorted_values, sorted_indices = relevance_scores.sort(dim=-1,
-#                                                       descending=True,
-#                                                       stable=True)
-# flip_val = self.generator.uniform(
-#     low=RANDOM_LOW, high=RANDOM_HIGH)
-
-# r_mask[r_mask > s_values[K]] = flip_val
-
-# # def pixel_flipping() -> None:
-
-# # Number of relevance scores in R
-# N = 10
-# # Number of flips
-# K = 5
-# # Parameters for random number generation
-# RANDOM_LOW = 0
-# RANDOM_HIGH = 100
-
-# # Random Number Generator
-# torch_rng = torch.Generator()
-# torch_rng.manual_seed(SEED)
-
-# numpy_rng = default_rng(seed=SEED)
-# numpy_rng_flip_val = numpy_rng.uniform(low=RANDOM_LOW, high=RANDOM_HIGH)
-
-# R = torch.randint(low=RANDOM_LOW, high=RANDOM_HIGH,
-#                   size=(N,), generator=torch_rng)
-# r_mask = R.detach().clone()
-# r_seq = R.detach().clone()
-
-# s_values, s_indices = R.sort(dim=-1, descending=True, stable=True)
-
-# r_mask[r_mask > s_values[K]] = numpy_rng_flip_val
