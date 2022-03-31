@@ -83,44 +83,7 @@ class PixelFlipping:
         if not should_loop:
             return
 
-        PixelFlipping._loop(pixel_flipping_generator)
-
-    @staticmethod
-    def _loop(generator) -> None:
-        r'''Loop over a generator without retrieving any values.
-
-        :param generator: Generator to loop over.
-        '''
-        for _ in generator:
-            pass
-
-    @staticmethod
-    def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> Generator[torch.Tensor, None, None]:
-        r'''Generator function that sorts relevance scores in order defined by objective.
-
-        :param relevance_scores: Relevance scores.
-        :param objective: Sorting order for relevance scores.
-
-        :yields: Mask to flip pixels/patches input in order specified by objective based on relevance scores.
-        '''
-
-        # Controls the sorting order (ascending or descending).
-        descending: bool = False
-
-        # Objective 'Most Relevant First' (MORF) refers to descending order.
-        if objective == PixelFlippingObjectives.MORF:
-            descending = True
-
-        # Sort relevance scores according to objective
-        sorted_values, _ = relevance_scores[0].flatten().sort(
-            descending=descending, stable=True)
-
-        for threshold_value in sorted_values:
-            # Create mask to flip pixels/patches in input located at the index of the
-            # threshold value in the sorted relevance scores.
-            mask: torch.Tensor = relevance_scores[0] == threshold_value
-
-            yield mask
+        utils._loop(pixel_flipping_generator)
 
     def _generator(self,
                    input: torch.Tensor,
@@ -154,7 +117,7 @@ class PixelFlipping:
             f'Initial classification score {self.class_prediction_scores[-1]}')
 
         mask_generator: Generator[torch.Tensor, None,
-                                  None] = PixelFlipping._argsort(relevance_scores)
+                                  None] = utils._argsort(relevance_scores)
 
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
