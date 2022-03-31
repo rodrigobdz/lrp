@@ -42,10 +42,12 @@ class UniformRNG(RandomNumberGenerator):
         r'''
         Draws a random number from the distribution.
 
-        :param lower: Lower bound of the distribution.
-        :param upper: Upper bound of the distribution.
+        The lower and upper bounds are inclusive.
+
+        :param low: Lower bound of the distribution.
+        :param high: Upper bound of the distribution.
         :param size: Number of random numbers to draw.
 
         :returns: A random number from the uniform distribution.
         '''
-        return self.generator.uniform(lower, upper)
+        return self.generator.uniform(low, high)
