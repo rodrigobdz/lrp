@@ -1,8 +1,10 @@
 r'''Pixel-Flipping Algorithm for Evaluation of Heatmaps.
-Also called Region Perturbation.
+Related to Region Perturbation.
 
 Source in Chicago citation format:
-Samek, Wojciech, Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin, and Klaus-Robert Müller. "Evaluating the visualization of what a deep neural network has learned." IEEE transactions on neural networks and learning systems 28, no. 11 (2016): 2660-2673.
+  Samek, Wojciech, Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin, and Klaus-Robert Müller.
+  "Evaluating the visualization of what a deep neural network has learned."
+  IEEE transactions on neural networks and learning systems 28, no. 11 (2016): 2660-2673.
 '''
 
 
@@ -52,6 +54,7 @@ class PixelFlipping:
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
 
+        # List to store updated classification scores after each perturbation step.
         self.class_prediction_scores: List[float] = []
 
         self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
@@ -199,6 +202,7 @@ class PixelFlipping:
         # Disable gradient computation for the pixel-flipping operations.
         # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
         with torch.no_grad():
+            # TODO: Add support for patches
             input[0][mask] = flip_value
 
     def plot(self) -> None:
@@ -209,6 +213,7 @@ class PixelFlipping:
         '''
 
         # Error handling
+        # FIXME: logger.exception and raise ValueError seems redundant.
         if not self.class_prediction_scores:
             self.logger.exception('Executed plot() before calling __call__()')
             raise ValueError(
