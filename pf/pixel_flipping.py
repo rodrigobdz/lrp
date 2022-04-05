@@ -80,7 +80,8 @@ class PixelFlipping:
                  input: torch.Tensor,
                  relevance_scores: torch.Tensor,
                  forward_pass: Callable[[torch.Tensor], float],
-                 should_loop: bool = True
+                 should_loop: bool = True,
+                 simultaneous_pixel_flips: int = 1,
                  ) -> None:
         r'''Run pixel-flipping algorithm.
 
@@ -88,10 +89,20 @@ class PixelFlipping:
         :param relevance_scores: Relevance scores.
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
         :param should_loop: Whether to loop over the generator or not.
+        :param simultaneous_pixel_flips: Number of pixels to flip simultaneously.
 
         :yields: Tuple of flipped input and updated classification score
         after one perturbation step.
         '''
+
+        # Number of pixels/patches to flip simultaneously
+        self.simultaneous_pixel_flips: int = simultaneous_pixel_flips
+
+        # Verify that number of flips does not exceed the number of elements in the input.
+        # FIXME: Include perturbation_size in calculation
+        if (simultaneous_pixel_flips * self.perturbation_steps) > torch.numel(input):
+            raise ValueError(
+                f'simultaneous_pixel_flips * perturbation_steps ({simultaneous_pixel_flips * self.perturbation_steps}) exceeds the number of elements in the input ({torch.numel(input)}).')
 
         pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
             input, relevance_scores, forward_pass)
@@ -121,6 +132,7 @@ class PixelFlipping:
         Source: https://docs.python.org/3/library/typing.html
         '''
 
+        # TODO: Add support for custom low and high bounds (random number generation).
         # Infer (min. and max.) bounds of input for random number generation
         low: float = float(input.min())
         high: float = float(input.max())
@@ -143,15 +155,20 @@ class PixelFlipping:
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
 
-            # Mask to select which pixels to flip.
-            mask: torch.Tensor = next(mask_generator)
+            # FIXME: Vectorize simultaneous flip operation
+            for k in range(self.simultaneous_pixel_flips):
+                self.logger.debug(
+                    f'Step {i} - simultaneous flip {k}/{self.simultaneous_pixel_flips}')
 
-            # Flip pixels
-            self._flip(input=flipped_input,
-                       mask=mask,
-                       low=self.low,
-                       high=self.high,
-                       perturbation_size=self.perturbation_size)
+                # Mask to select which pixels to flip.
+                mask: torch.Tensor = next(mask_generator)
+
+                # Flip pixels
+                self._flip(input=flipped_input,
+                           mask=mask,
+                           low=low,
+                           high=high,
+                           perturbation_size=self.perturbation_size)
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -195,9 +212,10 @@ class PixelFlipping:
         # Debug: Count how many elements are set to True—i.e., would be flipped.
         flip_count: torch.Tensor = input[0][mask].count_nonzero()
         self.logger.debug(
-            f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} elements.')
+            f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
 
         # Error handling
+        # FIXME: Remove this check to vectorize operation
         if flip_count != 1:
             self.logger.exception(
                 f'Flip count {flip_count} is not one. This means that the mask is flipping more than one element.')
