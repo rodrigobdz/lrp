@@ -216,9 +216,11 @@ class PixelFlipping:
             # TODO: Add support for patches
             input[0][mask] = flip_value
 
-    def plot(self) -> None:
+    def plot(self, title: str = '') -> None:
         r'''Plot the updated prediction scores throughout the perturbation steps of
         the pixel-flipping algorithm to visualize the accuracy of the explanation.
+
+        :param title: Title of the plot.
 
         :raises ValueError: If class prediction scores are empty.
         '''
@@ -231,4 +233,5 @@ class PixelFlipping:
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
         plt.plot(self.class_prediction_scores)
+        plt.title(title)
         plt.show()
