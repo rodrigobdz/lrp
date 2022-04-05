@@ -19,25 +19,40 @@ import torch
 import logging
 import sys
 
-from typing import Optional, Generator, Callable, List, Tuple
+from typing import Optional, Generator, Callable, List, Tuple, Union
 from matplotlib import pyplot as plt
-from .objectives import PixelFlippingObjectives
 from .random_number_generators import RandomNumberGenerator, UniformRNG
+from . import utils
 
 
 class PixelFlipping:
     r'''Pixel-Flipping Algorithm.'''
 
+    # Define default flipping values for each pixel.
+    # These bounds are used to generate the flipping values.
+    DEFAULT_FLIP_LOW: float = 0.0
+    DEFAULT_FLIP_HIGH: float = 1.0
+    DEFAULT_PERTURBATION_SIZE: int = 1
+
     def __init__(self,
                  perturbation_steps: int = 100,
                  verbose: bool = False,
-                 ran_num_gen: Optional[RandomNumberGenerator] = None
+                 ran_num_gen: Optional[RandomNumberGenerator] = None,
+                 low: float = DEFAULT_FLIP_LOW,
+                 high: float = DEFAULT_FLIP_HIGH,
+                 perturbation_size: Union[int, Tuple[int]
+                                          ] = DEFAULT_PERTURBATION_SIZE
                  ) -> None:
         r'''Constructor
 
         :param perturbation_steps: Number of perturbation steps.
         :param verbose: Whether to print debug messages.
         :param ran_num_gen: Random number generator to use.
+
+        :param low: Lower bound of the range of values to be flipped.
+        :param high: Upper bound of the range of values to be flipped.
+        :param perturbation_size: Size of the region to flip.
+        A size of 1 corresponds to single pixels, whereas a tuple to patches.
         '''
 
         logging.basicConfig(
@@ -51,12 +66,25 @@ class PixelFlipping:
         if verbose:
             self.logger.setLevel(logging.DEBUG)
 
+        # Error handling when perturbation size does not conform to standard format of two elements: width and height.
+        # FIXME: logger.exception and raise ValueError seems redundant.
+        if isinstance(perturbation_size, tuple) and len(perturbation_size) >= 2:
+            self.logger.exception(
+                f'Perturbation size parameter expected a max. of two elements, got {len(perturbation_size)}')
+            raise ValueError(
+                f'Perturbation size must be a tuple of length 1 or 2, got {len(perturbation_size)}.')
+
+        self.perturbation_size: Union[int, Tuple[int]] = perturbation_size
+
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
 
         # List to store updated classification scores after each perturbation step.
         self.class_prediction_scores: List[float] = []
 
+        # Random number generation
+        self.low: float = low
+        self.high: float = high
         self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
 
     def __call__(self,
@@ -126,7 +154,11 @@ class PixelFlipping:
             mask: torch.Tensor = next(mask_generator)
 
             # Flip pixels
-            self._flip(flipped_input, mask)
+            self._flip(input=flipped_input,
+                       mask=mask,
+                       low=self.low,
+                       high=self.high,
+                       perturbation_size=self.perturbation_size)
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -138,16 +170,32 @@ class PixelFlipping:
 
     def _flip(self,
               input: torch.Tensor,
-              mask: torch.Tensor
+              mask: torch.Tensor,
+              low: float = DEFAULT_FLIP_LOW,
+              high: float = DEFAULT_FLIP_HIGH,
+              perturbation_size: Union[int, Tuple[int]
+                                       ] = DEFAULT_PERTURBATION_SIZE
               ) -> None:
         r'''Flip pixels of input in-place according to the relevance scores.
 
+        Pixels to be flipped will be replaced by samples drawn from the interval between the
+        values of the low and high parameters.
+
         :param input: Input to be flipped.
         :param relevance_scores: Relevance scores.
+        :param low: Lower bound of the range of values to be flipped.
+        :param high: Upper bound of the range of values to be flipped.
+        :param perturbation_size: Size of the region to flip.
+        A size of 1 corresponds to single pixels, whereas a tuple to patches.
         '''
 
+        if isinstance(perturbation_size, tuple):
+            raise ValueError(
+                'Region Perturbation algorithm not supported yet. Size can only be a single integer value.')
+
         # Draw a random number.
-        flip_value: float = self.ran_num_gen.draw()
+        flip_value: float = self.ran_num_gen.draw(
+            low=low, high=high, size=perturbation_size)
 
         # Debug: Compute indices selected for flipping in mask.
         flip_indices = mask.nonzero().flatten().tolist()
