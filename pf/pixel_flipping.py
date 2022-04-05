@@ -28,31 +28,22 @@ from . import utils
 class PixelFlipping:
     r'''Pixel-Flipping Algorithm.'''
 
-    # Define default flipping values for each pixel.
-    # These bounds are used to generate the flipping values.
-    DEFAULT_FLIP_LOW: float = 0.0
-    DEFAULT_FLIP_HIGH: float = 1.0
     DEFAULT_PERTURBATION_SIZE: int = 1
 
     def __init__(self,
                  perturbation_steps: int = 100,
+                 perturbation_size: Union[int, Tuple[int]
+                                          ] = DEFAULT_PERTURBATION_SIZE,
                  verbose: bool = False,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
-                 low: float = DEFAULT_FLIP_LOW,
-                 high: float = DEFAULT_FLIP_HIGH,
-                 perturbation_size: Union[int, Tuple[int]
-                                          ] = DEFAULT_PERTURBATION_SIZE
                  ) -> None:
         r'''Constructor
 
         :param perturbation_steps: Number of perturbation steps.
-        :param verbose: Whether to print debug messages.
-        :param ran_num_gen: Random number generator to use.
-
-        :param low: Lower bound of the range of values to be flipped.
-        :param high: Upper bound of the range of values to be flipped.
         :param perturbation_size: Size of the region to flip.
         A size of 1 corresponds to single pixels, whereas a tuple to patches.
+        :param verbose: Whether to print debug messages.
+        :param ran_num_gen: Random number generator to use.
         '''
 
         logging.basicConfig(
@@ -74,17 +65,15 @@ class PixelFlipping:
             raise ValueError(
                 f'Perturbation size must be a tuple of length 1 or 2, got {len(perturbation_size)}.')
 
-        self.perturbation_size: Union[int, Tuple[int]] = perturbation_size
-
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
+
+        # Size of the region to flip
+        self.perturbation_size: Union[int, Tuple[int]] = perturbation_size
 
         # List to store updated classification scores after each perturbation step.
         self.class_prediction_scores: List[float] = []
 
-        # Random number generation
-        self.low: float = low
-        self.high: float = high
         self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
 
     def __call__(self,
@@ -132,6 +121,10 @@ class PixelFlipping:
         Source: https://docs.python.org/3/library/typing.html
         '''
 
+        # Infer (min. and max.) bounds of input for random number generation
+        low: float = float(input.min())
+        high: float = float(input.max())
+
         # Deep copy input to avoid in-place modifications.
         # Detach input from computational graph to avoid computing gradient for the
         # pixel-flipping operations.
@@ -171,8 +164,8 @@ class PixelFlipping:
     def _flip(self,
               input: torch.Tensor,
               mask: torch.Tensor,
-              low: float = DEFAULT_FLIP_LOW,
-              high: float = DEFAULT_FLIP_HIGH,
+              low: float = 0.0,
+              high: float = 1.0,
               perturbation_size: Union[int, Tuple[int]
                                        ] = DEFAULT_PERTURBATION_SIZE
               ) -> None:
