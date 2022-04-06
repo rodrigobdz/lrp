@@ -227,7 +227,10 @@ class PixelFlipping:
             # TODO: Add support for patches
             input[0][mask] = flip_value
 
-    def plot(self, title: str = '') -> None:
+    def plot(self,
+             title: str = '',
+             xlabel: str = '',
+             ylabel: str = '') -> None:
         r'''Plot the updated prediction scores throughout the perturbation steps of
         the pixel-flipping algorithm to visualize the accuracy of the explanation.
 
@@ -245,4 +248,6 @@ class PixelFlipping:
 
         plt.plot(self.class_prediction_scores)
         plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
         plt.show()
