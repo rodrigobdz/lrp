@@ -160,6 +160,11 @@ class PixelFlipping:
                 self.logger.debug(
                     f'Step {i} - simultaneous flip {k}/{self.simultaneous_pixel_flips}')
 
+                # FIXME: Verify what happens with mask_generator when mask_generator selects multiple pixels at once.
+                # Reproduce error:
+                # steps 100
+                # simultaneous 10
+
                 # Mask to select which pixels to flip.
                 mask: torch.Tensor = next(mask_generator)
 
@@ -210,15 +215,17 @@ class PixelFlipping:
         # Debug: Compute indices selected for flipping in mask.
         flip_indices = mask.nonzero().flatten().tolist()
         # Debug: Count how many elements are set to True—i.e., would be flipped.
-        flip_count: torch.Tensor = input[0][mask].count_nonzero()
+        flip_count: int = input[0][mask].count_nonzero().item()
         self.logger.debug(
             f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
 
         # Error handling
         # FIXME: Remove this check to vectorize operation
+        # FIXME: Check what happens when flip_count is greater than one.
+        # It seems like the mask_generator returns the mask repeatedly for #simultaneous flips times.
         if flip_count != 1:
-            self.logger.exception(
-                f'Flip count {flip_count} is not one. This means that the mask is flipping more than one element.')
+            self.logger.debug(
+                f'''Flip count {flip_count} is not one. The mask is flipping more than one element.''')
 
         # Flip pixels/patch
         # Disable gradient computation for the pixel-flipping operations.
