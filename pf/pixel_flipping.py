@@ -71,7 +71,7 @@ class PixelFlipping:
         )
 
         # Init logger instance
-        self.logger = logging.getLogger(__name__)
+        self.logger: logging.Logger = logging.getLogger(__name__)
 
         if verbose:
             self.logger.setLevel(logging.DEBUG)
