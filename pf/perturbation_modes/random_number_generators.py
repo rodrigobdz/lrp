@@ -1,4 +1,4 @@
-r'''Interface for Random Number Generators for simplified access.'''
+r'''Interface for simplified access to Random Number Generators.'''
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'

@@ -30,12 +30,14 @@ def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjec
     :yields: Mask to flip pixels/patches input in order specified by objective based on relevance scores.
     '''
 
-    # Controls the sorting order (ascending or descending).
-    descending: bool = False
+    if objective != PixelFlippingObjectives.MORF:
+        raise ValueError(f'Objective {objective} not supported.')
 
-    # Objective 'Most Relevant First' (MORF) refers to descending order.
-    if objective == PixelFlippingObjectives.MORF:
-        descending = True
+    # Controls the sorting order (ascending or descending).
+    # Set default value to descending—i.e., most relevant first.
+    descending: bool = True
+
+    # FIXME: Add switch case to implement the user's selected objective.
 
     # Sort relevance scores according to objective
     sorted_values, _ = relevance_scores[0].flatten().sort(
