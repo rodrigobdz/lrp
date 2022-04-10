@@ -56,9 +56,10 @@ class PixelFlipping:
 
         # Ensure ran_num_gen is only specified when the perturbation technique is random.
         if perturb_mode != PerturbModes.RANDOM and ran_num_gen:
-            raise TypeError(
+            raise ValueError(
                 'Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.')
 
+        # Limit perturbation modes to the ones available in the library.
         if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
             raise NotImplementedError(
                 f'Perturbation mode \'{perturb_mode}\' not implemented yet.')
@@ -188,9 +189,9 @@ class PixelFlipping:
                     # Flip pixels
                     self._flip(input=flipped_input,
                                mask=mask,
+                               perturbation_size=self.perturbation_size,
                                low=low,
-                               high=high,
-                               perturbation_size=self.perturbation_size)
+                               high=high)
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -203,10 +204,10 @@ class PixelFlipping:
     def _flip(self,
               input: torch.Tensor,
               mask: torch.Tensor,
-              low: float = 0.0,
-              high: float = 1.0,
               perturbation_size: Union[int, Tuple[int]
-                                       ] = DEFAULT_PERTURBATION_SIZE
+                                       ] = DEFAULT_PERTURBATION_SIZE,
+              low: Optional[float] = None,
+              high: Optional[float] = None,
               ) -> None:
         r'''Flip pixels of input in-place according to the relevance scores.
 
@@ -215,15 +216,21 @@ class PixelFlipping:
 
         :param input: Input to be flipped.
         :param relevance_scores: Relevance scores.
-        :param low: Lower bound of the range of values to be flipped.
-        :param high: Upper bound of the range of values to be flipped.
         :param perturbation_size: Size of the region to flip.
         A size of 1 corresponds to single pixels, whereas a tuple to patches.
+        :param low: Lower bound of the range of values to be flipped.
+        :param high: Upper bound of the range of values to be flipped.
         '''
 
-        if isinstance(perturbation_size, tuple):
+        # Ensure low and high are not passed when perturbation technique is not set to random.
+        if self.perturb_mode != PerturbModes.RANDOM and (low or high):
             raise ValueError(
-                'Region Perturbation algorithm not supported yet. Size can only be a single integer value.')
+                'Arguments \'low\' and \'high\' are only available with PerturbModes.RANDOM and should not be passed otherwise.')
+
+        # Disable region perturbation as long as it's not implemented.
+        if isinstance(perturbation_size, tuple):
+            raise TypeError(
+                'Region Perturbation algorithm not supported yet. Size can only be a single integer value, not a tuple.')
 
         if self.perturb_mode == PerturbModes.RANDOM:
             # Draw a random number.
