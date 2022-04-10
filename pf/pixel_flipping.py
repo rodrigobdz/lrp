@@ -23,6 +23,7 @@ from typing import Generator, Callable, List, Tuple, Union, Optional
 from matplotlib import pyplot as plt
 from .perturbation_modes.random_number_generators import RandomNumberGenerator, UniformRNG
 from .perturbation_modes.constants import PerturbModes
+from .objectives import sort
 from . import utils
 
 
@@ -167,7 +168,7 @@ class PixelFlipping:
             f'Initial classification score {self.class_prediction_scores[-1]}')
 
         mask_generator: Generator[torch.Tensor, None,
-                                  None] = utils._argsort(relevance_scores)
+                                  None] = sort._argsort(relevance_scores)
 
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
@@ -185,8 +186,9 @@ class PixelFlipping:
                 # Mask to select which pixels to flip.
                 mask: torch.Tensor = next(mask_generator)
 
+                # Flip pixels with respective perturbation technique
+
                 if self.perturb_mode == PerturbModes.RANDOM:
-                    # Flip pixels
                     self._flip(input=flipped_input,
                                mask=mask,
                                perturbation_size=self.perturbation_size,
@@ -218,9 +220,14 @@ class PixelFlipping:
         :param relevance_scores: Relevance scores.
         :param perturbation_size: Size of the region to flip.
         A size of 1 corresponds to single pixels, whereas a tuple to patches.
+
+        Settings for Perturbation Mode RANDOM:
+
         :param low: Lower bound of the range of values to be flipped.
         :param high: Upper bound of the range of values to be flipped.
         '''
+
+        # Error handling first
 
         # Ensure low and high are not passed when perturbation technique is not set to random.
         if self.perturb_mode != PerturbModes.RANDOM and (low or high):
@@ -231,6 +238,8 @@ class PixelFlipping:
         if isinstance(perturbation_size, tuple):
             raise TypeError(
                 'Region Perturbation algorithm not supported yet. Size can only be a single integer value, not a tuple.')
+
+        # Flip values according to perturbation technique
 
         if self.perturb_mode == PerturbModes.RANDOM:
             # Draw a random number.
