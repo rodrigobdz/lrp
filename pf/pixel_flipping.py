@@ -58,10 +58,7 @@ class PixelFlipping:
             self.logger.setLevel(logging.DEBUG)
 
         # Error handling when perturbation size does not conform to standard format of two elements: width and height.
-        # FIXME: logger.exception and raise ValueError seems redundant.
         if isinstance(perturbation_size, tuple) and len(perturbation_size) >= 2:
-            self.logger.exception(
-                f'Perturbation size parameter expected a max. of two elements, got {len(perturbation_size)}')
             raise ValueError(
                 f'Perturbation size must be a tuple of length 1 or 2, got {len(perturbation_size)}.')
 
@@ -231,7 +228,7 @@ class PixelFlipping:
         # Disable gradient computation for the pixel-flipping operations.
         # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
         with torch.no_grad():
-            # TODO: Add support for patches
+            # FIXME: Add support for patches / region perturbation
             input[0][mask] = flip_value
 
     def plot(self,
@@ -247,9 +244,7 @@ class PixelFlipping:
         '''
 
         # Error handling
-        # FIXME: logger.exception and raise ValueError seems redundant.
         if not self.class_prediction_scores:
-            self.logger.exception('Executed plot() before calling __call__()')
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
