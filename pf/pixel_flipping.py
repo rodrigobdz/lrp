@@ -21,7 +21,7 @@ import sys
 
 from typing import Optional, Generator, Callable, List, Tuple, Union
 from matplotlib import pyplot as plt
-from .random_number_generators import RandomNumberGenerator, UniformRNG
+from .perturbation_modes.random_number_generators import RandomNumberGenerator, UniformRNG
 from . import utils
 
 
