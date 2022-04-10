@@ -21,7 +21,9 @@ import sys
 
 from typing import Generator, Callable, List, Tuple, Union, Optional
 from matplotlib import pyplot as plt
-from .perturbation_modes.random_number_generators import RandomNumberGenerator, UniformRNG
+
+from .perturbation_modes.random.flip import flip_random
+from .perturbation_modes.random.random_number_generators import RandomNumberGenerator, UniformRNG
 from .perturbation_modes.constants import PerturbModes
 from .objectives import sort
 from . import utils
@@ -47,6 +49,7 @@ class PixelFlipping:
         A size of 1 corresponds to single pixels, whereas a tuple to patches.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
+
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         '''
 
@@ -189,11 +192,18 @@ class PixelFlipping:
                 # Flip pixels with respective perturbation technique
 
                 if self.perturb_mode == PerturbModes.RANDOM:
+                    flip_random(input=flipped_input,
+                                mask=mask,
+                                perturbation_size=self.perturbation_size,
+                                ran_num_gen=self.ran_num_gen,
+                                low=low,
+                                high=high,
+                                logger=self.logger)
+
+                if self.perturb_mode == PerturbModes.INPAINTING:
                     self._flip(input=flipped_input,
                                mask=mask,
-                               perturbation_size=self.perturbation_size,
-                               low=low,
-                               high=high)
+                               perturbation_size=self.perturbation_size)
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -202,71 +212,6 @@ class PixelFlipping:
                 f'Classification score: {self.class_prediction_scores[-1]}')
 
             yield flipped_input, self.class_prediction_scores[-1]
-
-    def _flip(self,
-              input: torch.Tensor,
-              mask: torch.Tensor,
-              perturbation_size: Union[int, Tuple[int]
-                                       ] = DEFAULT_PERTURBATION_SIZE,
-              low: Optional[float] = None,
-              high: Optional[float] = None,
-              ) -> None:
-        r'''Flip pixels of input in-place according to the relevance scores.
-
-        Pixels to be flipped will be replaced by samples drawn from the interval between the
-        values of the low and high parameters.
-
-        :param input: Input to be flipped.
-        :param relevance_scores: Relevance scores.
-        :param perturbation_size: Size of the region to flip.
-        A size of 1 corresponds to single pixels, whereas a tuple to patches.
-
-        Settings for Perturbation Mode RANDOM:
-
-        :param low: Lower bound of the range of values to be flipped.
-        :param high: Upper bound of the range of values to be flipped.
-        '''
-
-        # Error handling first
-
-        # Ensure low and high are not passed when perturbation technique is not set to random.
-        if self.perturb_mode != PerturbModes.RANDOM and (low or high):
-            raise ValueError(
-                'Arguments \'low\' and \'high\' are only available with PerturbModes.RANDOM and should not be passed otherwise.')
-
-        # Disable region perturbation as long as it's not implemented.
-        if isinstance(perturbation_size, tuple):
-            raise TypeError(
-                'Region Perturbation algorithm not supported yet. Size can only be a single integer value, not a tuple.')
-
-        # Flip values according to perturbation technique
-
-        if self.perturb_mode == PerturbModes.RANDOM:
-            # Draw a random number.
-            flip_value: float = self.ran_num_gen.draw(
-                low=low, high=high, size=perturbation_size)
-
-        # Debug: Compute indices selected for flipping in mask.
-        flip_indices = mask.nonzero().flatten().tolist()
-        # Debug: Count how many elements are set to True—i.e., would be flipped.
-        flip_count: int = input[0][mask].count_nonzero().item()
-        self.logger.debug(
-            f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
-
-        # Error handling
-        # FIXME: Remove this check to vectorize operation
-        # FIXME: Check what happens when flip_count is greater than one.
-        # It seems like the mask_generator returns the mask repeatedly for #simultaneous flips times.
-        if flip_count != 1:
-            self.logger.debug(
-                f'''Flip count {flip_count} is not one. The mask is flipping more than one element.''')
-
-        # Flip pixels/patch
-        # Disable gradient computation for the pixel-flipping operations.
-        # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
-        with torch.no_grad():
-            # FIXME: Add support for patches / region perturbation
-            input[0][mask] = flip_value
 
     def plot(self,
              title: str = '',
