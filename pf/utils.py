@@ -31,7 +31,7 @@ def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjec
     '''
 
     if objective != PixelFlippingObjectives.MORF:
-        raise ValueError(f'Objective {objective} not supported.')
+        raise NotImplementedError(f'Objective {objective} not supported.')
 
     # Controls the sorting order (ascending or descending).
     # Set default value to descending—i.e., most relevant first.
