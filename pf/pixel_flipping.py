@@ -19,9 +19,10 @@ import torch
 import logging
 import sys
 
-from typing import Optional, Generator, Callable, List, Tuple, Union
+from typing import Generator, Callable, List, Tuple, Union, Optional
 from matplotlib import pyplot as plt
 from .perturbation_modes.random_number_generators import RandomNumberGenerator, UniformRNG
+from .perturbation_modes.constants import PerturbModes
 from . import utils
 
 
@@ -35,6 +36,7 @@ class PixelFlipping:
                  perturbation_size: Union[int, Tuple[int]
                                           ] = DEFAULT_PERTURBATION_SIZE,
                  verbose: bool = False,
+                 perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
                  ) -> None:
         r'''Constructor
@@ -43,8 +45,22 @@ class PixelFlipping:
         :param perturbation_size: Size of the region to flip.
         A size of 1 corresponds to single pixels, whereas a tuple to patches.
         :param verbose: Whether to print debug messages.
-        :param ran_num_gen: Random number generator to use.
+        :param perturb_mode: Perturbation technique to decide how to replace flipped values.
+        :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         '''
+
+        # Ensure perturbation size conforms to standard format of two elements: width and height.
+        if isinstance(perturbation_size, tuple) and len(perturbation_size) >= 2:
+            raise ValueError(
+                f'Perturbation size must be a tuple of length 1 or 2, got {len(perturbation_size)}.')
+
+        # Ensure ran_num_gen is only specified when the perturbation technique is random.
+        if perturb_mode != PerturbModes.RANDOM and ran_num_gen:
+            raise TypeError(
+                'Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.')
+
+        if perturb_mode == PerturbModes.INPAINTING:
+            raise NotImplementedError('Perturbation mode not implemented yet.')
 
         logging.basicConfig(
             stream=sys.stderr,
@@ -57,21 +73,20 @@ class PixelFlipping:
         if verbose:
             self.logger.setLevel(logging.DEBUG)
 
-        # Error handling when perturbation size does not conform to standard format of two elements: width and height.
-        if isinstance(perturbation_size, tuple) and len(perturbation_size) >= 2:
-            raise ValueError(
-                f'Perturbation size must be a tuple of length 1 or 2, got {len(perturbation_size)}.')
-
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
 
         # Size of the region to flip
         self.perturbation_size: Union[int, Tuple[int]] = perturbation_size
 
+        # Name of the perturbation technique
+        self.perturb_mode: str = perturb_mode
+
+        if self.perturb_mode == PerturbModes.RANDOM:
+            self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
+
         # List to store updated classification scores after each perturbation step.
         self.class_prediction_scores: List[float] = []
-
-        self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
 
     def __call__(self,
                  input: torch.Tensor,
@@ -119,6 +134,7 @@ class PixelFlipping:
 
         :param input: Input to be explained.
         :param relevance_scores: Relevance scores.
+
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
 
         :yields: Tuple of flipped input and updated classification score
@@ -129,10 +145,12 @@ class PixelFlipping:
         Source: https://docs.python.org/3/library/typing.html
         '''
 
-        # TODO: Add support for custom low and high bounds (random number generation).
-        # Infer (min. and max.) bounds of input for random number generation
-        low: float = float(input.min())
-        high: float = float(input.max())
+        if self.perturb_mode == PerturbModes.RANDOM:
+            # TODO: Add support for custom low and high bounds (random number generation).
+
+            # Infer (min. and max.) bounds of input for random number generation
+            low: float = float(input.min())
+            high: float = float(input.max())
 
         # Deep copy input to avoid in-place modifications.
         # Detach input from computational graph to avoid computing gradient for the
@@ -165,12 +183,13 @@ class PixelFlipping:
                 # Mask to select which pixels to flip.
                 mask: torch.Tensor = next(mask_generator)
 
-                # Flip pixels
-                self._flip(input=flipped_input,
-                           mask=mask,
-                           low=low,
-                           high=high,
-                           perturbation_size=self.perturbation_size)
+                if self.perturb_mode == PerturbModes.RANDOM:
+                    # Flip pixels
+                    self._flip(input=flipped_input,
+                               mask=mask,
+                               low=low,
+                               high=high,
+                               perturbation_size=self.perturbation_size)
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -205,9 +224,10 @@ class PixelFlipping:
             raise ValueError(
                 'Region Perturbation algorithm not supported yet. Size can only be a single integer value.')
 
-        # Draw a random number.
-        flip_value: float = self.ran_num_gen.draw(
-            low=low, high=high, size=perturbation_size)
+        if self.perturb_mode == PerturbModes.RANDOM:
+            # Draw a random number.
+            flip_value: float = self.ran_num_gen.draw(
+                low=low, high=high, size=perturbation_size)
 
         # Debug: Compute indices selected for flipping in mask.
         flip_indices = mask.nonzero().flatten().tolist()
