@@ -1,5 +1,5 @@
 r'''Pixel-Flipping Algorithm for Evaluation of Heatmaps.
-Related to Region Perturbation.
+Also called Region Perturbation when perturbation size is greater than one pixel at once.
 
 Source in Chicago citation format:
   Samek, Wojciech, Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin, and Klaus-Robert Müller.
@@ -59,8 +59,9 @@ class PixelFlipping:
             raise TypeError(
                 'Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.')
 
-        if perturb_mode == PerturbModes.INPAINTING:
-            raise NotImplementedError('Perturbation mode not implemented yet.')
+        if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
+            raise NotImplementedError(
+                f'Perturbation mode \'{perturb_mode}\' not implemented yet.')
 
         logging.basicConfig(
             stream=sys.stderr,
