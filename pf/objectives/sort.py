@@ -18,13 +18,13 @@ class PixelFlippingObjectives:
     MORF: str = 'Most Relevant First'
 
 
-def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> Generator[torch.Tensor, None, None]:
+def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> torch.Tensor:
     r'''Generator function that sorts relevance scores in order defined by objective.
 
     :param relevance_scores: Relevance scores in NCHW format.
     :param objective: Sorting order for relevance scores.
 
-    :yields: Mask in CHW format to flip pixels/patches input in order specified by objective based on relevance scores.
+    :returns: Sorted relevance scores as one-dimensional list.
     '''
 
     if objective != PixelFlippingObjectives.MORF:
@@ -40,6 +40,19 @@ def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjec
     sorted_values, _ = relevance_scores[0].flatten().sort(
         descending=descending, stable=True)
 
+    return sorted_values
+
+
+def _mask_generator(relevance_scores: torch.Tensor, sorted_values: torch.Tensor) -> Generator[torch.Tensor, None, None]:
+    r'''Generator function that creates masks with one value selected at a time from the order in which they are sorted.
+
+    :param relevance_scores: Relevance scores in NCHW format.
+    :param sorted_values: Sorted relevance scores as one-dimensional list.
+
+    :yields: Mask in CHW format to flip pixels/patches input in order specified by sorted_values.
+    '''
+
+    # FIXME: Extract to a separate function.
     for threshold_value in sorted_values:
         # Create mask to flip pixels/patches in input located at the index of the
         # threshold value in the sorted relevance scores.

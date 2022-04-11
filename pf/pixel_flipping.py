@@ -171,8 +171,9 @@ class PixelFlipping:
         self.logger.debug(
             f'Initial classification score {self.class_prediction_scores[-1]}')
 
-        mask_generator: Generator[torch.Tensor, None,
-                                  None] = sort._argsort(relevance_scores)
+        sorted_values: torch.Tensor = sort._argsort(relevance_scores)
+        mask_iter: Generator[torch.Tensor, None,
+                             None] = sort._mask_generator(relevance_scores, sorted_values)
 
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
@@ -182,19 +183,20 @@ class PixelFlipping:
                 self.logger.debug(
                     f'Step {i} - simultaneous flip {k}/{self.simultaneous_pixel_flips}')
 
-                # FIXME: Verify what happens with mask_generator when mask_generator selects multiple pixels at once.
+                # FIXME: Verify what happens with mask_iter when mask_iter selects multiple pixels at once.
                 # Reproduce error:
                 # steps 100
                 # simultaneous 10
 
                 # Mask to select which pixels to flip.
-                mask: torch.Tensor = next(mask_generator)
+                mask: torch.Tensor = next(mask_iter)
 
                 # Flip pixels with respective perturbation technique
 
                 if self.perturb_mode == PerturbModes.RANDOM:
                     flip_random(input=flipped_input,
                                 mask=mask,
+                                perturbation_size=self.perturbation_size,
                                 ran_num_gen=self.ran_num_gen,
                                 low=low,
                                 high=high,
