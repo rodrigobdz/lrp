@@ -20,15 +20,15 @@ def flip_random(input: torch.Tensor,
                 ran_num_gen: RandomNumberGenerator,
                 low: float,
                 high: float,
-                logger: Optional[logging.Logger] = None) -> None:
+                logger: Optional[logging.Logger] = None) -> torch.Tensor:
     r'''Flip pixels of input in-place according to the relevance scores with
     perturbation technique random.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.
 
-    :param input: Input to be flipped.
-    :param mask: Mask to select which pixels to flip.
+    :param input: Input to be flipped in NCHW format.
+    :param mask: Mask to select which pixels to flip in CHW format.
     :param perturbation_size: Size of the region to flip.
     A size of 1 corresponds to single pixels, whereas a tuple to patches.
 
@@ -37,6 +37,8 @@ def flip_random(input: torch.Tensor,
     :param high: Upper bound of the range of values to be flipped.
 
     :param logger: Logger instance to be used to print to console.
+
+    :returns: Flipped input.
     '''
 
     # Error handling for missing or wrong parameters
@@ -69,3 +71,5 @@ def flip_random(input: torch.Tensor,
     with torch.no_grad():
         # FIXME: Add support for patches / region perturbation
         input[0][mask] = flip_value
+
+    return input

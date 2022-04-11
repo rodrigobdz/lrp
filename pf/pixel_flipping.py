@@ -195,17 +195,15 @@ class PixelFlipping:
                 if self.perturb_mode == PerturbModes.RANDOM:
                     flip_random(input=flipped_input,
                                 mask=mask,
-                                perturbation_size=self.perturbation_size,
                                 ran_num_gen=self.ran_num_gen,
                                 low=low,
                                 high=high,
                                 logger=self.logger)
 
                 elif self.perturb_mode == PerturbModes.INPAINTING:
-                    flip_inpainting(input=flipped_input,
-                                    mask=mask,
-                                    perturbation_size=self.perturbation_size,
-                                    logger=self.logger)
+                    flipped_input = flip_inpainting(input=flipped_input,
+                                                    mask=mask,
+                                                    logger=self.logger)
 
                 else:
                     raise NotImplementedError(
