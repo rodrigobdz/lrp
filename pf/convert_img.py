@@ -59,8 +59,9 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
         # Skip color format conversion
         return img_rgb_hwc
 
-    # Convert from RGB to BGR color space
-    img_bgr_hwc: numpy.array = cv2.cvtColor(img_rgb_hwc, cv2.COLOR_RGB2BGR)
+    # Convert from RGB to BGR color space and to 8-bit integer data type
+    img_bgr_hwc: numpy.array = cv2.cvtColor(
+        img_rgb_hwc.astype(numpy.uint8), cv2.COLOR_RGB2BGR)
 
     return img_bgr_hwc
 
@@ -71,13 +72,16 @@ def tensor_to_opencv_inpainting(img_rgb_chw: torch.Tensor, grayscale=False) -> n
         Ensure image is in CPU memory before any operation.
         Type-cast to 8-bit integers required by OpenCV's inpainting function.
 
-    :param img_rgb_chw: Image to be converted.
+    :param img_rgb_chw: Image to be converted. Assumes values are of type integer.
     :param grayscale: Whether to convert skip color conversions because image has only one channel.
 
     :returns: Numpy array with image in HWC format and BGR color format.
     '''
     if not isinstance(img_rgb_chw, torch.Tensor):
         raise TypeError('Input must be a torch tensor.')
+
+    if img_rgb_chw.is_floating_point():
+        raise TypeError('Tensor must be of integer data type.')
 
     return tensor_to_opencv(
         img_rgb_chw=img_rgb_chw.int().cpu(), grayscale=grayscale).astype(numpy.uint8)
