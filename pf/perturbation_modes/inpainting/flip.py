@@ -14,54 +14,44 @@ import torch
 import torchvision
 import numpy
 import cv2
+from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 
 
 def flip_inpainting(input: torch.Tensor,
                     mask: torch.Tensor,
-                    perturbation_size: Union[int, Tuple[int]],
-                    logger: Optional[logging.Logger] = None) -> None:
-    r'''Flip pixels of input in -place according to the relevance scores with
+                    logger: Optional[logging.Logger] = None) -> torch.Tensor:
+    r'''Flip pixels of input (not in-place) according to the relevance scores with
     perturbation technique random.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.
 
-    : param input: Input to be flipped.
-    : param mask: Mask to select which pixels to flip.
-    : param perturbation_size: Size of the region to flip.
-    A size of 1 corresponds to single pixels, whereas a tuple to patches.
+    :param input: Input to be flipped in NCHW format.
+    :param mask: Mask to select which pixels to flip in CHW format.
 
-    : param logger: Logger instance to be used to print to console.
+    :param logger: Logger instance to be used to print to console.
+
+    :returns: Flipped input.
     '''
-
-    # Reduce number of channels in mask from 3 to 1.
-    mask_grayscale: torch.Tensor = torchvision.transforms.functional.rgb_to_grayscale(
-        img=mask, num_output_channels=1)
-
-    # OpenCV's inpainting method has the following prerequisites for the mask:
-    # 1. Data type: numpy array of 8-bit integers with 1-channel
-    # Non-zero pixels indicate the area that needs to be inpainted.
-    # 2. The format it expects is HWC instead of CHW.
-    mask_arr: numpy.array = mask_grayscale.int().cpu().numpy().transpose((1, 2, 0))
-    # Type-cast to 8-bit integers.
-    mask_arr = mask_arr.astype(numpy.uint8)
-    img: numpy.array = input[0].cpu().numpy().transpose(
-        (1, 2, 0)).astype(numpy.uint8)
-    # Type-cast to 8-bit integers.
-    img = img.astype(numpy.uint8)
-
-    inpainted_img: numpy.array = cv2.inpaint(
-        img, mask_arr, 3, cv2.INPAINT_TELEA)
-
-    # FIXME: convert image back to tensor and save as input
-
-    print('inpainted_img', inpainted_img.shape)
-    input: torch.Tensor = torch.from_numpy(inpainted_img)
-    print('input', input.shape)
-
-    # FIXME: Input needs to be set in-place or returned. Currently not saved.
-
     # Error handling for missing or wrong parameters
     # Initialize logger, if not provided.
     if not logger:
         logger = logging.getLogger(__name__)
+
+    # Reduce number of channels in mask from 3 to 1.
+    # mask_grayscale: torch.Tensor = torchvision.transforms.functional.rgb_to_grayscale(
+    #     img=mask, num_output_channels=1)
+    mask_arr: numpy.array = tensor_to_opencv_inpainting(mask, grayscale=True)
+    img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(input[0])
+
+    inpainted_img_bgr_hwc: numpy.array = cv2.inpaint(
+        img_bgr_hwc, mask_arr, 3, cv2.INPAINT_TELEA)
+
+    # Convert back inpainted image to tensor
+    inpainted_img_rgb_chw: numpy.array = opencv_to_tensor(
+        img_bgr_hwc=inpainted_img_bgr_hwc)
+
+    # Simulate batch by adding a new dimension
+    inpainted_img_rgb_chw = torch.unsqueeze(inpainted_img_rgb_chw, 0)
+
+    return inpainted_img_rgb_chw
