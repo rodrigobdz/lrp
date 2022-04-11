@@ -22,8 +22,9 @@ import sys
 from typing import Generator, Callable, List, Tuple, Union, Optional
 from matplotlib import pyplot as plt
 
-from .perturbation_modes.random.flip import flip_random
 from .perturbation_modes.random.random_number_generators import RandomNumberGenerator, UniformRNG
+from .perturbation_modes.random.flip import flip_random
+from .perturbation_modes.inpainting.flip import flip_inpainting
 from .perturbation_modes.constants import PerturbModes
 from .objectives import sort
 from . import utils
@@ -200,10 +201,15 @@ class PixelFlipping:
                                 high=high,
                                 logger=self.logger)
 
-                if self.perturb_mode == PerturbModes.INPAINTING:
-                    self._flip(input=flipped_input,
-                               mask=mask,
-                               perturbation_size=self.perturbation_size)
+                elif self.perturb_mode == PerturbModes.INPAINTING:
+                    flip_inpainting(input=flipped_input,
+                                    mask=mask,
+                                    perturbation_size=self.perturbation_size,
+                                    logger=self.logger)
+
+                else:
+                    raise NotImplementedError(
+                        f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
