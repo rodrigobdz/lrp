@@ -21,10 +21,10 @@ class PixelFlippingObjectives:
 def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> Generator[torch.Tensor, None, None]:
     r'''Generator function that sorts relevance scores in order defined by objective.
 
-    :param relevance_scores: Relevance scores.
+    :param relevance_scores: Relevance scores in NCHW format.
     :param objective: Sorting order for relevance scores.
 
-    :yields: Mask to flip pixels/patches input in order specified by objective based on relevance scores.
+    :yields: Mask in CHW format to flip pixels/patches input in order specified by objective based on relevance scores.
     '''
 
     if objective != PixelFlippingObjectives.MORF:
