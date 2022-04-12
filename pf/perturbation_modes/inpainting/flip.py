@@ -26,7 +26,7 @@ def flip_inpainting(input: torch.Tensor,
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.
 
-    :param input: Input to be flipped in NCHW format.
+    :param input: Input to be flipped in NCHW format with int values.
     :param mask: Mask to select which pixels to flip in CHW format.
 
     :param logger: Logger instance to be used to print to console.
@@ -38,9 +38,10 @@ def flip_inpainting(input: torch.Tensor,
     if not logger:
         logger = logging.getLogger(__name__)
 
+    if input.is_floating_point():
+        raise TypeError('Tensor must be of integer data type.')
+
     # Reduce number of channels in mask from 3 to 1.
-    # mask_grayscale: torch.Tensor = torchvision.transforms.functional.rgb_to_grayscale(
-    #     img=mask, num_output_channels=1)
     mask_arr: numpy.array = tensor_to_opencv_inpainting(mask, grayscale=True)
     img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(input[0])
 

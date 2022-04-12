@@ -203,9 +203,9 @@ class PixelFlipping:
                                 logger=self.logger)
 
                 elif self.perturb_mode == PerturbModes.INPAINTING:
-                    flipped_input = flip_inpainting(input=flipped_input,
+                    flipped_input = flip_inpainting(input=flipped_input.int(),
                                                     mask=mask,
-                                                    logger=self.logger)
+                                                    logger=self.logger).float()
 
                 else:
                     raise NotImplementedError(

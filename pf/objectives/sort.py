@@ -49,7 +49,7 @@ def _mask_generator(relevance_scores: torch.Tensor, sorted_values: torch.Tensor)
     :param relevance_scores: Relevance scores in NCHW format.
     :param sorted_values: Sorted relevance scores as one-dimensional list.
 
-    :yields: Mask in CHW format to flip pixels/patches input in order specified by sorted_values.
+    :yields: Mask in CHW (1-channel) format to flip pixels/patches input in order specified by sorted_values.
     '''
 
     # FIXME: Extract to a separate function.
@@ -58,4 +58,7 @@ def _mask_generator(relevance_scores: torch.Tensor, sorted_values: torch.Tensor)
         # threshold value in the sorted relevance scores.
         mask: torch.Tensor = relevance_scores[0] == threshold_value
 
-        yield mask
+        # Reduce dimensionality of mask from 3-channel to 1-channel.
+        # any(dim=0) returns True if any element along dimension 0 is True. Returns HW format, no C
+        # Create artificial channel dimension to make mask in CHW format.
+        yield mask.any(dim=0).unsqueeze(0)
