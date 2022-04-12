@@ -19,7 +19,7 @@ from pf.convert_img import arr_chw_to_hwc
 import lrp.plot
 
 
-def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax) -> None:
+def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor) -> None:
     r'''Plot an image as a tensor in NCHW format with RGB color format using matplotlib.
 
     "valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers)."
