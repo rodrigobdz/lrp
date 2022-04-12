@@ -28,6 +28,7 @@ from .perturbation_modes.inpainting.flip import flip_inpainting
 from .perturbation_modes.constants import PerturbModes
 from .objectives import sort
 from . import utils
+from lrp import norm
 
 
 class PixelFlipping:
@@ -203,9 +204,15 @@ class PixelFlipping:
                                 logger=self.logger)
 
                 elif self.perturb_mode == PerturbModes.INPAINTING:
+                    flipped_input = norm.denorm_img_pxls(
+                        norm.ImageNetNorm.inverse_normalize(flipped_input))
+
                     flipped_input = flip_inpainting(image=flipped_input.int(),
                                                     mask=mask,
                                                     logger=self.logger).float()
+
+                    flipped_input = norm.ImageNetNorm.normalize(
+                        norm.norm_img_pxls(flipped_input))
 
                 else:
                     raise NotImplementedError(
