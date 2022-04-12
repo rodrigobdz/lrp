@@ -25,8 +25,10 @@ class ImageNetNorm:
     '''
     MEAN = [0.485, 0.456, 0.406]
     STD = [0.229, 0.224, 0.225]
+    # Convert from range [0,1] to custom one.
     normalize: Callable[[torch.Tensor],
                         torch.Tensor] = transforms.Normalize(MEAN, STD)
+    # Convert from custom range to [0,1]
     inverse_normalize: Callable[[torch.Tensor],
                                 torch.Tensor] = transforms.Normalize(
         mean=[-m/s for m, s in zip(MEAN, STD)],
@@ -41,15 +43,15 @@ class ImageNetNorm:
     ])
 
 
-def denorm_img_pxls(img: Union[numpy.array, torch.Tensor],
-                    max: float = 255.0) -> Union[numpy.array, torch.Tensor]:
-    r'''Denormalize pixel values in image from [0, 1] to [0, max].
+def _verify_range(img: Union[numpy.array, torch.Tensor], low: float, high: float) -> None:
+    r'''Verify that image has values in the range [low, high].
 
-    :param img: Image with values to be denormalized/re-scaled.
+    :param img: Image to be verified
+    :param low: Minimum possible value of the pixels in image
+    :param high: Maximum possible value of the pixels in image
 
-    :returns: Image with values in range [0, max]
+    :raises ValueError: If image has values outside of the range [low, high]
     '''
-    # Verify that image has correct range of values
     f: Callable[[torch.Tensor], torch.Tensor]
     if isinstance(img, torch.Tensor):
         f = torch.all
@@ -57,10 +59,24 @@ def denorm_img_pxls(img: Union[numpy.array, torch.Tensor],
         f = numpy.all
     else:
         raise ValueError(
-            f'Expected torch.Tensor or numpy.ndarray, got {type(img)}')
+            f'Expected torch.Tensor or numpy.ndarray, got {type(img)}.')
 
-    if not f((img >= 0) & (img <= 1)):
-        raise ValueError(f'Image has values outside of expected range [0, 1].')
+    if not f((img >= low) & (img <= high)):
+        raise ValueError(
+            f'Image has values outside of expected range [{low}, {high}]. Actual range [{img.min()}, {img.max()}]')
+
+
+def denorm_img_pxls(img: Union[numpy.array, torch.Tensor],
+                    max: float = 255.0) -> Union[numpy.array, torch.Tensor]:
+    r'''Denormalize pixel values in image from [0, 1] to [0, max].
+
+    :param img: Image with values to be denormalized/re-scaled.
+
+    :raises ValueError: If image has values outside of the range [0, 1]
+
+    :returns: Image with values in range [0, max]
+    '''
+    _verify_range(img, 0, 1)
 
     return img * max
 
@@ -77,19 +93,16 @@ def norm_img_pxls(src_img: numpy.array,
     :param min: Minimum possible value of the pixels in image
     :param max: Maximum possible value of the pixels in image
 
+    :raises ValueError: If image has values outside of the range [min, max]
+    :raises ValueError: If normalized image has values outside of the range [0, 1]
+
     :returns: Image with values normalized to [0, 1]
     '''
-    # Verify that image has correct range of values
-    if not numpy.all((src_img >= min) & (src_img <= max)):
-        raise ValueError(
-            f'Image contains values outside of the source range [{min}, {max}]. Verify the passed arguments \'min\' and \'max\'.')
+    _verify_range(src_img, min, max)
 
     # Normalize pixel values to [0, 1]
     target_img: numpy.array = src_img / max
 
-    # Verify that the resulting image has the correct range
-    if not numpy.all((target_img >= 0) & (target_img <= 1)):
-        raise ValueError(
-            f'Normalized image contains values outside of the target range [0, 1]. Verify the passed arguments \'min\' and \'max\'.')
+    _verify_range(target_img, 0, 1)
 
     return target_img

@@ -40,6 +40,9 @@ def flip_inpainting(image: torch.Tensor,
     if image.is_floating_point():
         raise TypeError('Tensor must be of integer data type.')
 
+    logger.debug(
+        f'Mask will flip a total of {mask.count_nonzero().item()} elements in image.')
+
     # Reduce number of channels in mask from 3 to 1.
     mask_arr: numpy.array = tensor_to_opencv_inpainting(mask, grayscale=True)
     img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(image[0])
