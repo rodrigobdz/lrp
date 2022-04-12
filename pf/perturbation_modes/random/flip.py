@@ -14,7 +14,6 @@ import logging
 import torch
 
 
-
 def flip_random(image: torch.Tensor,
                 mask: torch.Tensor,
                 perturbation_size: Union[int, Tuple[int]],
@@ -30,7 +29,7 @@ def flip_random(image: torch.Tensor,
 
     :param image: Image to be flipped in NCHW format.
     :param mask: Mask to select which pixels to flip in CHW format.
-    :param perturbation_size: Size of the region to flip.
+    :param perturbation_size: Size of the region to flip. Used to determine the number of random values to generate.
     A size of 1 corresponds to single pixels, whereas a tuple to patches.
 
     :param ran_num_gen: Random number generator to use.
