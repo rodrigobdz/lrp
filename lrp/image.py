@@ -8,12 +8,9 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from matplotlib.figure import Figure
 import cv2
 import torch
 import numpy
-from matplotlib import pyplot as plt
-from matplotlib.colors import ListedColormap
 from . import norm
 
 
