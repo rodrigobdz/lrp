@@ -14,20 +14,21 @@ import logging
 import torch
 
 
-def flip_random(input: torch.Tensor,
+
+def flip_random(image: torch.Tensor,
                 mask: torch.Tensor,
                 perturbation_size: Union[int, Tuple[int]],
                 ran_num_gen: RandomNumberGenerator,
                 low: float,
                 high: float,
                 logger: Optional[logging.Logger] = None) -> torch.Tensor:
-    r'''Flip pixels of input in-place according to the relevance scores with
+    r'''Flip pixels of image in-place according to the relevance scores with
     perturbation technique random.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.
 
-    :param input: Input to be flipped in NCHW format.
+    :param image: Image to be flipped in NCHW format.
     :param mask: Mask to select which pixels to flip in CHW format.
     :param perturbation_size: Size of the region to flip.
     A size of 1 corresponds to single pixels, whereas a tuple to patches.
@@ -38,7 +39,7 @@ def flip_random(input: torch.Tensor,
 
     :param logger: Logger instance to be used to print to console.
 
-    :returns: Flipped input.
+    :returns: Flipped image.
     '''
 
     # Error handling for missing or wrong parameters
@@ -53,7 +54,7 @@ def flip_random(input: torch.Tensor,
     # Debug: Compute indices selected for flipping in mask.
     flip_indices = mask.nonzero().flatten().tolist()
     # Debug: Count how many elements are set to True—i.e., would be flipped.
-    flip_count: int = input[0][mask].count_nonzero().item()
+    flip_count: int = image[0][mask].count_nonzero().item()
     logger.debug(
         f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
 
@@ -70,6 +71,6 @@ def flip_random(input: torch.Tensor,
     # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
     with torch.no_grad():
         # FIXME: Add support for patches / region perturbation
-        input[0][mask] = flip_value
+        image[0][mask] = flip_value
 
-    return input
+    return image

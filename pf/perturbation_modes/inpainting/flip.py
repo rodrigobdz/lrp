@@ -16,33 +16,33 @@ import cv2
 from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 
 
-def flip_inpainting(input: torch.Tensor,
+def flip_inpainting(image: torch.Tensor,
                     mask: torch.Tensor,
                     logger: Optional[logging.Logger] = None) -> torch.Tensor:
-    r'''Flip pixels of input (not in-place) according to the relevance scores with
+    r'''Flip pixels of image (not in-place) according to the relevance scores with
     perturbation technique random.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.
 
-    :param input: Input to be flipped in NCHW format with int values.
+    :param image: Image to be flipped in NCHW format with int values.
     :param mask: Mask to select which pixels to flip in CHW format.
 
     :param logger: Logger instance to be used to print to console.
 
-    :returns: Flipped input.
+    :returns: Flipped image.
     '''
     # Error handling for missing or wrong parameters
     # Initialize logger, if not provided.
     if not logger:
         logger = logging.getLogger(__name__)
 
-    if input.is_floating_point():
+    if image.is_floating_point():
         raise TypeError('Tensor must be of integer data type.')
 
     # Reduce number of channels in mask from 3 to 1.
     mask_arr: numpy.array = tensor_to_opencv_inpainting(mask, grayscale=True)
-    img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(input[0])
+    img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(image[0])
 
     inpainted_img_bgr_hwc: numpy.array = cv2.inpaint(
         img_bgr_hwc, mask_arr, 3, cv2.INPAINT_TELEA)

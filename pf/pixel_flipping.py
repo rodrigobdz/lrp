@@ -194,7 +194,7 @@ class PixelFlipping:
                 # Flip pixels with respective perturbation technique
 
                 if self.perturb_mode == PerturbModes.RANDOM:
-                    flip_random(input=flipped_input,
+                    flip_random(image=flipped_input,
                                 mask=mask,
                                 perturbation_size=self.perturbation_size,
                                 ran_num_gen=self.ran_num_gen,
@@ -203,7 +203,7 @@ class PixelFlipping:
                                 logger=self.logger)
 
                 elif self.perturb_mode == PerturbModes.INPAINTING:
-                    flipped_input = flip_inpainting(input=flipped_input.int(),
+                    flipped_input = flip_inpainting(image=flipped_input.int(),
                                                     mask=mask,
                                                     logger=self.logger).float()
 
