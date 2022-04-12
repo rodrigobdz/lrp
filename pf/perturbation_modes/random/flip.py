@@ -40,11 +40,16 @@ def flip_random(image: torch.Tensor,
 
     :returns: Flipped image.
     '''
-
     # Error handling for missing or wrong parameters
     # Initialize logger, if not provided.
     if not logger:
         logger = logging.getLogger(__name__)
+
+    # Convert mask from (1, H, W) to (C, H, W) where C is the number of channels in the image.
+    # Expanding a tensor does not allocate new memory.
+    expanded_mask: torch.Tensor = mask.expand(image[0].shape)
+
+    logger.debug(f'Expanded mask has shape {expanded_mask.shape}.')
 
     # Draw a random number.
     flip_value: float = ran_num_gen.draw(
@@ -53,7 +58,7 @@ def flip_random(image: torch.Tensor,
     # Debug: Compute indices selected for flipping in mask.
     flip_indices = mask.nonzero().flatten().tolist()
     # Debug: Count how many elements are set to True—i.e., would be flipped.
-    flip_count: int = image[0][mask].count_nonzero().item()
+    flip_count: int = image[0][expanded_mask].count_nonzero().item()
     logger.debug(
         f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
 
@@ -70,6 +75,6 @@ def flip_random(image: torch.Tensor,
     # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
     with torch.no_grad():
         # FIXME: Add support for patches / region perturbation
-        image[0][mask] = flip_value
+        image[0][expanded_mask] = flip_value
 
     return image

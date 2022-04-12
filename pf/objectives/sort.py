@@ -51,8 +51,6 @@ def _mask_generator(relevance_scores: torch.Tensor, sorted_values: torch.Tensor)
 
     :yields: Mask in CHW (1-channel) format to flip pixels/patches input in order specified by sorted_values.
     '''
-
-    # FIXME: Extract to a separate function.
     for threshold_value in sorted_values:
         # Create mask to flip pixels/patches in input located at the index of the
         # threshold value in the sorted relevance scores.
