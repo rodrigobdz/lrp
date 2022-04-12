@@ -15,24 +15,28 @@ from . import norm
 
 
 def load_normalized_img(path: str) -> numpy.array:
-    r'''Load image and normalize pixel values to [0, 1]
+    r'''Load image with pixel values [0, 255] and normalize to [0, 1]
 
     Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb
 
     :param path: Path to the image
     :returns: Normalized image
     '''
-    # Returns a numpy array in BGR color space, not RGB
-    img = cv2.imread(path)
+    # Returns image as numpy array with HWC format in BGR color space (not RGB) and with pixel values in [0, 255]
+    img_bgr_hwc = cv2.imread(path)
 
     # Convert from BGR to RGB color space
-    img = img[..., ::-1]
-    # img.shape is (224, 224, 3), where 3 corresponds to RGB channels
+    img_rgb_hwc = cv2.cvtColor(img_bgr_hwc, cv2.COLOR_BGR2RGB)
 
-    return norm.normalize_rgb_img(img)
+    # Alternative way to convert from BGR to RGB color space
+    # img_rgb_hwc = img_bgr_hwc[..., ::-1]
+
+    # img_rgb_hwc.shape is (224, 224, 3), where 3 corresponds to RGB channels
+
+    return norm.norm_img_pxls(img_rgb_hwc)
 
 
-def img_to_tensor(img: numpy.array) -> torch.Tensor:
+def img_to_tensor(img_nhwc: numpy.array) -> torch.Tensor:
     r'''Convert image as numpy.array to tensor
 
     Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and zennit
@@ -46,7 +50,7 @@ def img_to_tensor(img: numpy.array) -> torch.Tensor:
         H: height of the image
         W: width of the image
 
-    :param img: Image to be converted
+    :param img_nhwc: Image to be converted
     :returns: Tensor with image data
     '''
-    return torch.FloatTensor(img[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
+    return torch.FloatTensor(img_nhwc[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
