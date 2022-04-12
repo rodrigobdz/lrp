@@ -8,10 +8,9 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Tuple, Union, Optional
+from typing import Optional
 import logging
 import torch
-import torchvision
 import numpy
 import cv2
 from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
