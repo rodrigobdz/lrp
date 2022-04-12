@@ -16,6 +16,26 @@ import torch
 import cv2
 
 
+def arr_chw_to_hwc(arr_chw: numpy.array) -> numpy.array:
+    r'''Convert numpy array from CHW to HWC format.
+
+    :param arr_chw: numpy array to be converted.
+
+    :returns: numpy array in HWC format.
+    '''
+    return arr_chw.transpose((1, 2, 0))
+
+
+def arr_hwc_to_chw(arr_hwc: numpy.array) -> numpy.array:
+    r'''Convert numpy array from HWC to CHW format.
+
+    :param arr_hwc: numpy array to be converted.
+
+    :returns: numpy array in CHW format.
+    '''
+    return arr_hwc.transpose((2, 0, 1))
+
+
 def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
     r'''Convert image as numpy array to torch tensor.
     Operations performed:
@@ -34,7 +54,7 @@ def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
     img_rgb_hwc: numpy.array = cv2.cvtColor(img_bgr_hwc, cv2.COLOR_BGR2RGB)
 
     # Convert from HWC to CHW format.
-    img_rgb_chw: numpy.array = img_rgb_hwc.transpose((2, 0, 1))
+    img_rgb_chw: numpy.array = arr_hwc_to_chw(img_rgb_hwc)
     return torch.from_numpy(img_rgb_chw)
 
 
@@ -53,7 +73,7 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
         raise TypeError('Input must be a torch tensor.')
 
     # Convert to numpy array and from CHW to HWC format
-    img_rgb_hwc: numpy.array = img_rgb_chw.numpy().transpose((1, 2, 0))
+    img_rgb_hwc: numpy.array = arr_chw_to_hwc(img_rgb_chw.numpy())
 
     if grayscale:
         # Skip color format conversion

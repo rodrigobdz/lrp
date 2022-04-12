@@ -15,7 +15,23 @@ import torch
 from matplotlib.colors import ListedColormap
 from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
+from pf.convert_img import arr_chw_to_hwc
 import lrp.plot
+
+
+def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax) -> None:
+    r'''Plot an image as a tensor in NCHW format with RGB color format using matplotlib.
+
+    "valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers)."
+
+    :param img_nchw_rgb: Image to plot
+    '''
+    if img_nchw_rgb.dim() != 4:
+        raise ValueError('Image tensor must be 4D and have NCHW format.')
+
+    # Convert from NCHW to HWC format and from tensor to numpy array.
+    img_hwc_rgb: numpy.array = arr_chw_to_hwc(img_nchw_rgb[0].numpy())
+    plt.imshow(img_hwc_rgb)
 
 
 def heatmap(relevance_scores: numpy.array, width: float, height: float,
@@ -48,7 +64,7 @@ def heatmap(relevance_scores: numpy.array, width: float, height: float,
 
 
 def grid(results: List[Tuple[float, torch.Tensor]],
-         image: torch.Tensor,
+         image_chw_rgb: torch.Tensor,
          title: str,
          filename: str,
          gridsize: Tuple[int, int],
@@ -62,10 +78,10 @@ def grid(results: List[Tuple[float, torch.Tensor]],
     Source: https://stackoverflow.com/a/46616645
 
     :param results: List of tuples of the form (rule_param, R)
-    :param image: Reference image used to calculate the relevance scores
+    :param image_chw_rgb: Reference image in CHW format with RGB color format used to calculate the relevance scores
     :param title: Title of the plot
     :param filename: Name of the file to save the plot to
-    :param gridsize: Number of rows and columnds in the grid
+    :param gridsize: Number of rows and columns in the grid
     :param param_name: Name of the parameter to plot
     :param param_print: Function to print the parameter value
     :param figsize: Figure size
@@ -97,11 +113,10 @@ def grid(results: List[Tuple[float, torch.Tensor]],
 
         # Plot reference image
         if transform:
-            # Convert from NCHW to NHWC format.
-            img_nhwc = transform(image).numpy().transpose(1, 2, 0)
-            axi.imshow(img_nhwc, alpha=alpha)
+            img_hwc = arr_chw_to_hwc(transform(image_chw_rgb).numpy())
+            axi.imshow(img_hwc, alpha=alpha)
         else:
-            axi.imshow(image, alpha=alpha)
+            axi.imshow(arr_chw_to_hwc(image_chw_rgb), alpha=alpha)
 
         # Hide axis
         axi.axis('off')

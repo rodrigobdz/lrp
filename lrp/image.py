@@ -14,7 +14,7 @@ import numpy
 from . import norm
 
 
-def load_normalized_img(path: str) -> numpy.array:
+def load_img_norm_zero_one(path: str) -> numpy.array:
     r'''Load image with pixel values [0, 255] and normalize to [0, 1]
 
     Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb
@@ -51,6 +51,7 @@ def img_to_tensor(img_nhwc: numpy.array) -> torch.Tensor:
         W: width of the image
 
     :param img_nhwc: Image to be converted
+
     :returns: Tensor with image data
     '''
     return torch.FloatTensor(img_nhwc[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)
