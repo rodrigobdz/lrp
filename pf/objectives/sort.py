@@ -48,18 +48,18 @@ def _mask_generator(relevance_scores: torch.Tensor,
                     sorted_values: torch.Tensor,
                     perturbation_size: int
                     ) -> Generator[torch.Tensor, None, None]:
-    r'''Generator function that creates masks with one value selected at a time from the order in which they are sorted.
+    r'''Generator function that creates masks with one or multiple pixels selected for flipping
+    at a time from the order in which they are sorted.
 
     :param relevance_scores: Relevance scores in NCHW format.
     :param sorted_values: Sorted relevance scores as one-dimensional list.
     :param perturbation_size: Size of the region to flip.
     A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
 
+    The patches for region perturbation (perturbation_size > 1) are overlapping.
+
     :yields: Mask in CHW (1-channel) format to flip pixels/patches input in order specified by sorted_values.
     '''
-    # Calculate maximum height and width for generating patches around the selected pixel.
-    max_height: int = relevance_scores[0].shape[1]
-    max_width: int = relevance_scores[0].shape[2]
 
     for threshold_value in sorted_values:
         # Create mask to flip pixels/patches in input located at the index of the
@@ -72,22 +72,16 @@ def _mask_generator(relevance_scores: torch.Tensor,
         mask = mask.any(dim=0).unsqueeze(0)
 
         # Region Perturbation in action.
-        # FIXME: Extract into function.
         i, j = mask.squeeze().nonzero().flatten().tolist()
-        # TODO: Integrate heuristics on edges
-        # max(j+perturbation_size, max_height)
-        # max(, max_width)
 
         i_centered: int = i - (perturbation_size//2)
         j_centered: int = j - (perturbation_size//2)
-        # print('i j', i, j)
-        # print('centered', i_centered, j_centered)
-        # Create patches around selected pixel.
-        patch_mask: torch.Tensor = transforms.functional.erase(img=mask,
-                                                               i=i_centered,
-                                                               j=j_centered,
-                                                               h=perturbation_size,
-                                                               w=perturbation_size,
-                                                               v=True)
 
-        yield patch_mask
+        # TODO: Integrate heuristics around edges for non-overlapping patches.
+        # Create patches around selected pixel.
+        yield transforms.functional.erase(img=mask,
+                                          i=i_centered,
+                                          j=j_centered,
+                                          h=perturbation_size,
+                                          w=perturbation_size,
+                                          v=True)
