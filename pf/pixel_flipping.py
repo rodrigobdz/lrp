@@ -100,7 +100,7 @@ class PixelFlipping:
                  forward_pass: Callable[[torch.Tensor], float],
                  should_loop: bool = True,
                  simultaneous_pixel_flips: int = 1,
-                 ) -> None:
+                 ) -> Optional[Generator[Tuple[torch.Tensor, float], None, None]]:
         r'''Run pixel-flipping algorithm.
 
         :param input: Input to be explained.
@@ -111,10 +111,18 @@ class PixelFlipping:
 
         :yields: Tuple of flipped input and updated classification score
         after one perturbation step.
+
+        :returns: None if should_loop is True, otherwise a generator.
         '''
 
         # Number of pixels/patches to flip simultaneously
         self.simultaneous_pixel_flips: int = simultaneous_pixel_flips
+
+        # Count number of pixels affected by the perturbation.
+        perturbation_size_numel: int = self.perturbation_size
+        if isinstance(self.perturbation_size, tuple):
+            perturbation_size_numel = self.perturbation_size[0] * \
+                self.perturbation_size[1]
 
         # Verify that number of flips does not exceed the number of elements in the input.
         if (simultaneous_pixel_flips * perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
@@ -126,7 +134,7 @@ class PixelFlipping:
 
         # Toggle to return generator or loop automatically over it.
         if not should_loop:
-            return
+            return pixel_flipping_generator
 
         utils._loop(pixel_flipping_generator)
 
@@ -152,7 +160,6 @@ class PixelFlipping:
 
         if self.perturb_mode == PerturbModes.RANDOM:
             # TODO: Add support for custom low and high bounds (random number generation).
-
             # Infer (min. and max.) bounds of input for random number generation
             low: float = float(input.min())
             high: float = float(input.max())
