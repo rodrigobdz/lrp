@@ -19,19 +19,42 @@ from pf.convert_img import arr_chw_to_hwc
 import lrp.plot
 
 
-def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor) -> None:
+def plot_imagenet_tensor(img_nchw_rgb, ax=None) -> None:
+    r'''Plot an image in NCHW format and RGB color format with ImageNet mean and standard deviance.
+
+    Image is converted to [0,1] range first, then plotted.
+
+    :param img_nchw_rgb: Image to plot.
+    :param ax: Axis to plot on
+    '''
+    return lrp.plot.plot_tensor_img_nchw_rgb(
+        lrp.norm.ImageNetNorm.inverse_normalize(img_nchw_rgb),
+        ax
+    )
+
+
+def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax=None) -> None:
     r'''Plot an image as a tensor in NCHW format with RGB color format using matplotlib.
 
     "valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers)."
 
     :param img_nchw_rgb: Image to plot
+    :param ax: Axis to plot on (default: plt)
     '''
+    # Optionally, plot on a specific axis
+    if ax is None:
+        ax = plt
+
     if img_nchw_rgb.dim() != 4:
         raise ValueError('Image tensor must be 4D and have NCHW format.')
 
     # Convert from NCHW to HWC format and from tensor to numpy array.
     img_hwc_rgb: numpy.array = arr_chw_to_hwc(img_nchw_rgb[0].numpy())
-    plt.imshow(img_hwc_rgb)
+
+    # Plot image
+    ax.imshow(img_hwc_rgb)
+
+# FIXME: Add function to plot relevance scores as tensor, as in lrp.core
 
 
 def heatmap(relevance_scores: numpy.array, width: float, height: float,

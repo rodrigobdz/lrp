@@ -30,6 +30,7 @@ from .objectives import sort
 from . import utils
 from .decorators import timer
 from lrp import norm
+import lrp.plot
 
 
 class PixelFlipping:
@@ -80,6 +81,9 @@ class PixelFlipping:
         if verbose:
             self.logger.setLevel(logging.DEBUG)
 
+        # Store flipped input after perturbation.
+        self.flipped_input: torch.Tensor
+
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
 
@@ -116,6 +120,9 @@ class PixelFlipping:
 
         :returns: None if should_loop is True, otherwise a generator.
         '''
+
+        # Store input for comparison at the end.
+        self.original_input: torch.Tensor = input.detach().clone()
 
         # Number of pixels/patches to flip simultaneously
         self.simultaneous_pixel_flips: int = simultaneous_pixel_flips
@@ -224,6 +231,8 @@ class PixelFlipping:
                     raise NotImplementedError(
                         f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
+            self.flipped_input: torch.Tensor = flipped_input
+
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
 
@@ -254,3 +263,18 @@ class PixelFlipping:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.show()
+
+    def plot_image_comparison(self) -> None:
+        r'''Plot the original input and the perturbed input to visualize the changes.
+        '''
+
+        # Create grid of original and perturbed images.
+        _, ax = plt.subplots(nrows=1, ncols=2, figsize=[10, 10])
+
+        # Plot images.
+        lrp.plot.plot_imagenet_tensor(self.original_input, ax[0])
+        lrp.plot.plot_imagenet_tensor(self.flipped_input, ax[1])
+
+        # Show plots.
+        plt.show()
+
