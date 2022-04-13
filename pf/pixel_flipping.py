@@ -34,12 +34,10 @@ from lrp import norm
 class PixelFlipping:
     r'''Pixel-Flipping Algorithm.'''
 
-    DEFAULT_PERTURBATION_SIZE: int = 1
-
     def __init__(self,
                  perturbation_steps: int = 100,
                  perturbation_size: Union[int, Tuple[int]
-                                          ] = DEFAULT_PERTURBATION_SIZE,
+                                          ] = 1,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
