@@ -48,7 +48,6 @@ def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
     '''
     if not isinstance(img_bgr_hwc, numpy.ndarray):
         raise TypeError('Input must be a numpy array.')
-    # TODO: Ensure data type is correct and return tensor is in format CHW.
 
     # Convert from BGR to RGB color space
     img_rgb_hwc: numpy.array = cv2.cvtColor(img_bgr_hwc, cv2.COLOR_BGR2RGB)

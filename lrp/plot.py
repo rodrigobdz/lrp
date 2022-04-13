@@ -54,7 +54,7 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax=None) -> None:
     # Plot image
     ax.imshow(img_hwc_rgb)
 
-# FIXME: Add function to plot relevance scores as tensor, as in lrp.core
+# TODO: Add function to plot relevance scores as tensor, as in lrp.core
 
 
 def heatmap(relevance_scores: numpy.array, width: float, height: float,

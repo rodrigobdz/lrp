@@ -55,18 +55,18 @@ def flip_random(image: torch.Tensor,
     flip_value: float = ran_num_gen.draw(
         low=low, high=high, size=perturbation_size)
 
-    # Debug: Compute indices selected for flipping in mask.
+    # Compute indices selected for flipping in mask.
     flip_indices = mask.nonzero().flatten().tolist()
-    # Debug: Count how many elements are set to True—i.e., would be flipped.
+    # Count how many elements are set to True—i.e., would be flipped.
     flip_count: int = image[0][expanded_mask].count_nonzero().item()
     logger.debug(
         f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
 
     # Error handling during flipping.
     # FIXME: Remove this check to vectorize operation
-    # FIXME: Check what happens when flip_count is greater than one.
+    # DEBUG: Check what happens when flip_count is greater than one.
     # It seems like the mask_generator returns the mask repeatedly for #simultaneous flips times.
-    if flip_count != 1:
+    if flip_count != 3:
         logger.debug(
             f'''Flip count {flip_count} is not one. The mask is flipping more than one element.''')
 

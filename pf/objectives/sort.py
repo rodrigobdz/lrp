@@ -34,7 +34,7 @@ def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjec
     # Set default value to descending—i.e., most relevant first.
     descending: bool = True
 
-    # FIXME: Add switch case to implement the user's selected objective.
+    # TODO: Add switch case to implement the user's selected objective.
 
     # Sort relevance scores according to objective
     sorted_values, _ = relevance_scores[0].flatten().sort(

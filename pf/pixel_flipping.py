@@ -186,18 +186,19 @@ class PixelFlipping:
             f'Initial classification score {self.class_prediction_scores[-1]}')
 
         sorted_values: torch.Tensor = sort._argsort(relevance_scores)
+        # FIXME: Include perturbation_size in calculation of mask
         mask_iter: Generator[torch.Tensor, None,
                              None] = sort._mask_generator(relevance_scores, sorted_values)
 
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
 
-            # FIXME: Vectorize simultaneous flip operation
+            # TODO: Vectorize simultaneous flip operation
             for k in range(self.simultaneous_pixel_flips):
                 self.logger.debug(
                     f'Step {i} - simultaneous flip {k}/{self.simultaneous_pixel_flips}')
 
-                # FIXME: Verify what happens with mask_iter when mask_iter selects multiple pixels at once.
+                # DEBUG: Verify what happens with mask_iter when mask_iter selects multiple pixels at once.
                 # Reproduce error:
                 # steps 100
                 # simultaneous 10
@@ -278,3 +279,4 @@ class PixelFlipping:
         # Show plots.
         plt.show()
 
+    # TODO: Add function to create heatmap of flipped values only with mask

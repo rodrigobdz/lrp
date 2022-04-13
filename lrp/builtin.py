@@ -30,6 +30,8 @@ def rsetattr(obj: object, name: str, value: Any, sep: str = '.') -> None:
     :param obj: Object to be modified
     :param name: Name of the attribute to be modified
     :param value: Value to be assigned to the attribute
+
+    :raises NotImplementedError: If attributes have a nested level deeper than one.
     '''
     # Count recursion level in name
     n: int = name.count(sep)
