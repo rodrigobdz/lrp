@@ -121,10 +121,10 @@ class PixelFlipping:
         self.original_input: torch.Tensor = input.detach().clone()
 
         # Count number of pixels affected by the perturbation.
-        perturbation_size_numel: int = self.perturbation_size
-        if isinstance(self.perturbation_size, tuple):
-            perturbation_size_numel = self.perturbation_size[0] * \
-                self.perturbation_size[1]
+        #
+        # If perturbation size is one, then we only need to flip one pixel.
+        # Otherwise, we need to flip a patch of size nxn = # affected pixels.
+        perturbation_size_numel = self.perturbation_size**2
 
         # Verify that number of flips does not exceed the number of elements in the input.
         if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
@@ -181,7 +181,6 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
             f'Initial classification score {self.class_prediction_scores[-1]}')
 
         sorted_values: torch.Tensor = sort._argsort(relevance_scores)
-        # FIXME: Include perturbation_size in calculation of mask
         mask_iter: Generator[torch.Tensor, None,
                              None] = sort._mask_generator(relevance_scores,
                                                           sorted_values,
