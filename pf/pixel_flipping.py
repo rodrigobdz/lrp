@@ -117,8 +117,7 @@ class PixelFlipping:
         self.simultaneous_pixel_flips: int = simultaneous_pixel_flips
 
         # Verify that number of flips does not exceed the number of elements in the input.
-        # FIXME: Include perturbation_size in calculation
-        if (simultaneous_pixel_flips * self.perturbation_steps) > torch.numel(input):
+        if (simultaneous_pixel_flips * perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
             raise ValueError(
                 f'simultaneous_pixel_flips * perturbation_steps ({simultaneous_pixel_flips * self.perturbation_steps}) exceeds the number of elements in the input ({torch.numel(input)}).')
 
