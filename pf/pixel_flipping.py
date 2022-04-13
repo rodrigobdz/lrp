@@ -82,6 +82,9 @@ class PixelFlipping:
         # Store flipped input after perturbation.
         self.flipped_input: torch.Tensor
 
+        # Store (accumulative) masks applied to flip the input together in a single mask.
+        self.acc_flip_mask: torch.Tensor
+
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
 
@@ -120,11 +123,21 @@ class PixelFlipping:
         # Store input for comparison at the end.
         self.original_input: torch.Tensor = input.detach().clone()
 
+        # Initialize accumulative mask to False.
+        # Each mask used to flip the input will be stored in this tensor with logical OR.
+        #
+        # Input has dimensions (batch_size, channels, height, width).
+        # Accumulative mask has dimensions (height, width).
+        #   .sum(dim=0) is used to reduce the number of channels to 1.
+        #   I.e., to convert from (channels, height, width) to (height, width).
+        self.acc_flip_mask: torch.Tensor = torch.zeros(
+            *input[0].shape, dtype=torch.bool).sum(dim=0)
+
         # Count number of pixels affected by the perturbation.
         #
         # If perturbation size is one, then we only need to flip one pixel.
         # Otherwise, we need to flip a patch of size nxn = # affected pixels.
-        perturbation_size_numel = self.perturbation_size**2
+        perturbation_size_numel: int = self.perturbation_size**2
 
         # Verify that number of flips does not exceed the number of elements in the input.
         if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
@@ -224,6 +237,18 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
                     f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
             self.flipped_input: torch.Tensor = flipped_input
+
+            flipped_pixel_count: int = self.acc_flip_mask.count_nonzero().item()
+
+            # Squeeze mask to empty channel dimension.
+            self.acc_flip_mask: torch.Tensor = torch.logical_or(
+                self.acc_flip_mask, mask.squeeze())
+
+            # Calculate delta of flipped pixels.
+            flipped_pixel_count = self.acc_flip_mask.count_nonzero().item() - \
+                flipped_pixel_count
+
+            self.logger.info(f'Flipped {flipped_pixel_count} pixels.')
 
             # Measure classification accuracy change
             self.class_prediction_scores.append(forward_pass(flipped_input))
