@@ -38,8 +38,7 @@ class PixelFlipping:
 
     def __init__(self,
                  perturbation_steps: int = 100,
-                 perturbation_size: Union[int, Tuple[int]
-                                          ] = 1,
+                 perturbation_size: int = 1,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
@@ -48,19 +47,18 @@ class PixelFlipping:
 
         :param perturbation_steps: Number of perturbation steps.
         :param perturbation_size: Size of the region to flip.
-        A size of 1 corresponds to single pixels, whereas a tuple to patches.
+        A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
 
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         '''
-
-        # Ensure perturbation size conforms to standard format of two elements: width and height.
-        if isinstance(perturbation_size, tuple) and len(perturbation_size) >= 2:
+        # Ensure perturbation size is a valid number.
+        if perturbation_size < 1:
             raise ValueError(
-                f'Perturbation size must be a tuple of length 1 or 2, got {len(perturbation_size)}.')
+                'Perturbation size must be greater than or equal to 1.')
 
-        # Ensure ran_num_gen is only specified when the perturbation technique is random.
+            # Ensure ran_num_gen is only specified when the perturbation technique is random.
         if perturb_mode != PerturbModes.RANDOM and ran_num_gen:
             raise ValueError(
                 'Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.')
@@ -104,8 +102,7 @@ class PixelFlipping:
                  input: torch.Tensor,
                  relevance_scores: torch.Tensor,
                  forward_pass: Callable[[torch.Tensor], float],
-                 should_loop: bool = True,
-                 simultaneous_pixel_flips: int = 1,
+                 should_loop: bool = True
                  ) -> Optional[Generator[Tuple[torch.Tensor, float], None, None]]:
         r'''Run pixel-flipping algorithm.
 
@@ -113,7 +110,6 @@ class PixelFlipping:
         :param relevance_scores: Relevance scores.
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
         :param should_loop: Whether to loop over the generator or not.
-        :param simultaneous_pixel_flips: Number of pixels to flip simultaneously.
 
         :yields: Tuple of flipped input and updated classification score
         after one perturbation step.
@@ -124,9 +120,6 @@ class PixelFlipping:
         # Store input for comparison at the end.
         self.original_input: torch.Tensor = input.detach().clone()
 
-        # Number of pixels/patches to flip simultaneously
-        self.simultaneous_pixel_flips: int = simultaneous_pixel_flips
-
         # Count number of pixels affected by the perturbation.
         perturbation_size_numel: int = self.perturbation_size
         if isinstance(self.perturbation_size, tuple):
@@ -134,9 +127,11 @@ class PixelFlipping:
                 self.perturbation_size[1]
 
         # Verify that number of flips does not exceed the number of elements in the input.
-        if (simultaneous_pixel_flips * perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
+        if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
             raise ValueError(
-                f'simultaneous_pixel_flips * perturbation_steps ({simultaneous_pixel_flips * self.perturbation_steps}) exceeds the number of elements in the input ({torch.numel(input)}).')
+                f'''perturbation_size_numel * perturbation_steps =
+{perturbation_size_numel} * {self.perturbation_steps} = {perturbation_size_numel * self.perturbation_steps}
+exceeds the number of elements in the input ({torch.numel(input)}).''')
 
         pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
             input, relevance_scores, forward_pass)
@@ -188,49 +183,46 @@ class PixelFlipping:
         sorted_values: torch.Tensor = sort._argsort(relevance_scores)
         # FIXME: Include perturbation_size in calculation of mask
         mask_iter: Generator[torch.Tensor, None,
-                             None] = sort._mask_generator(relevance_scores, sorted_values)
+                             None] = sort._mask_generator(relevance_scores,
+                                                          sorted_values,
+                                                          self.perturbation_size)
 
         for i in range(self.perturbation_steps):
             self.logger.debug(f'Step {i}')
 
-            # TODO: Vectorize simultaneous flip operation
-            for k in range(self.simultaneous_pixel_flips):
-                self.logger.debug(
-                    f'Step {i} - simultaneous flip {k}/{self.simultaneous_pixel_flips}')
+            # DEBUG: Verify what happens with mask_iter when mask_iter selects multiple pixels at once.
+            # Reproduce error:
+            # steps 100
+            # simultaneous 10
 
-                # DEBUG: Verify what happens with mask_iter when mask_iter selects multiple pixels at once.
-                # Reproduce error:
-                # steps 100
-                # simultaneous 10
+            # Mask to select which pixels to flip.
+            mask: torch.Tensor = next(mask_iter)
 
-                # Mask to select which pixels to flip.
-                mask: torch.Tensor = next(mask_iter)
+            # Flip pixels with respective perturbation technique
 
-                # Flip pixels with respective perturbation technique
+            if self.perturb_mode == PerturbModes.RANDOM:
+                flip_random(image=flipped_input,
+                            mask=mask,
+                            perturbation_size=self.perturbation_size,
+                            ran_num_gen=self.ran_num_gen,
+                            low=low,
+                            high=high,
+                            logger=self.logger)
 
-                if self.perturb_mode == PerturbModes.RANDOM:
-                    flip_random(image=flipped_input,
-                                mask=mask,
-                                perturbation_size=self.perturbation_size,
-                                ran_num_gen=self.ran_num_gen,
-                                low=low,
-                                high=high,
-                                logger=self.logger)
+            elif self.perturb_mode == PerturbModes.INPAINTING:
+                flipped_input = norm.denorm_img_pxls(
+                    norm.ImageNetNorm.inverse_normalize(flipped_input))
 
-                elif self.perturb_mode == PerturbModes.INPAINTING:
-                    flipped_input = norm.denorm_img_pxls(
-                        norm.ImageNetNorm.inverse_normalize(flipped_input))
+                flipped_input = flip_inpainting(image=flipped_input.int(),
+                                                mask=mask,
+                                                logger=self.logger).float()
 
-                    flipped_input = flip_inpainting(image=flipped_input.int(),
-                                                    mask=mask,
-                                                    logger=self.logger).float()
+                flipped_input = norm.ImageNetNorm.normalize(
+                    norm.norm_img_pxls(flipped_input))
 
-                    flipped_input = norm.ImageNetNorm.normalize(
-                        norm.norm_img_pxls(flipped_input))
-
-                else:
-                    raise NotImplementedError(
-                        f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
+            else:
+                raise NotImplementedError(
+                    f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
             self.flipped_input: torch.Tensor = flipped_input
 
