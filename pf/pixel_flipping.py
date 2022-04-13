@@ -1,4 +1,4 @@
-r'''Pixel-Flipping Algorithm for Evaluation of Heatmaps.
+r'''Pixel-Flipping Algorithm for Evaluation of Explanations.
 Also called Region Perturbation when perturbation size is greater than one pixel at once.
 
 Source in Chicago citation format:
@@ -28,6 +28,7 @@ from .perturbation_modes.inpainting.flip import flip_inpainting
 from .perturbation_modes.constants import PerturbModes
 from .objectives import sort
 from . import utils
+from .decorators import timer
 from lrp import norm
 
 
@@ -94,6 +95,7 @@ class PixelFlipping:
         # List to store updated classification scores after each perturbation step.
         self.class_prediction_scores: List[float] = []
 
+    @timer
     def __call__(self,
                  input: torch.Tensor,
                  relevance_scores: torch.Tensor,
