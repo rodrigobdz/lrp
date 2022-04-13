@@ -52,8 +52,9 @@ def flip_random(image: torch.Tensor,
     logger.debug(f'Expanded mask has shape {expanded_mask.shape}.')
 
     # Draw a random number.
+    # Size of perturbation/patch is NxN, where N is perturbation_size.
     flip_value: float = ran_num_gen.draw(
-        low=low, high=high, size=perturbation_size)
+        low=low, high=high, size=perturbation_size**2)
 
     # Compute indices selected for flipping in mask.
     flip_indices = mask.nonzero().flatten().tolist()
@@ -74,7 +75,6 @@ def flip_random(image: torch.Tensor,
     # Disable gradient computation for the pixel-flipping operations.
     # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
     with torch.no_grad():
-        # FIXME: Add support for patches / region perturbation
         image[0][expanded_mask] = flip_value
 
     return image
