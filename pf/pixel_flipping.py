@@ -238,15 +238,19 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
                 raise NotImplementedError(
                     f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
+            # Store flipped input for comparison at the end with the original input.
             self.flipped_input: torch.Tensor = flipped_input
 
+            # Store number of flipped pixels before this perturbation step.
             flipped_pixel_count: int = self.acc_flip_mask.count_nonzero().item()
 
             # Squeeze mask to empty channel dimension.
             self.acc_flip_mask: torch.Tensor = torch.logical_or(
                 self.acc_flip_mask, mask.squeeze())
 
-            # Calculate delta of flipped pixels.
+            # Calculate delta of flipped pixels:
+            #   I.e., total number of flipped pixels in this perturbation step
+            #   minus the count of already flipped pixels.
             flipped_pixel_count = self.acc_flip_mask.count_nonzero().item() - \
                 flipped_pixel_count
 
