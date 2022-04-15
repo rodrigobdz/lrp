@@ -18,7 +18,7 @@ class RandomNumberGenerator(ABC):
     '''
 
     def __init__(self,
-                 seed: int = 42):
+                 seed: int = 0):
         '''
         Constructor
 
