@@ -24,7 +24,7 @@ def plot_imagenet_tensor(img_nchw_rgb, ax: Figure = plt) -> None:
 
     Image is converted to [0,1] range first, then plotted.
 
-    :param img_nchw_rgb: Image to plot.
+    :param img_nchw_rgb: Images to plot.
     :param ax: Axis to plot on
     '''
     return lrp.plot.plot_tensor_img_nchw_rgb(
@@ -38,18 +38,21 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> No
 
     "valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers)."
 
-    :param img_nchw_rgb: Image to plot
+    :param img_nchw_rgb: Images to plot
     :param ax: Axis to plot on (default: plt)
     '''
+    print(img_nchw_rgb.shape)
     if img_nchw_rgb.dim() != 4:
         raise ValueError('Image tensor must be 4D and have NCHW format.')
 
-    # Convert from NCHW to HWC format and from tensor to numpy array.
-    img_hwc_rgb: numpy.array = arr_chw_to_hwc(img_nchw_rgb[0].numpy())
+    for img_chw_rgb in img_nchw_rgb:
+        # Convert from NCHW to HWC format and from tensor to numpy array.
+        img_hwc_rgb: numpy.array = arr_chw_to_hwc(img_chw_rgb.detach().numpy())
 
-    # Plot image
-    ax.imshow(img_hwc_rgb)
-
+        # Plot image
+        ax.imshow(img_hwc_rgb)
+        ax.axis('off')
+        plt.show()
 # TODO: Add function to plot relevance scores as tensor, as in lrp.core
 
 
