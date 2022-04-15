@@ -8,11 +8,25 @@ __status__ = 'Development'
 
 
 from typing import List
+import sklearn.metrics
 import numpy
 
 
-def area_over_the_curve(class_prediction_scores: List[float]) -> float:
-    r'''Calculate the area over the curve (AOC) using the formula 12 from paper:
+def area_under_the_curve(class_prediction_scores: List[float]) -> float:
+    r'''Calculate the area under the curve (AUC).
+
+    The AUC score is not bounded between 0 and 1.
+
+    :param y: List of Y values.
+
+    :return: Area under the curve.
+    '''
+    x: numpy.array = numpy.arange(0, len(class_prediction_scores))
+    return sklearn.metrics.auc(x=x, y=class_prediction_scores)
+
+
+def area_over_the_pertubation_curve(class_prediction_scores: List[float]) -> float:
+    r'''Calculate the area over the perturbation curve (AOPC) using the formula 12 from paper:
 
         Samek, Wojciech, Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin, and Klaus-Robert Müller.
         "Evaluating the visualization of what a deep neural network has learned."
@@ -22,7 +36,7 @@ def area_over_the_curve(class_prediction_scores: List[float]) -> float:
 
     :param class_prediction_scores: List of Y values.
 
-    :return: Area over the curve.
+    :return: Area over the perturbation curve.
     '''
     y: numpy.array = numpy.array(class_prediction_scores)
 
