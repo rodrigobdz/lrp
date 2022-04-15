@@ -38,7 +38,7 @@ class UniformRNG(RandomNumberGenerator):
     Uniform random number generator class.
     '''
 
-    def draw(self, low: float = 0.0, high: float = 1.0, size: Union[int, Tuple[int]] = 1) -> float:
+    def draw(self, low: float = 0.0, high: float = 1.0) -> float:
         r'''
         Draws a random number from the distribution.
 
@@ -50,4 +50,5 @@ class UniformRNG(RandomNumberGenerator):
 
         :returns: A random number from the uniform distribution.
         '''
+        # TODO: Add parameter size for generating n multiple random numbers.
         return self.generator.uniform(low, high)
