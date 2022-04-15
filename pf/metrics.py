@@ -20,7 +20,7 @@ def area_over_the_curve(class_prediction_scores: List[float]) -> float:
 
         (Chicago-style citation)
 
-    :param y: List of Y values.
+    :param class_prediction_scores: List of Y values.
 
     :return: Area over the curve.
     '''
