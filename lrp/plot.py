@@ -9,7 +9,7 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Any, List, Tuple, Callable, Optional
+from typing import Any, List, Tuple, Callable, Optional, Sequence
 import numpy
 import torch
 from matplotlib.colors import ListedColormap
@@ -20,7 +20,7 @@ import lrp.plot
 import torchvision.transforms.functional
 
 
-def _show(imgs: torch.Tensor):
+def _show(imgs: Sequence) -> None:
     r'''Show a batch of images
 
     Function imported directly from:
@@ -42,7 +42,7 @@ def _show(imgs: torch.Tensor):
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
 
 
-def grid_plot_imagenet(img_nchw_rgb: torch.Tensor):
+def grid_plot_imagenet(img_nchw_rgb: torch.Tensor) -> None:
     r'''Plot a grid of images in NCHW format and RGB color format with ImageNet mean and standard deviance.
 
     :param img_nchw_rgb: Images to plot.
@@ -92,8 +92,13 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> No
 # TODO: Add function to plot relevance scores as tensor, as in lrp.core
 
 
-def heatmap(relevance_scores: numpy.array, width: float, height: float,
-            fig: Figure = plt, show_plot: bool = True, dpi: float = 100.0) -> None:
+def heatmap(relevance_scores: numpy.array,
+            width: float,
+            height: float,
+            fig: Figure = plt,
+            show_plot: bool = True,
+            dpi: float = 100.0
+            ) -> None:
     r'''Plot heatmap of relevance scores
 
     :param relevance_scores: Relevance scores in pixel layer only
@@ -130,7 +135,8 @@ def grid(results: List[Tuple[float, torch.Tensor]],
          transform: Optional[Callable] = None,
          param_print: Callable[[Any], Any] = lambda p: p,
          figsize: List[int] = [10, 10],
-         alpha: float = 0.2) -> None:
+         alpha: float = 0.2
+         ) -> None:
     r'''Plot the results of the hyperparameter grid search.
 
     Source: https://stackoverflow.com/a/46616645

@@ -17,7 +17,7 @@ import numpy
 import random
 
 
-def _seed_worker(worker_id: int):
+def _seed_worker(worker_id: int) -> None:
     r'''Seed the worker with a random seed.
 
     Function imported from PyTorch tutorial:
@@ -79,7 +79,7 @@ def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,
     return mask
 
 
-def _imagenet_dataset(root: str):
+def _imagenet_dataset(root: str) -> torch.utils.data.Dataset:
     r'''Retrieve the ImageNet dataset.
 
     :param root: The root directory where the dataset is stored.
