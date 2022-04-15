@@ -17,9 +17,45 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 from pf.convert_img import arr_chw_to_hwc
 import lrp.plot
+import torchvision.transforms.functional
 
 
-def plot_imagenet_tensor(img_nchw_rgb, ax: Figure = plt) -> None:
+def _show(imgs: torch.Tensor):
+    r'''Show a batch of images
+
+    Function imported directly from:
+        https://pytorch.org/vision/stable/auto_examples/plot_visualization_utils.html#sphx-glr-auto-examples-plot-visualization-utils-py
+
+    :param imgs: Batch of images
+    '''
+    if not isinstance(imgs, list):
+        imgs = [imgs]
+
+    plt.rcParams["savefig.bbox"] = 'tight'
+
+    _, axs = plt.subplots(ncols=len(imgs), squeeze=False)
+
+    for i, img in enumerate(imgs):
+        img = img.detach()
+        img = torchvision.transforms.functional.to_pil_image(img)
+        axs[0, i].imshow(numpy.asarray(img))
+        axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
+
+
+def grid_plot_imagenet(img_nchw_rgb: torch.Tensor):
+    r'''Plot a grid of images in NCHW format and RGB color format with ImageNet mean and standard deviance.
+
+    :param img_nchw_rgb: Images to plot.
+    '''
+    # Create grid with batch of images.
+    grid: torch.Tensor = torchvision.utils.make_grid(
+        lrp.norm.ImageNetNorm.inverse_normalize(img_nchw_rgb)
+    )
+    # Plot image grid
+    _show(grid)
+
+
+def plot_imagenet(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> None:
     r'''Plot an image in NCHW format and RGB color format with ImageNet mean and standard deviance.
 
     Image is converted to [0,1] range first, then plotted.
