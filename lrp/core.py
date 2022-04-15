@@ -111,10 +111,34 @@ class LRP:
         # Reset stored gradients
         X.grad = None
 
-        # Compute explanation
-        # Stores value of gradient in X.grad
-        # [0].max() retrieves the maximum activation/relevance in the first layer
-        self.model.forward(X)[0].max().backward()
+        # Compute explanation by storing value of gradient in X.grad.
+        # Only the predicted class is propagated backwards.
+        #
+        # 1. Compute forward pass
+        forward_pass: torch.Tensor = self.model(X)
+
+        # 2. Get index maximum activation in the output layer (index of the predicted class)
+        idx: torch.Tensor = forward_pass.max(dim=1).indices
+
+        # 3. Create new tensor where elements are tuples (i, idx[i]) with i: counter.
+        #   This is used to
+        #   Tensor looks like this: [0, 1, ..., len(idx)]
+        arange: torch.Tensor = torch.arange(len(idx))
+        stacked_idx: torch.Tensor = torch.stack((arange, idx), dim=1)
+
+        # 4. One-hot encoding for the predicted class in each sample.
+        # This is a mask where the predicted class is True and the rest is False.
+        batch_size: int = X.shape[0]
+        number_of_classes: int = forward_pass.shape[1]
+        # Init zeros tensor for one-hot encoding
+        gradient: torch.Tensor = torch.zeros(batch_size,
+                                             number_of_classes,
+                                             dtype=torch.bool)
+        # Set the predicted class to True
+        gradient[stacked_idx[:, 0], stacked_idx[:, 1]] = True
+
+        # 5. Compute gradient of output layer for the predicted class of each sample.
+        forward_pass.backward(gradient=gradient)
 
         if isinstance(first_layer, rules.LrpZBoxRule):
             # Compute gradients
@@ -131,8 +155,14 @@ class LRP:
     def heatmap(R: torch.Tensor, width: int = 4, height: int = 4) -> None:
         r'''Create heatmap of relevance
 
-        :param R: Relevance tensor
+        :param R: Relevance tensor with N3HW format
         :param width: Width of heatmap
         :param height: Height of heatmap
         '''
-        return plot.heatmap(R[0].sum(dim=0).detach().numpy(), width, height)
+        # Convert each heatmap from 3-channel to 1-channel.
+        # Channel dimension is now omitted.
+        r_nhw = R.sum(dim=1)
+
+        # Loop over relevance scores for each image in batch
+        for r_hw in r_nhw:
+            plot.heatmap(r_hw.detach().numpy(), width, height)
