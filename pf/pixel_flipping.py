@@ -302,13 +302,18 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
         kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
         lrp.plot.heatmap(self.relevance_scores[0].sum(dim=0).detach().numpy(),
                          fig=ax[1][0], **kwargs)
+        # Plot heatmap of perturbed regions.
         lrp.plot.heatmap(self.acc_flip_mask, fig=ax[1][1], **kwargs)
 
-        # Set titles.
-        ax[0][0].text(75, -10, 'Original Input', size=12)
-        ax[0][1].text(75, -10, 'Flipped Input', size=12)
-        ax[1][0].text(75, -10, 'Relevance scores', size=12)
-        ax[1][1].text(75, -10, 'Perturbed Regions', size=12)
+        x: int = 75
+        y: int = -10
+        size: int = 12
+
+        # Add captions.
+        ax[0][0].text(x, y, 'Original Input', size=size)
+        ax[0][1].text(x, y, 'Flipped Input', size=size)
+        ax[1][0].text(x, y, 'Relevance scores', size=size)
+        ax[1][1].text(x, y, 'Perturbed Regions', size=size)
 
         # Show plots.
         plt.show()
