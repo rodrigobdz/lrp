@@ -100,11 +100,11 @@ class LRP:
         first_layer: torch.nn.Module = self.model.features[0]
 
         if isinstance(first_layer, rules.LrpZBoxRule):
-            # Access high and low copy layers in first layer
+            # Access high and low copy layers in first layer.
             low: torch.Tensor = first_layer.low
             high: torch.Tensor = first_layer.high
 
-            # Reset stored gradients
+            # Reset stored gradients.
             low.grad = None
             high.grad = None
 
@@ -121,10 +121,9 @@ class LRP:
         idx: torch.Tensor = forward_pass.max(dim=1).indices
 
         # 3. Create new tensor where elements are tuples (i, idx[i]) with i: counter.
-        #   This is used to
-        #   Tensor looks like this: [0, 1, ..., len(idx)]
-        arange: torch.Tensor = torch.arange(len(idx))
-        stacked_idx: torch.Tensor = torch.stack((arange, idx), dim=1)
+        # Tensor looks like this: [0, 1, ..., len(idx)]
+        i: torch.Tensor = torch.arange(len(idx))
+        stacked_idx: torch.Tensor = torch.stack((i, idx), dim=1)
 
         # 4. One-hot encoding for the predicted class in each sample.
         # This is a mask where the predicted class is True and the rest is False.

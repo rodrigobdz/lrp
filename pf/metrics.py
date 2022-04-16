@@ -44,4 +44,5 @@ def area_over_the_pertubation_curve(class_prediction_scores: List[float]) -> flo
     L: int = len(y)
 
     # y[0] - y represents the deviation of the class prediction scores (y) from the ground truth (y[0]).
+    # The first element is the ground truth because it is the class prediction score before the perturbation.
     return (y[0] - y).sum() / (L + 1)

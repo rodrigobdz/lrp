@@ -112,6 +112,17 @@ class PixelFlipping:
         :param input: Input to be explained.
         :param relevance_scores: Relevance scores.
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+            It should take an input tensor in NCHW format and return the class prediction
+            score of a single class.
+            The index in the output layer of the class to be explained should be hardcoded.
+            It shouldn't make use of .max() to retrieve the class index because—as a result
+            of perturbation—the class index with maximum score can change.
+            Example:
+                # In this example 483 is the class index of the class to be explained,
+                # which corresponds to the castle class in ImageNet.
+                # The function assumes that all input images in the batch have the same
+                # class index 483—i.e., are castle images.
+                forward_pass: Callable[[torch.Tensor], float] = lambda input: lrp_instance.model(input)[:][483].item()
         :param should_loop: Whether to loop over the generator or not.
 
         :yields: Tuple of flipped input and updated classification score
@@ -213,7 +224,6 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
             mask: torch.Tensor = next(mask_iter)
 
             # Flip pixels with respective perturbation technique
-
             if self.perturb_mode == PerturbModes.RANDOM:
                 flip_random(image=flipped_input,
                             mask=mask,
