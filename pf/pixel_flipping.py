@@ -219,75 +219,110 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             forward_pass, flipped_input_nchw, perturbation_step=0)
 
         self.logger.debug(
-            f'Initial classification score {self.class_prediction_scores[-1]}')
+            f'Initial classification score {self.class_prediction_scores_n}')
 
-        sorted_values: torch.Tensor = sort._argsort(relevance_scores)
-        mask_iter: Generator[torch.Tensor, None,
-                             None] = sort._mask_generator(relevance_scores,
-                                                          sorted_values,
-                                                          self.perturbation_size)
+        # Contains N one-dimensional lists of relevance scores with m elements. Shape (N, m).
+        sorted_values_nm: torch.Tensor = sort._argsort(relevance_scores_nchw)
+        self._mask_iter: Generator[torch.Tensor, None,
+                                   None] = sort._mask_generator(relevance_scores_nchw,
+                                                                sorted_values_nm,
+                                                                self.perturbation_size)
 
-        for i in range(self.perturbation_steps):
-            self.logger.debug(f'Step {i}')
+        for perturbation_step in range(self.perturbation_steps):
+            self.logger.debug(f'Step {perturbation_step}')
 
-            # DEBUG: Verify what happens with mask_iter when mask_iter selects multiple pixels at once.
-            # Reproduce error:
-            # steps 100
-            # simultaneous 10
-
-            # Mask to select which pixels to flip.
-            mask: torch.Tensor = next(mask_iter)
-
-            # Flip pixels with respective perturbation technique
-            if self.perturb_mode == PerturbModes.RANDOM:
-                flip_random(image=flipped_input,
-                            mask=mask,
-                            perturbation_size=self.perturbation_size,
-                            ran_num_gen=self.ran_num_gen,
-                            low=low,
-                            high=high,
-                            logger=self.logger)
-
-            elif self.perturb_mode == PerturbModes.INPAINTING:
-                flipped_input = norm.denorm_img_pxls(
-                    norm.ImageNetNorm.inverse_normalize(flipped_input))
-
-                flipped_input = flip_inpainting(image=flipped_input.int(),
-                                                mask=mask,
-                                                logger=self.logger).float()
-
-                flipped_input = norm.ImageNetNorm.normalize(
-                    norm.norm_img_pxls(flipped_input))
-
-            else:
-                raise NotImplementedError(
-                    f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
+            # Run a perturbation step.
+            flipped_input_nchw, last_class_prediction_score = self._flip(
+                forward_pass, flipped_input_nchw, perturbation_step)
 
             # Store flipped input for comparison at the end with the original input.
             self.flipped_input_nchw: torch.Tensor = flipped_input_nchw
 
-            # Store number of flipped pixels before this perturbation step.
-            flipped_pixel_count: int = self.acc_flip_mask.count_nonzero().item()
+            yield flipped_input_nchw, last_class_prediction_score
 
-            # Squeeze mask to empty channel dimension.
-            self.acc_flip_mask: torch.Tensor = torch.logical_or(
-                self.acc_flip_mask, mask.squeeze())
+    def _measure_class_prediction_score(self,
+                                        forward_pass: Callable[[torch.Tensor], torch.Tensor],
+                                        flipped_input_nchw: torch.Tensor,
+                                        perturbation_step: int) -> None:
+        r'''Measure class prediction score of input using forward pass.
 
-            # Calculate delta of flipped pixels:
-            #   I.e., total number of flipped pixels in this perturbation step
-            #   minus the count of already flipped pixels.
-            flipped_pixel_count = self.acc_flip_mask.count_nonzero().item() - \
-                flipped_pixel_count
+        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param flipped_input_nchw: Input to be explained.
+        :param perturbation_step: Current perturbation step.
+        '''
+        score = forward_pass(flipped_input_nchw).detach()
+        self.class_prediction_scores_n[:, perturbation_step] = score
 
-            self.logger.info(f'Flipped {flipped_pixel_count} pixels.')
+        print(f'Perturbation step {perturbation_step}: {score}')
 
-            # Measure classification accuracy change
-            self.class_prediction_scores.append(forward_pass(flipped_input))
+        self.logger.debug(
+            f'Classification score: {self.class_prediction_scores_n[:, perturbation_step]}')
 
-            self.logger.debug(
-                f'Classification score: {self.class_prediction_scores[-1]}')
+    @timer
+    def _flip(self,
+              forward_pass: Callable[[torch.Tensor], torch.Tensor],
+              flipped_input_nchw: torch.Tensor,
+              perturbation_step: int
+              ) -> Tuple[torch.Tensor, List[float]]:
+        r'''Execute a single iteration of the Region Perturbation algorithm.
 
-            yield flipped_input, self.class_prediction_scores[-1]
+        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param flipped_input_nchw: Input to be explained.
+        :param perturbation_step: Current perturbation step.
+
+        :returns: Tuple of flipped input and updated classification score
+        '''
+        # Mask to select which pixels to flip.
+        mask_n1hw: torch.Tensor = next(self._mask_iter)
+
+        # Flip pixels with respective perturbation technique
+        if self.perturb_mode == PerturbModes.RANDOM:
+            flip_random(input_nchw=flipped_input_nchw,
+                        mask_n1hw=mask_n1hw,
+                        perturbation_size=self.perturbation_size,
+                        ran_num_gen=self.ran_num_gen,
+                        low=self._low,
+                        high=self._high,
+                        logger=self.logger)
+
+        elif self.perturb_mode == PerturbModes.INPAINTING:
+            flipped_input_nchw = norm.denorm_img_pxls(
+                norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
+
+            flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
+                                                 mask_n1hw=mask_n1hw,
+                                                 logger=self.logger).float()
+
+            flipped_input_nchw = norm.ImageNetNorm.normalize(
+                norm.norm_img_pxls(flipped_input_nchw))
+
+        else:
+            raise NotImplementedError(
+                f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
+        # FIXME: Add batch support.
+        # Store number of flipped pixels before this perturbation step.
+        flipped_pixel_count: int = self.acc_flip_mask.count_nonzero().item()
+        # FIXME: Add batch support.
+        # Squeeze mask to empty channel dimension.
+        self.acc_flip_mask: torch.Tensor = torch.logical_or(
+            self.acc_flip_mask, mask_n1hw.squeeze())
+        print('self.acc_flip_mask', self.acc_flip_mask.shape)
+        # FIXME: Add batch support.
+        # Calculate delta of flipped pixels:
+        #   I.e., total number of flipped pixels in this perturbation step
+        #   minus the count of already flipped pixels.
+        flipped_pixel_count = self.acc_flip_mask.count_nonzero().item() - \
+            flipped_pixel_count
+
+        self.logger.info(f'Flipped {flipped_pixel_count} pixels.')
+
+        # Measure classification accuracy change
+        self._measure_class_prediction_score(
+            forward_pass, flipped_input_nchw, perturbation_step
+        )
+
+        # return flipped_input_nchw, self.class_prediction_scores_n[..., -1:]
+        return flipped_input_nchw, self.class_prediction_scores_n
 
     def plot(self,
              title: str = '',
