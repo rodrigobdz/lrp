@@ -80,7 +80,15 @@ class PixelFlipping:
             self.logger.setLevel(logging.DEBUG)
 
         # Store flipped input after perturbation.
-        self.flipped_input: torch.Tensor
+        self.flipped_input_nchw: torch.Tensor
+
+        # Store min. and max. values of tensor in case of perturbation mode random.
+        # Otherwise these remain uninitialized.
+        self._low: Optional[float]
+        self._high: Optional[float]
+
+        # Iterator over masks in each perturbation step.
+        self._mask_iter: Generator[torch.Tensor, None, None]
 
         # Store (accumulative) masks applied to flip the input together in a single mask.
         self.acc_flip_mask: torch.Tensor
@@ -102,15 +110,15 @@ class PixelFlipping:
 
     @timer
     def __call__(self,
-                 input: torch.Tensor,
-                 relevance_scores: torch.Tensor,
-                 forward_pass: Callable[[torch.Tensor], float],
+                 input_nchw: torch.Tensor,
+                 relevance_scores_nchw: torch.Tensor,
+                 forward_pass: Callable[[torch.Tensor], torch.Tensor],
                  should_loop: bool = True
                  ) -> Optional[Generator[Tuple[torch.Tensor, float], None, None]]:
         r'''Run pixel-flipping algorithm.
 
-        :param input: Input to be explained.
-        :param relevance_scores: Relevance scores.
+        :param input_nchw: Input to be explained.
+        :param relevance_scores_nchw: Relevance scores.
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
             It should take an input tensor in NCHW format and return the class prediction
             score of a single class.
@@ -122,7 +130,8 @@ class PixelFlipping:
                 # which corresponds to the castle class in ImageNet.
                 # The function assumes that all input images in the batch have the same
                 # class index 483—i.e., are castle images.
-                forward_pass: Callable[[torch.Tensor], float] = lambda input: lrp_instance.model(input)[:][483].item()
+                forward_pass: Callable[[torch.Tensor], torch.Tensor] = lambda input: lrp_instance.model(input)[
+                                                                                                 :][483].item()
         :param should_loop: Whether to loop over the generator or not.
 
         :yields: Tuple of flipped input and updated classification score
@@ -132,9 +141,9 @@ class PixelFlipping:
         '''
 
         # Store input for comparison at the end.
-        self.original_input: torch.Tensor = input.detach().clone()
+        self.original_input: torch.Tensor = input_nchw.detach().clone()
 
-        self.relevance_scores: torch.Tensor = relevance_scores.detach().clone()
+        self.relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.detach().clone()
 
         # Initialize accumulative mask to False.
         # Each mask used to flip the input will be stored in this tensor with logical OR.
@@ -153,14 +162,14 @@ class PixelFlipping:
         perturbation_size_numel: int = self.perturbation_size**2
 
         # Verify that number of flips does not exceed the number of elements in the input.
-        if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input):
+        if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input_nchw):
             raise ValueError(
                 f'''perturbation_size_numel * perturbation_steps =
 {perturbation_size_numel} * {self.perturbation_steps} = {perturbation_size_numel * self.perturbation_steps}
-exceeds the number of elements in the input ({torch.numel(input)}).''')
+exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
 
         pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
-            input, relevance_scores, forward_pass)
+            input_nchw, relevance_scores_nchw, forward_pass)
 
         # Toggle to return generator or loop automatically over it.
         if not should_loop:
@@ -169,14 +178,14 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
         utils._loop(pixel_flipping_generator)
 
     def _generator(self,
-                   input: torch.Tensor,
-                   relevance_scores: torch.Tensor,
-                   forward_pass: Callable[[torch.Tensor], float]
-                   ) -> Generator[Tuple[torch.Tensor, float], None, None]:
+                   input_nchw: torch.Tensor,
+                   relevance_scores_nchw: torch.Tensor,
+                   forward_pass: Callable[[torch.Tensor], torch.Tensor]
+                   ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
         r'''Generator to flip pixels of input according to the relevance scores.
 
-        :param input: Input to be explained.
-        :param relevance_scores: Relevance scores.
+        :param input_nchw: Input to be explained.
+        :param relevance_scores_nchw: Relevance scores.
 
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
 
@@ -191,14 +200,14 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
         if self.perturb_mode == PerturbModes.RANDOM:
             # TODO: Add support for custom low and high bounds (random number generation).
             # Infer (min. and max.) bounds of input for random number generation
-            low: float = float(input.min())
-            high: float = float(input.max())
+            self._low: Optional[float] = float(input_nchw.min())
+            self._high: Optional[float] = float(input_nchw.max())
 
         # Deep copy input to avoid in-place modifications.
         # Detach input from computational graph to avoid computing gradient for the
         # pixel-flipping operations.
-        flipped_input: torch.Tensor = input.detach().clone()
-        flipped_input.requires_grad = False
+        flipped_input_nchw: torch.Tensor = input_nchw.detach().clone()
+        flipped_input_nchw.requires_grad = False
 
         # Get initial classification score.
         self.class_prediction_scores.append(forward_pass(flipped_input))
@@ -249,7 +258,7 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
                     f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
             # Store flipped input for comparison at the end with the original input.
-            self.flipped_input: torch.Tensor = flipped_input
+            self.flipped_input_nchw: torch.Tensor = flipped_input_nchw
 
             # Store number of flipped pixels before this perturbation step.
             flipped_pixel_count: int = self.acc_flip_mask.count_nonzero().item()
@@ -305,12 +314,12 @@ exceeds the number of elements in the input ({torch.numel(input)}).''')
         _, ax = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])
 
         # Plot images.
-        lrp.plot.plot_imagenet_tensor(self.original_input, ax=ax[0][0])
-        lrp.plot.plot_imagenet_tensor(self.flipped_input, ax=ax[0][1])
+        lrp.plot.plot_imagenet(self.original_input, ax=ax[0][0])
+        lrp.plot.plot_imagenet(self.flipped_input_nchw, ax=ax[0][1])
 
         # Plot heatmaps.
         kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
-        lrp.plot.heatmap(self.relevance_scores[0].sum(dim=0).detach().numpy(),
+        lrp.plot.heatmap(self.relevance_scores_nchw[0].sum(dim=0).detach().numpy(),
                          fig=ax[1][0], **kwargs)
         # Plot heatmap of perturbed regions.
         lrp.plot.heatmap(self.acc_flip_mask, fig=ax[1][1], **kwargs)

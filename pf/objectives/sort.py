@@ -19,10 +19,10 @@ class PixelFlippingObjectives:
     MORF: str = 'Most Relevant First'
 
 
-def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> torch.Tensor:
+def _argsort(relevance_scores_nchw: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> torch.Tensor:
     r'''Generator function that sorts relevance scores in order defined by objective.
 
-    :param relevance_scores: Relevance scores in NCHW format.
+    :param relevance_scores_nchw: Relevance scores in NCHW format.
     :param objective: Sorting order for relevance scores.
 
     :returns: Sorted relevance scores as one-dimensional list.
@@ -44,15 +44,15 @@ def _argsort(relevance_scores: torch.Tensor, objective: str = PixelFlippingObjec
     return sorted_values
 
 
-def _mask_generator(relevance_scores: torch.Tensor,
-                    sorted_values: torch.Tensor,
+def _mask_generator(relevance_scores_nchw: torch.Tensor,
+                    sorted_values_nm: torch.Tensor,
                     perturbation_size: int
                     ) -> Generator[torch.Tensor, None, None]:
     r'''Generator function that creates masks with one or multiple pixels selected for flipping
     at a time from the order in which they are sorted.
 
-    :param relevance_scores: Relevance scores in NCHW format.
     :param sorted_values: Sorted relevance scores as one-dimensional list.
+    :param relevance_scores_nchw: Relevance scores in NCHW format.
     :param perturbation_size: Size of the region to flip.
     A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
 
