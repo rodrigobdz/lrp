@@ -38,7 +38,7 @@ class PixelFlipping:
 
     def __init__(self,
                  perturbation_steps: int = 100,
-                 perturbation_size: int = 1,
+                 perturbation_size: int = 9,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
