@@ -42,23 +42,39 @@ def flip_inpainting(input_nchw: torch.Tensor,
     if input_nchw.is_floating_point():
         raise TypeError('Tensor must be of integer data type.')
 
+    # Verify that input and mask have the same batch size.
     if input_nchw.shape[0] != mask_n1hw.shape[0]:
         raise ValueError(
             f'Number of images in input ({input_nchw.shape[0]}) must equal number of masks ({mask_n1hw.shape[0]})')
 
-    # Reduce number of channels in mask from 3 to 1.
-    mask_arr_n1hw: numpy.array = tensor_to_opencv_inpainting(
-        mask_n1hw, grayscale=True)
-    img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(input_nchw[0])
+    batch_size: int = input_nchw.shape[0]
+    inpainted_img_rgb_nchw: torch.Tensor = torch.zeros(0, dtype=torch.float)
 
-    inpainted_img_bgr_hwc: numpy.array = cv2.inpaint(
-        img_bgr_hwc, mask_arr_n1hw, 3, cv2.INPAINT_TELEA)
+    # Loop over all images and masks in batch
+    for n in range(batch_size):
+        mask_1hw: torch.Tensor = mask_n1hw[n]
+        input_chw: torch.Tensor = input_nchw[n]
 
-    # Convert back inpainted image to tensor
-    inpainted_img_rgb_chw: numpy.array = opencv_to_tensor(
-        img_bgr_hwc=inpainted_img_bgr_hwc)
+        logger.debug(
+            f'Mask {n} will flip a total of {mask_1hw.count_nonzero().item()} elements in image.')
 
-    # Simulate batch by adding a new dimension
-    inpainted_img_rgb_chw = torch.unsqueeze(inpainted_img_rgb_chw, 0)
+        # Reduce number of channels in mask from 3 to 1.
+        mask_arr_hw1: numpy.array = tensor_to_opencv_inpainting(
+            img_rgb_chw=mask_1hw, grayscale=True)
+        img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(
+            img_rgb_chw=input_chw)
 
-    return inpainted_img_rgb_chw
+        inpainted_img_bgr_hwc: numpy.array = cv2.inpaint(
+            img_bgr_hwc, mask_arr_hw1, 3, cv2.INPAINT_TELEA)
+
+        # Convert back inpainted image to tensor
+        inpainted_img_rgb_chw: torch.Tensor = opencv_to_tensor(
+            img_bgr_hwc=inpainted_img_bgr_hwc)
+
+        # Simulate batch by adding a new dimension using unsqueeze(0)
+        # Concatenate inpainted image with the rest of the batch of inpainted images.
+        # Shape of inpainted_img_rgb_nchw: (batch_size, 3, height, width)
+        inpainted_img_rgb_nchw = torch.cat(
+            (inpainted_img_rgb_nchw, inpainted_img_rgb_chw.unsqueeze(0)))
+
+    return inpainted_img_rgb_nchw
