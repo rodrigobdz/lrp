@@ -72,7 +72,7 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
         raise TypeError('Input must be a torch tensor.')
 
     # Convert to numpy array and from CHW to HWC format
-    img_rgb_hwc: numpy.array = arr_chw_to_hwc(img_rgb_chw.numpy())
+    img_rgb_hwc: numpy.array = arr_chw_to_hwc(img_rgb_chw.detach().numpy())
 
     if grayscale:
         # Skip color format conversion

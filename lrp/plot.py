@@ -177,7 +177,7 @@ def grid(results: List[Tuple[float, torch.Tensor]],
 
         # Plot reference image
         if transform:
-            img_hwc = arr_chw_to_hwc(transform(image_chw_rgb).numpy())
+            img_hwc = arr_chw_to_hwc(transform(image_chw_rgb).detach().numpy())
             axi.imshow(img_hwc, alpha=alpha)
         else:
             axi.imshow(arr_chw_to_hwc(image_chw_rgb), alpha=alpha)
