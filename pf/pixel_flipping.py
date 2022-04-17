@@ -229,11 +229,15 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
                                                                 self.perturbation_size)
 
         for perturbation_step in range(self.perturbation_steps):
-            self.logger.debug(f'Step {perturbation_step}')
+            # Perturbation step 0 is the original input.
+            # Shift perturbation step by one to start from 1.
+            shifted_perturbation_step: int = perturbation_step + 1
+
+            self.logger.debug(f'Step {shifted_perturbation_step}')
 
             # Run a perturbation step.
             flipped_input_nchw, last_class_prediction_score = self._flip(
-                forward_pass, flipped_input_nchw, perturbation_step)
+                forward_pass, flipped_input_nchw, shifted_perturbation_step)
 
             # Store flipped input for comparison at the end with the original input.
             self.flipped_input_nchw: torch.Tensor = flipped_input_nchw
@@ -252,8 +256,6 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         '''
         score = forward_pass(flipped_input_nchw).detach()
         self.class_prediction_scores_n[:, perturbation_step] = score
-
-        print(f'Perturbation step {perturbation_step}: {score}')
 
         self.logger.debug(
             f'Classification score: {self.class_prediction_scores_n[:, perturbation_step]}')
