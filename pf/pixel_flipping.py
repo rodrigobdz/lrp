@@ -106,7 +106,7 @@ class PixelFlipping:
             self.ran_num_gen: RandomNumberGenerator = ran_num_gen or UniformRNG()
 
         # List to store updated classification scores after each perturbation step.
-        self.class_prediction_scores: List[float] = []
+        self.class_prediction_scores_n: torch.Tensor
 
     @timer
     def __call__(self,
@@ -149,11 +149,12 @@ class PixelFlipping:
         # Each mask used to flip the input will be stored in this tensor with logical OR.
         #
         # Input has dimensions (batch_size, channels, height, width).
-        # Accumulative mask has dimensions (height, width).
-        #   .sum(dim=0) is used to reduce the number of channels to 1.
-        #   I.e., to convert from (channels, height, width) to (height, width).
+        # Accumulative mask has dimensions (batch_size, height, width).
+        #   .sum(dim=1) is used to reduce the number of channels to 1.
+        #   I.e., to convert from (batch_size, channels, height, width) to (batch_size, height, width).
         self.acc_flip_mask: torch.Tensor = torch.zeros(
-            *input[0].shape, dtype=torch.bool).sum(dim=0)
+            *input_nchw.shape,
+            dtype=torch.bool).sum(dim=1)
 
         # Count number of pixels affected by the perturbation.
         #
@@ -209,8 +210,13 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         flipped_input_nchw: torch.Tensor = input_nchw.detach().clone()
         flipped_input_nchw.requires_grad = False
 
+        # Tensor with class prediction scores has shape (batch_size, perturbation_steps).
+        self.class_prediction_scores_n: torch.Tensor = torch.zeros(
+            (input_nchw.shape[0], self.perturbation_steps), dtype=torch.float)
+
         # Get initial classification score.
-        self.class_prediction_scores.append(forward_pass(flipped_input))
+        self._measure_class_prediction_score(
+            forward_pass, flipped_input_nchw, perturbation_step=0)
 
         self.logger.debug(
             f'Initial classification score {self.class_prediction_scores[-1]}')
@@ -296,15 +302,17 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         '''
 
         # Error handling
-        if not self.class_prediction_scores:
+        # Check if class prediction scores are empty—i.e., initialized to zeros.
+        if (self.class_prediction_scores_n == 0).all():
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
-        plt.plot(self.class_prediction_scores)
-        plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.show()
+        for class_prediction_scores in self.class_prediction_scores_n:
+            plt.plot(class_prediction_scores)
+            plt.title(title)
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.show()
 
     def plot_image_comparison(self) -> None:
         r'''Plot the original input and the perturbed input to visualize the changes.

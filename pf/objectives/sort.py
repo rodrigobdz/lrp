@@ -25,7 +25,9 @@ def _argsort(relevance_scores_nchw: torch.Tensor, objective: str = PixelFlipping
     :param relevance_scores_nchw: Relevance scores in NCHW format.
     :param objective: Sorting order for relevance scores.
 
-    :returns: Sorted relevance scores as one-dimensional list.
+    :returns: Sorted relevance scores as a tensor with N one-dimensional lists,
+              one for each image in the batch of size and each list with m elements,
+              m is # relevance scores for each image. Shape is (N, m).
     '''
 
     if objective != PixelFlippingObjectives.MORF:
@@ -38,10 +40,11 @@ def _argsort(relevance_scores_nchw: torch.Tensor, objective: str = PixelFlipping
     # TODO: Add switch case to implement the user's selected objective.
 
     # Sort relevance scores according to objective
-    sorted_values, _ = relevance_scores[0].flatten().sort(
+
+    sorted_values_nm, _ = relevance_scores_nchw.flatten(start_dim=1).sort(
         descending=descending, stable=True)
 
-    return sorted_values
+    return sorted_values_nm
 
 
 def _mask_generator(relevance_scores_nchw: torch.Tensor,
@@ -51,37 +54,59 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
     r'''Generator function that creates masks with one or multiple pixels selected for flipping
     at a time from the order in which they are sorted.
 
-    :param sorted_values: Sorted relevance scores as one-dimensional list.
     :param relevance_scores_nchw: Relevance scores in NCHW format.
+    :param sorted_values_nm: Sorted relevance scores as a tensor with N one-dimensional lists,
+                             one for each image in the batch of size and each list with m elements,
+                             m is # relevance scores for each image. Shape is (N, m).
     :param perturbation_size: Size of the region to flip.
     A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
 
     The patches for region perturbation (perturbation_size > 1) are overlapping.
 
-    :yields: Mask in CHW (1-channel) format to flip pixels/patches input in order specified by sorted_values.
+    :yields: Mask in N1HW (1-channel) format to flip pixels/patches input in order specified by sorted_values_nm.
     '''
 
-    for threshold_value in sorted_values:
-        # Create mask to flip pixels/patches in input located at the index of the
-        # threshold value in the sorted relevance scores.
-        mask: torch.Tensor = relevance_scores[0] == threshold_value
+    # Loop over number of elements in each individual list of sorted values.
+    for m in range(sorted_values_nm.shape[1]):
+        # Create empty boolean tensor.
+        mask_n1hw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
+        # Loop over number of sorted value lists (number of images in batch).
+        for n in range(sorted_values_nm.shape[0]):
+            # Extract sorted value at index m for current image at batch index n.
+            threshold_value: float = sorted_values_nm[n, m]
+            # Create mask to flip pixels/patches in input located at the index of the
+            # threshold value in the sorted relevance scores.
+            mask_chw: torch.Tensor = relevance_scores_nchw[n] == threshold_value
 
-        # Reduce dimensionality of mask from 3-channel to 1-channel.
-        # any(dim=0) returns True if any element along dimension 0 is True. Returns HW format, no C
-        # unsqueeze(0) creates artificial channel dimension using to make mask in CHW format.
-        mask = mask.any(dim=0).unsqueeze(0)
+            # Reduce dimensionality of mask from 3-channel to 1-channel.
+            # any(dim=0) returns True if any element along dimension 0 is True. Returns HW format, no C
+            # unsqueeze(0) creates artificial channel dimension using to make mask in CHW format.
+            mask_1hw = mask_chw.any(dim=0).unsqueeze(0)
 
-        # Region Perturbation in action.
-        i, j = mask.squeeze().nonzero().flatten().tolist()
+            # Region Perturbation in action.
+            # i, j are the coordinates of the pixel to flip.
+            i, j = mask_1hw.squeeze().nonzero().flatten().tolist()
 
-        i_centered: int = i - (perturbation_size//2)
-        j_centered: int = j - (perturbation_size//2)
+            # Create patch around selected pixels.
+            i_centered: int = i - (perturbation_size//2)
+            j_centered: int = j - (perturbation_size//2)
 
-        # TODO: Integrate heuristics around edges for non-overlapping patches.
-        # Create patches around selected pixel.
-        yield transforms.functional.erase(img=mask,
-                                          i=i_centered,
-                                          j=j_centered,
-                                          h=perturbation_size,
-                                          w=perturbation_size,
-                                          v=True)
+            # TODO: Integrate heuristics around edges for non-overlapping patches.
+            # Currently the patches are overlapping.
+
+            # Create patches around selected pixel.
+            flipped_mask_1hw: torch.Tensor = transforms.functional.erase(img=mask_1hw,
+                                                                         i=i_centered,
+                                                                         j=j_centered,
+                                                                         h=perturbation_size,
+                                                                         w=perturbation_size,
+                                                                         v=True)
+            print(flipped_mask_1hw.dtype)
+            # Concatenate the mask for the current image to the list of masks.
+            # Initially mask_n1hw is empty and masks for each image are added incrementally.
+            # Shape of mask_n1hw is (N, H, W).
+            mask_n1hw: torch.Tensor = torch.cat((mask_n1hw, flipped_mask_1hw))
+
+        # unsqueze(1) creates artificial channel dimension using to make mask in N1HW format from NHW.
+        # Shape of mask_n1hw is (N, 1, H, W).
+        yield mask_n1hw.unsqueeze(1)
