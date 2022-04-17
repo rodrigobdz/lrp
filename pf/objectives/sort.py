@@ -69,7 +69,7 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
     # Loop over number of elements in each individual list of sorted values.
     for m in range(sorted_values_nm.shape[1]):
         # Create empty boolean tensor.
-        mask_n1hw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
+        mask_nhw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
 
         # Loop over number of sorted value lists (number of images in batch).
         for n in range(sorted_values_nm.shape[0]):
@@ -105,10 +105,12 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
                                                                          v=True)
 
             # Concatenate the mask for the current image to the list of masks.
-            # Initially mask_n1hw is empty and masks for each image are added incrementally.
-            # Shape of mask_n1hw is (N, H, W).
-            mask_n1hw: torch.Tensor = torch.cat((mask_n1hw, flipped_mask_1hw))
+            # Initially mask_nhw is empty and masks for each image are added incrementally.
+            # Shape of mask_nhw is (N, H, W).
+            mask_nhw = torch.cat((mask_nhw, flipped_mask_1hw))
 
         # unsqueze(1) creates artificial channel dimension using to make mask in N1HW format from NHW.
         # Shape of mask_n1hw is (N, 1, H, W).
-        yield mask_n1hw.unsqueeze(1)
+        mask_n1hw: torch.Tensor = mask_nhw.unsqueeze(1)
+
+        yield mask_n1hw
