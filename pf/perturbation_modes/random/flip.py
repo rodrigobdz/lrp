@@ -45,6 +45,7 @@ def flip_random(input_nchw: torch.Tensor,
     if not logger:
         logger = logging.getLogger(__name__)
 
+    # FIXME: Add batch support.
     # Convert mask from (1, H, W) to (C, H, W) where C is the number of channels in the image.
     # Expanding a tensor does not allocate new memory.
     expanded_mask_n1hw: torch.Tensor = mask_n1hw.expand(input_nchw[0].shape)

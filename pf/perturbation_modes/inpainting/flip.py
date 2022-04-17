@@ -27,8 +27,10 @@ def flip_inpainting(input_nchw: torch.Tensor,
 
     :param input_nchw: Image to be flipped in NCHW format with int values.
     :param mask_n1hw: Mask to select which pixels to flip in CHW format.
-
     :param logger: Logger instance to be used to print to console.
+
+    :raises TypeError: If input_nchw does not have data type integer.
+    :rasises ValueError: If input_nchw and mask_n1hw do not have the same batch size.
 
     :returns: Flipped image.
     '''
@@ -40,8 +42,9 @@ def flip_inpainting(input_nchw: torch.Tensor,
     if input_nchw.is_floating_point():
         raise TypeError('Tensor must be of integer data type.')
 
-    logger.debug(
-        f'Mask will flip a total of {mask_n1hw.count_nonzero().item()} elements in image.')
+    if input_nchw.shape[0] != mask_n1hw.shape[0]:
+        raise ValueError(
+            f'Number of images in input ({input_nchw.shape[0]}) must equal number of masks ({mask_n1hw.shape[0]})')
 
     # Reduce number of channels in mask from 3 to 1.
     mask_arr_n1hw: numpy.array = tensor_to_opencv_inpainting(

@@ -70,10 +70,12 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
     for m in range(sorted_values_nm.shape[1]):
         # Create empty boolean tensor.
         mask_n1hw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
+
         # Loop over number of sorted value lists (number of images in batch).
         for n in range(sorted_values_nm.shape[0]):
             # Extract sorted value at index m for current image at batch index n.
             threshold_value: float = sorted_values_nm[n, m]
+
             # Create mask to flip pixels/patches in input located at the index of the
             # threshold value in the sorted relevance scores.
             mask_chw: torch.Tensor = relevance_scores_nchw[n] == threshold_value
@@ -101,7 +103,7 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
                                                                          h=perturbation_size,
                                                                          w=perturbation_size,
                                                                          v=True)
-            print(flipped_mask_1hw.dtype)
+
             # Concatenate the mask for the current image to the list of masks.
             # Initially mask_n1hw is empty and masks for each image are added incrementally.
             # Shape of mask_n1hw is (N, H, W).

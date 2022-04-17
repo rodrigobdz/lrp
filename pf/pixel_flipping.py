@@ -299,14 +299,16 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         else:
             raise NotImplementedError(
                 f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
+
         # FIXME: Add batch support.
         # Store number of flipped pixels before this perturbation step.
         flipped_pixel_count: int = self.acc_flip_mask.count_nonzero().item()
+
         # FIXME: Add batch support.
         # Squeeze mask to empty channel dimension.
         self.acc_flip_mask: torch.Tensor = torch.logical_or(
             self.acc_flip_mask, mask_n1hw.squeeze())
-        print('self.acc_flip_mask', self.acc_flip_mask.shape)
+
         # FIXME: Add batch support.
         # Calculate delta of flipped pixels:
         #   I.e., total number of flipped pixels in this perturbation step
@@ -353,6 +355,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         r'''Plot the original input and the perturbed input to visualize the changes.
         '''
 
+        # FIXME: Add batch support.
         # Create grid of original and perturbed images.
         _, ax = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])
 
