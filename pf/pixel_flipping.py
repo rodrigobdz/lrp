@@ -92,7 +92,7 @@ Selected perturbation mode: {perturb_mode}''')
         self._mask_iter: Generator[torch.Tensor, None, None]
 
         # Store (accumulative) masks applied to flip the input together in a single mask.
-        self.acc_flip_mask_nchw: torch.Tensor
+        self.acc_flip_mask_nhw: torch.Tensor
 
         # Number of times to flip pixels/patches
         self.perturbation_steps: int = perturbation_steps
@@ -140,9 +140,11 @@ Selected perturbation mode: {perturb_mode}''')
 
         :returns: None if should_loop is True, otherwise a generator.
         '''
+        # FIXME: Add batch size check as function
+        self._batch_size: int = input_nchw.shape[0]
 
         # Store input for comparison at the end.
-        self.original_input: torch.Tensor = input_nchw.detach().clone()
+        self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
 
         self.relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.detach().clone()
 
@@ -153,7 +155,7 @@ Selected perturbation mode: {perturb_mode}''')
         # Accumulative mask has dimensions (batch_size, height, width).
         #   .sum(dim=1) is used to reduce the number of channels to 1.
         #   I.e., to convert from (batch_size, channels, height, width) to (batch_size, height, width).
-        self.acc_flip_mask_nchw: torch.Tensor = torch.zeros(
+        self.acc_flip_mask_nhw: torch.Tensor = torch.zeros(
             *input_nchw.shape,
             dtype=torch.bool).sum(dim=1)
 
@@ -211,9 +213,10 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         flipped_input_nchw: torch.Tensor = input_nchw.detach().clone()
         flipped_input_nchw.requires_grad = False
 
-        # Tensor with class prediction scores has shape (batch_size, perturbation_steps).
+        # Tensor with class prediction scores has shape (batch_size, perturbation_steps+1).
+        # First perturbation step is the original class prediction score without perturbation.
         self.class_prediction_scores_n: torch.Tensor = torch.zeros(
-            (input_nchw.shape[0], self.perturbation_steps), dtype=torch.float)
+            (self._batch_size, self.perturbation_steps+1), dtype=torch.float)
 
         # Get initial classification score.
         self._measure_class_prediction_score(
@@ -305,18 +308,18 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
 
         # FIXME: Add batch support.
         # Store number of flipped pixels before this perturbation step.
-        flipped_pixel_count: int = self.acc_flip_mask_nchw.count_nonzero().item()
+        flipped_pixel_count: int = self.acc_flip_mask_nhw.count_nonzero().item()
 
         # FIXME: Add batch support.
         # Squeeze mask to empty channel dimension.
-        self.acc_flip_mask_nchw: torch.Tensor = torch.logical_or(
-            self.acc_flip_mask_nchw, mask_n1hw.squeeze())
+        self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
+            self.acc_flip_mask_nhw, mask_n1hw.squeeze())
 
         # FIXME: Add batch support.
         # Calculate delta of flipped pixels:
         #   I.e., total number of flipped pixels in this perturbation step
         #   minus the count of already flipped pixels.
-        flipped_pixel_count = self.acc_flip_mask_nchw.count_nonzero().item() - \
+        flipped_pixel_count = self.acc_flip_mask_nhw.count_nonzero().item() - \
             flipped_pixel_count
 
         self.logger.info(f'Flipped {flipped_pixel_count} pixels.')
