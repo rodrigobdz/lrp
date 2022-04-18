@@ -27,7 +27,7 @@ class LRP:
         self.model.eval()
         self.name_map: List[Tuple[List[str], rules.LrpRule,
                                   Dict[str, Union[torch.Tensor, float]]]] = []
-        self.R: Optional[torch.Tensor] = None
+        self.relevance_scores_nchw: Optional[torch.Tensor] = None
 
     def convert_layers(self, name_map:
                        List[
@@ -147,11 +147,11 @@ class LRP:
         c1 = X.grad
 
         # Compute relevance
-        self.R = X * c1 + low * c2 + high * c3
-        return self.R.detach()
+        self.relevance_scores_nchw = X * c1 + low * c2 + high * c3
+        return self.relevance_scores_nchw.detach()
 
     @staticmethod
-    def heatmap(R: torch.Tensor, width: int = 4, height: int = 4) -> None:
+    def heatmap(relevance_scores_nchw: torch.Tensor, width: int = 4, height: int = 4) -> None:
         r'''Create heatmap of relevance
 
         :param R: Relevance tensor with N3HW format
@@ -160,7 +160,7 @@ class LRP:
         '''
         # Convert each heatmap from 3-channel to 1-channel.
         # Channel dimension is now omitted.
-        r_nhw = R.sum(dim=1)
+        r_nhw = relevance_scores_nchw.sum(dim=1)
 
         # Loop over relevance scores for each image in batch
         for r_hw in r_nhw:
