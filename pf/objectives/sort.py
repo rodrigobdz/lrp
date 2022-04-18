@@ -71,8 +71,10 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
         # Create empty boolean tensor.
         mask_nhw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
 
+        batch_size: int = sorted_values_nm.shape[0]
+        
         # Loop over number of sorted value lists (number of images in batch).
-        for n in range(sorted_values_nm.shape[0]):
+        for n in range(batch_size):
             # Extract sorted value at index m for current image at batch index n.
             threshold_value: float = sorted_values_nm[n, m]
 
