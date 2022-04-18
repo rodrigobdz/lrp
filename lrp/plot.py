@@ -77,9 +77,10 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> No
     :param img_nchw_rgb: Images to plot
     :param ax: Axis to plot on (default: plt)
     '''
-    print(img_nchw_rgb.shape)
+
     if img_nchw_rgb.dim() != 4:
-        raise ValueError('Image tensor must be 4D and have NCHW format.')
+        raise ValueError(
+            f'Image tensor must be 4D and have NCHW format. Got dimensions {img_nchw_rgb.dim()}D and shape {img_nchw_rgb.shape}.')
 
     for img_chw_rgb in img_nchw_rgb:
         # Convert from NCHW to HWC format and from tensor to numpy array.

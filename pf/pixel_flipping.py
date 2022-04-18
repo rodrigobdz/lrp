@@ -56,12 +56,13 @@ class PixelFlipping:
         # Ensure perturbation size is a valid number.
         if perturbation_size < 1:
             raise ValueError(
-                'Perturbation size must be greater than or equal to 1.')
+                f'Perturbation size ({perturbation_size}) must be greater than or equal to 1.')
 
             # Ensure ran_num_gen is only specified when the perturbation technique is random.
         if perturb_mode != PerturbModes.RANDOM and ran_num_gen:
             raise ValueError(
-                'Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.')
+                f'''Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.
+Selected perturbation mode: {perturb_mode}''')
 
         # Limit perturbation modes to the ones available in the library.
         if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
