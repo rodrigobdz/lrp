@@ -81,7 +81,6 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_
     :param ax: Axis to plot on (default: plt)
     :param show_plot: Show plot or not
     '''
-
     pf.utils._ensure_nchw_format(img_nchw_rgb)
 
     for img_chw_rgb in img_nchw_rgb:

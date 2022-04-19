@@ -342,10 +342,10 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         # return flipped_input_nchw, self.class_prediction_scores_n[..., -1:]
         return flipped_input_nchw, self.class_prediction_scores_n
 
-    def plot(self,
-             title: str = '',
-             xlabel: str = '',
-             ylabel: str = '') -> None:
+    def plot_class_prediction_scores(self,
+                                     title: str = '',
+                                     xlabel: str = '',
+                                     ylabel: str = '') -> None:
         r'''Plot the updated prediction scores throughout the perturbation steps of
         the pixel-flipping algorithm to visualize the accuracy of the explanation.
 
