@@ -141,6 +141,7 @@ Selected perturbation mode: {perturb_mode}''')
         :returns: None if should_loop is True, otherwise a generator.
         '''
         # FIXME: Add batch size check as function
+        # FIXME: Verify acc_flip_mask_nhw has same dimensions
         self._batch_size: int = input_nchw.shape[0]
 
         # Store input for comparison at the end.
@@ -269,7 +270,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
               forward_pass: Callable[[torch.Tensor], torch.Tensor],
               flipped_input_nchw: torch.Tensor,
               perturbation_step: int
-              ) -> Tuple[torch.Tensor, List[float]]:
+              ) -> Tuple[torch.Tensor, torch.Tensor]:
         r'''Execute a single iteration of the Region Perturbation algorithm.
 
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
@@ -306,23 +307,32 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             raise NotImplementedError(
                 f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
-        # FIXME: Add batch support.
-        # Store number of flipped pixels before this perturbation step.
-        flipped_pixel_count: int = self.acc_flip_mask_nhw.count_nonzero().item()
+        # Loop for debugging purposes only.
+        for n in range(self._batch_size):
+            # Mask with all pixels previously flipped.
+            old_acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[n]
+            # Mask with pixels flipped only in this perturbation step.
+            mask_hw: torch.Tensor = mask_n1hw.squeeze()[n]
+            # Mask with all pixels flipped as of this perturbation step (including previous flips).
+            new_acc_flip_mask_hw: torch.Tensor = torch.logical_or(
+                old_acc_flip_mask_hw, mask_hw)
 
-        # FIXME: Add batch support.
-        # Squeeze mask to empty channel dimension.
+            # Store number of flipped pixels before this perturbation step.
+            flipped_pixel_count: int = old_acc_flip_mask_hw.count_nonzero().item()
+
+            # Calculate delta of flipped pixels:
+            #   I.e., total number of flipped pixels in this perturbation step
+            #   minus the count of already flipped pixels.
+            flipped_pixel_count = new_acc_flip_mask_hw.count_nonzero().item() - \
+                flipped_pixel_count
+
+            self.logger.info(
+                f'Batch image {n}: Flipped {flipped_pixel_count} pixels.')
+
+        # Squeeze mask to empty channel dimension and convert from (N, 1, H, W) to (N, H, W).
+        mask_nhw: torch.Tensor = mask_n1hw.squeeze()
         self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
-            self.acc_flip_mask_nhw, mask_n1hw.squeeze())
-
-        # FIXME: Add batch support.
-        # Calculate delta of flipped pixels:
-        #   I.e., total number of flipped pixels in this perturbation step
-        #   minus the count of already flipped pixels.
-        flipped_pixel_count = self.acc_flip_mask_nhw.count_nonzero().item() - \
-            flipped_pixel_count
-
-        self.logger.info(f'Flipped {flipped_pixel_count} pixels.')
+            self.acc_flip_mask_nhw, mask_nhw)
 
         # Measure classification accuracy change
         self._measure_class_prediction_score(
@@ -362,6 +372,8 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         '''
 
         for n in range(self._batch_size):
+            plot_kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
+
             # tensor[n] returns an image tensor of shape (C, W, H)
             # unsqueeze adds a new dimension to the tensor to make it of shape (1, C, W, H)
             original_input_1chw: torch.Tensor = self.original_input_nchw[n].unsqueeze(
@@ -377,15 +389,21 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             _, ax = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])
 
             # Plot images.
-            lrp.plot.plot_imagenet(original_input_1chw, ax=ax[0][0])
-            lrp.plot.plot_imagenet(flipped_input_1chw, ax=ax[0][1])
+            lrp.plot.plot_imagenet(
+                original_input_1chw,
+                ax=ax[0][0],
+                show_plot=plot_kwargs['show_plot'])
+
+            lrp.plot.plot_imagenet(
+                flipped_input_1chw,
+                ax=ax[0][1],
+                show_plot=plot_kwargs['show_plot'])
 
             # Plot heatmaps.
-            kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
             lrp.plot.heatmap(relevance_scores_hw.detach().numpy(),
-                             fig=ax[1][0], **kwargs)
+                             fig=ax[1][0], **plot_kwargs)
             # Plot heatmap of perturbed regions.
-            lrp.plot.heatmap(acc_flip_mask_hw, fig=ax[1][1], **kwargs)
+            lrp.plot.heatmap(acc_flip_mask_hw, fig=ax[1][1], **plot_kwargs)
 
             x: int = 75
             y: int = -10
@@ -399,5 +417,3 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
 
             # Show plots.
             plt.show()
-
-    # TODO: Add function to create heatmap of flipped values only with mask
