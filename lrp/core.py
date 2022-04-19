@@ -80,14 +80,14 @@ class LRP:
 
         return None
 
-    def relevance(self, X: torch.Tensor) -> torch.Tensor:
-        r'''Compute relevance for input X by applying Gradient*Input
+    def relevance(self, input_nchw: torch.Tensor) -> torch.Tensor:
+        r'''Compute relevance for input_nchw by applying Gradient*Input
 
         Source: "Algorithm 8 LRP implementation based on forward hooks" in
         "Toward Interpretable Machine Learning: Transparent Deep Neural Networks and Beyond"
 
-        :param X: Input to be explained
-        :returns: Relevance for input X
+        :param input_nchw: Input to be explained
+        :returns: Relevance for input_nchw
         '''
 
         pf.utils._ensure_nchw_format(input_nchw)
@@ -95,7 +95,7 @@ class LRP:
         # Prepare to compute input gradient
         # Reset gradient
         self.model.zero_grad()
-        X.requires_grad = True
+        input_nchw.requires_grad = True
 
         # Set default values for relevance, in case ZBoxrule is not used
         low = high = c2 = c3 = 0
@@ -113,13 +113,13 @@ class LRP:
             high.grad = None
 
         # Reset stored gradients
-        X.grad = None
+        input_nchw.grad = None
 
-        # Compute explanation by storing value of gradient in X.grad.
+        # Compute explanation by storing value of gradient in input_nchw.grad.
         # Only the predicted class is propagated backwards.
         #
         # 1. Compute forward pass
-        forward_pass: torch.Tensor = self.model(X)
+        forward_pass: torch.Tensor = self.model(input_nchw)
 
         # 2. Get index maximum activation in the output layer (index of the predicted class)
         idx: torch.Tensor = forward_pass.max(dim=1).indices
@@ -131,7 +131,7 @@ class LRP:
 
         # 4. One-hot encoding for the predicted class in each sample.
         # This is a mask where the predicted class is True and the rest is False.
-        batch_size: int = X.shape[0]
+        batch_size: int = input_nchw.shape[0]
         number_of_classes: int = forward_pass.shape[1]
         # Init zeros tensor for one-hot encoding
         gradient: torch.Tensor = torch.zeros(batch_size,
@@ -148,10 +148,10 @@ class LRP:
             c2, c3 = low.grad, high.grad
 
         # Compute input gradient
-        c1 = X.grad
+        c1 = input_nchw.grad
 
         # Compute relevance
-        self.relevance_scores_nchw = X * c1 + low * c2 + high * c3
+        self.relevance_scores_nchw = input_nchw * c1 + low * c2 + high * c3
         return self.relevance_scores_nchw.detach()
 
     @staticmethod
