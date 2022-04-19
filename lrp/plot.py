@@ -92,12 +92,11 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_
         ax.axis('off')
         if show_plot:
             plt.show()
-# TODO: Add function to plot relevance scores as tensor, as in lrp.core
 
 
 def heatmap(relevance_scores: numpy.array,
-            width: float,
-            height: float,
+            width: float = 2,
+            height: float = 2,
             fig: Figure = plt,
             show_plot: bool = True,
             dpi: float = 100.0

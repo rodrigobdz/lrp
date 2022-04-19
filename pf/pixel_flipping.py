@@ -335,9 +335,9 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             self.acc_flip_mask_nhw, mask_nhw)
 
         # Measure classification accuracy change
-        self._measure_class_prediction_score(
-            forward_pass, flipped_input_nchw, perturbation_step
-        )
+        self._measure_class_prediction_score(forward_pass,
+                                             flipped_input_nchw,
+                                             perturbation_step)
 
         # return flipped_input_nchw, self.class_prediction_scores_n[..., -1:]
         return flipped_input_nchw, self.class_prediction_scores_n
@@ -345,11 +345,15 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
     def plot_class_prediction_scores(self,
                                      title: str = '',
                                      xlabel: str = '',
-                                     ylabel: str = '') -> None:
+                                     ylabel: str = '',
+                                     show_plot: bool = True) -> None:
         r'''Plot the updated prediction scores throughout the perturbation steps of
         the pixel-flipping algorithm to visualize the accuracy of the explanation.
 
         :param title: Title of the plot.
+        :param xlabel: Label of the x-axis.
+        :param ylabel: Label of the y-axis.
+        :param show_plot: If True, show the plot.
 
         :raises ValueError: If class prediction scores are empty.
         '''
@@ -365,10 +369,13 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             plt.title(title)
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
-            plt.show()
+            if show_plot:
+                plt.show()
 
-    def plot_image_comparison(self) -> None:
+    def plot_image_comparison(self, show_plot: bool = True) -> None:
         r'''Plot the original input and the perturbed input to visualize the changes.
+
+        :param show_plot: If True, show the plot.
         '''
 
         for n in range(self._batch_size):
@@ -415,5 +422,6 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             ax[1][0].text(x, y, 'Relevance scores', size=size)
             ax[1][1].text(x, y, 'Perturbed Regions', size=size)
 
-            # Show plots.
-            plt.show()
+            if show_plot:
+                # Show plots.
+                plt.show()
