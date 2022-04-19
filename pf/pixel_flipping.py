@@ -19,7 +19,7 @@ import torch
 import logging
 import sys
 
-from typing import Generator, Callable, List, Tuple, Union, Optional
+from typing import Generator, Callable, Tuple, Union, Optional
 from matplotlib import pyplot as plt
 
 from .perturbation_modes.random.random_number_generators import RandomNumberGenerator, UniformRNG
