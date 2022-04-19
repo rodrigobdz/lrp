@@ -55,27 +55,30 @@ def grid_plot_imagenet(img_nchw_rgb: torch.Tensor) -> None:
     _show(grid)
 
 
-def plot_imagenet(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> None:
+def plot_imagenet(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_plot: bool = True) -> None:
     r'''Plot an image in NCHW format and RGB color format with ImageNet mean and standard deviance.
 
     Image is converted to [0,1] range first, then plotted.
 
     :param img_nchw_rgb: Images to plot.
     :param ax: Axis to plot on
+    :param show_plot: Show plot or not
     '''
     return lrp.plot.plot_tensor_img_nchw_rgb(
-        lrp.norm.ImageNetNorm.inverse_normalize(img_nchw_rgb),
-        ax
+        img_nchw_rgb=lrp.norm.ImageNetNorm.inverse_normalize(img_nchw_rgb),
+        ax=ax,
+        show_plot=show_plot
     )
 
 
-def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> None:
+def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_plot: bool = True) -> None:
     r'''Plot an image as a tensor in NCHW format with RGB color format using matplotlib.
 
     "valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers)."
 
     :param img_nchw_rgb: Images to plot
     :param ax: Axis to plot on (default: plt)
+    :param show_plot: Show plot or not
     '''
 
     if img_nchw_rgb.dim() != 4:
@@ -89,7 +92,8 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt) -> No
         # Plot image
         ax.imshow(img_hwc_rgb)
         ax.axis('off')
-        plt.show()
+        if show_plot:
+            plt.show()
 # TODO: Add function to plot relevance scores as tensor, as in lrp.core
 
 
