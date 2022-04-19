@@ -16,10 +16,10 @@ import torch
 
 def flip_random(input_nchw: torch.Tensor,
                 mask_n1hw: torch.Tensor,
-                perturbation_size: Union[int, Tuple[int]],
                 ran_num_gen: RandomNumberGenerator,
                 low: float,
                 high: float,
+                perturbation_size: Union[int, Tuple[int]],
                 logger: Optional[logging.Logger] = None) -> torch.Tensor:
     r'''Flip pixels of image in-place according to the relevance scores with
     perturbation technique random.
@@ -29,12 +29,14 @@ def flip_random(input_nchw: torch.Tensor,
 
     :param input_nchw: Image to be flipped in NCHW format.
     :param mask_n1hw: Mask to select which pixels to flip in CHW format.
-    :param perturbation_size: Size of the region to flip. Used to determine the number of random values to generate.
     A size of 1 corresponds to single pixels, whereas a tuple to patches.
 
     :param ran_num_gen: Random number generator to use.
     :param low: Lower bound of the range of values to be flipped.
     :param high: Upper bound of the range of values to be flipped.
+
+    Unused parameter:
+    :param perturbation_size: Size of the region to flip. Used to determine the number of random values to generate.
 
     :param logger: Logger instance to be used to print to console.
 
