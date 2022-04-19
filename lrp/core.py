@@ -12,6 +12,7 @@ __status__ = 'Development'
 from typing import Union, Dict, List, Tuple, Optional
 import torch
 import copy
+import pf.utils
 from . import rules, builtin, plot
 
 
@@ -88,6 +89,9 @@ class LRP:
         :param X: Input to be explained
         :returns: Relevance for input X
         '''
+
+        pf.utils._ensure_nchw_format(input_nchw)
+
         # Prepare to compute input gradient
         # Reset gradient
         self.model.zero_grad()
@@ -154,10 +158,11 @@ class LRP:
     def heatmap(relevance_scores_nchw: torch.Tensor, width: int = 4, height: int = 4) -> None:
         r'''Create heatmap of relevance
 
-        :param R: Relevance tensor with N3HW format
+        :param relevance_scores_nchw: Relevance tensor with N3HW format
         :param width: Width of heatmap
         :param height: Height of heatmap
         '''
+        pf.utils._ensure_nchw_format(relevance_scores_nchw)
         # Convert each heatmap from 3-channel to 1-channel.
         # Channel dimension is now omitted.
         r_nhw = relevance_scores_nchw.sum(dim=1)

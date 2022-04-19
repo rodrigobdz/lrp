@@ -16,6 +16,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 from pf.convert_img import arr_chw_to_hwc
+import pf.utils
 import lrp.plot
 import torchvision.transforms.functional
 
@@ -81,9 +82,7 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_
     :param show_plot: Show plot or not
     '''
 
-    if img_nchw_rgb.dim() != 4:
-        raise ValueError(
-            f'Image tensor must be 4D and have NCHW format. Got dimensions {img_nchw_rgb.dim()}D and shape {img_nchw_rgb.shape}.')
+    pf.utils._ensure_nchw_format(img_nchw_rgb)
 
     for img_chw_rgb in img_nchw_rgb:
         # Convert from NCHW to HWC format and from tensor to numpy array.

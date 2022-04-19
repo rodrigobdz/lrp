@@ -140,8 +140,8 @@ Selected perturbation mode: {perturb_mode}''')
 
         :returns: None if should_loop is True, otherwise a generator.
         '''
-        # FIXME: Add batch size check as function
-        # FIXME: Verify acc_flip_mask_nhw has same dimensions
+        utils._ensure_nchw_format(input_nchw)
+        utils._verify_batch_size(input_nchw, relevance_scores_nchw)
         self._batch_size: int = input_nchw.shape[0]
 
         # Store input for comparison at the end.
