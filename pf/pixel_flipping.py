@@ -19,7 +19,7 @@ import torch
 import logging
 import sys
 
-from typing import Generator, Callable, Tuple, Union, Optional
+from typing import Generator, Callable, Tuple, Union, Optional, List
 from matplotlib import pyplot as plt
 
 from .perturbation_modes.random.random_number_generators import RandomNumberGenerator, UniformRNG
@@ -27,6 +27,7 @@ from .perturbation_modes.random.flip import flip_random
 from .perturbation_modes.inpainting.flip import flip_inpainting
 from .perturbation_modes.constants import PerturbModes
 from .objectives import sort
+from .metrics import area_over_the_pertubation_curve, area_under_the_curve
 from . import utils
 from .decorators import timer
 from lrp import norm
@@ -364,33 +365,71 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
-        for class_prediction_scores in self.class_prediction_scores_n:
-            plt.plot(class_prediction_scores)
-            plt.title(title)
-            plt.xlabel(xlabel)
-            plt.ylabel(ylabel)
-            if show_plot:
-                plt.show()
+        mean_class_prediction_scores_n: torch.Tensor = torch.mean(
+            self.class_prediction_scores_n, dim=0)
 
-    def plot_image_comparison(self, show_plot: bool = True) -> None:
-        r'''Plot the original input and the perturbed input to visualize the changes.
+        for image_index, class_prediction_scores in enumerate(self.class_prediction_scores_n):
+            plt.plot(class_prediction_scores,
+                     label=f'Image {image_index}')
 
+        auc: float = area_under_the_curve(
+            mean_class_prediction_scores_n.detach().numpy()
+        )
+        aopc: float = area_over_the_pertubation_curve(
+            mean_class_prediction_scores_n.detach().numpy()
+        )
+        plt.plot(mean_class_prediction_scores_n,
+                 label=f'Mean\nAOPC={aopc}\nAUC={auc}', linewidth=5, alpha=0.5)
+
+        x: List[int] = range(len(mean_class_prediction_scores_n))
+        plt.fill_between(x=x,
+                         y1=mean_class_prediction_scores_n,
+                         facecolor='#eafff5',
+                         alpha=0.5)
+
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        # Add padding for better alignment of (sup)title
+        # Source: https://stackoverflow.com/a/45161551
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+        plt.legend(loc='upper right')
+        if show_plot:
+            plt.show()
+
+    @staticmethod
+    def _plot_image_comparison(batch_size: int,
+                               original_input_nchw: torch.Tensor,
+                               flipped_input_nchw: torch.Tensor,
+                               relevance_scores_nchw: torch.Tensor,
+                               acc_flip_mask_nhw: torch.Tensor,
+                               show_plot: bool = True) -> None:
+        r'''Plot the original and flipped input images alongside the relevance scores
+        of the pixels that were flipped.
+
+        :param batch_size: Batch size of the input images.
+        :param original_input_nchw: Original input images.
+        :param flipped_input_nchw: Flipped input images.
+        :param relevance_scores_nchw: Relevance scores of the pixels that were flipped.
+        :param acc_flip_mask_nhw: Mask of pixels that were flipped.
         :param show_plot: If True, show the plot.
         '''
 
-        for n in range(self._batch_size):
-            plot_kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
+        # Show plot must be False here to display image grid.
+        plot_kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
+        for n in range(batch_size):
 
             # tensor[n] returns an image tensor of shape (C, W, H)
             # unsqueeze adds a new dimension to the tensor to make it of shape (1, C, W, H)
-            original_input_1chw: torch.Tensor = self.original_input_nchw[n].unsqueeze(
+            original_input_1chw: torch.Tensor = original_input_nchw[n].unsqueeze(
                 0)
-            flipped_input_1chw: torch.Tensor = self.flipped_input_nchw[n].unsqueeze(
+            flipped_input_1chw: torch.Tensor = flipped_input_nchw[n].unsqueeze(
                 0)
             # sum along the channel dimension to convert from (C, W, H) to (W, H)
-            relevance_scores_hw: torch.Tensor = self.relevance_scores_nchw[n].sum(
+            relevance_scores_hw: torch.Tensor = relevance_scores_nchw[n].sum(
                 dim=0)
-            acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[n]
+            acc_flip_mask_hw: torch.Tensor = acc_flip_mask_nhw[n]
 
             # Create grid of original and perturbed images.
             _, ax = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])
@@ -425,3 +464,15 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             if show_plot:
                 # Show plots.
                 plt.show()
+
+    def plot_image_comparison(self, show_plot: bool = True) -> None:
+        r'''Plot the original input and the perturbed input to visualize the changes.
+
+        :param show_plot: If True, show the plot.
+        '''
+        PixelFlipping._plot_image_comparison(batch_size=self._batch_size,
+                                             original_input_nchw=self.original_input_nchw,
+                                             flipped_input_nchw=self.flipped_input_nchw,
+                                             relevance_scores_nchw=self.relevance_scores_nchw,
+                                             acc_flip_mask_nhw=self.acc_flip_mask_nhw,
+                                             show_plot=show_plot)
