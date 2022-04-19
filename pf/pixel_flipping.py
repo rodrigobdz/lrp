@@ -370,7 +370,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
 
         for image_index, class_prediction_scores in enumerate(self.class_prediction_scores_n):
             plt.plot(class_prediction_scores,
-                     label=f'Image {image_index}')
+                     color='lightgrey')
 
         auc: float = area_under_the_curve(
             mean_class_prediction_scores_n.detach().numpy()
@@ -379,17 +379,28 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             mean_class_prediction_scores_n.detach().numpy()
         )
         plt.plot(mean_class_prediction_scores_n,
-                 label=f'Mean\nAOPC={aopc}\nAUC={auc}', linewidth=5, alpha=0.5)
+                 label=f'Mean',
+                 linewidth=5,
+                 alpha=0.9,
+                 color='black')
 
         x: List[int] = range(len(mean_class_prediction_scores_n))
         plt.fill_between(x=x,
                          y1=mean_class_prediction_scores_n,
-                         facecolor='#eafff5',
-                         alpha=0.5)
+                         y2=plt.ylim()[1],
+                         facecolor='thistle',
+                         label=f'AOPC={aopc}',
+                         alpha=0.2)
+        plt.fill_between(x=x,
+                         y1=mean_class_prediction_scores_n,
+                         facecolor='wheat',
+                         label=f'AUC={auc}',
+                         alpha=0.2)
 
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        plt.margins(0, tight=True)
         # Add padding for better alignment of (sup)title
         # Source: https://stackoverflow.com/a/45161551
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
