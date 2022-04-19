@@ -45,37 +45,40 @@ def flip_random(input_nchw: torch.Tensor,
     if not logger:
         logger = logging.getLogger(__name__)
 
-    # FIXME: Add batch support.
-    # Convert mask from (1, H, W) to (C, H, W) where C is the number of channels in the image.
-    # Expanding a tensor does not allocate new memory.
-    expanded_mask_n1hw: torch.Tensor = mask_n1hw.expand(input_nchw[0].shape)
+    batch_size: int = input_nchw.shape[0]
 
-    logger.debug(f'Expanded mask has shape {expanded_mask_n1hw.shape}.')
+    # Loop over all images and masks in batch
+    for n in range(batch_size):
+        mask_1hw: torch.Tensor = mask_n1hw[n]
+        input_chw: torch.Tensor = input_nchw[n]
 
-    # Draw a random number.
-    # Size of perturbation/patch is NxN, where N is perturbation_size.
-    flip_value: float = ran_num_gen.draw(
-        low=low, high=high, size=perturbation_size**2)
+        # Convert mask from (1, H, W) to (C, H, W) where C is the number of channels in the image.
+        # Expanding a tensor does not allocate new memory.
+        # Expanding a tensor basically duplicates tensor C times.
+        expanded_mask_chw: torch.Tensor = mask_1hw.expand(input_chw.shape)
 
-    # Compute indices selected for flipping in mask.
-    flip_indices = mask_n1hw.nonzero().flatten().tolist()
-    # Count how many elements are set to True—i.e., would be flipped.
-    flip_count: int = input_nchw[0][expanded_mask_n1hw].count_nonzero().item()
-    logger.debug(
-        f'Flipping X[0]{flip_indices} to {flip_value}: {flip_count} element(s).')
+        logger.debug(f'Expanded mask has shape {expanded_mask_chw.shape}.')
 
-    # Error handling during flipping.
-    # FIXME: Remove this check to vectorize operation
-    # DEBUG: Check what happens when flip_count is greater than one.
-    # It seems like the mask_generator returns the mask repeatedly for #simultaneous flips times.
-    if flip_count != 3:
+        # Draw a random number.
+        # Size of perturbation/patch is NxN, where N is perturbation_size.
+        flip_value: float = ran_num_gen.draw(low=low,
+                                             high=high)
+
+        # TODO: Add parameter size for generating n multiple random numbers.
+        # The following line is part of the changes required to support multiple random numbers.
+        #  size=perturbation_size**2)
+
+        # Compute indices selected for flipping in mask.
+        flip_indices = mask_n1hw.nonzero().flatten().tolist()
+        # Count how many elements are set to True—i.e., would be flipped.
+        flip_count: int = input_chw[expanded_mask_chw].count_nonzero().item()
         logger.debug(
-            f'''Flip count {flip_count} is not one. The mask is flipping more than one element.''')
+            f'Flipping input_chw{flip_indices} to {flip_value}: {flip_count} element(s).')
 
-    # Flip pixels/patch
-    # Disable gradient computation for the pixel-flipping operations.
-    # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
-    with torch.no_grad():
-        input_nchw[0][expanded_mask_n1hw] = flip_value
+        # Flip pixels/patch in-place. Changes are reflected in input_nchw.
+        # Disable gradient computation for the pixel-flipping operations.
+        # Avoid error "A leaf Variable that requires grad is being used in an in-place operation."
+        with torch.no_grad():
+            input_chw[expanded_mask_chw] = flip_value
 
     return input_nchw
