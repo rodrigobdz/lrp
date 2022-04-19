@@ -26,13 +26,13 @@ import multiprocessing
 
 # Experiment parameters
 NUMBER_OF_BATCHES: int = 1
-BATCH_SIZE: int = 10  # multiprocessing.cpu_count()
-PERTURBATION_STEPS: int = 15
+BATCH_SIZE: int = 25  # multiprocessing.cpu_count()
+PERTURBATION_STEPS: int = 100
 CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 9
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc/batch-size-{BATCH_SIZE}'
 DPI: float = 150
 # Toggle for plt.show() for each figure
 SHOW_PLOT: bool = False
@@ -141,9 +141,10 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
                                              flipped_input_nchw=flipped_input_1chw,
                                              relevance_scores_nchw=relevance_scores_1chw,
                                              acc_flip_mask_nhw=acc_flip_mask_1hw,
-                                             show_plot=SHOW_PLOT)
+                                             show_plot=SHOW_PLOT,
+                                             title=title)
 
-        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-pixel-flipping-image-comparison-{BATCH_SIZE}.png'
+        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-pixel-flipping-image-comparison.png'
         # Facecolor sets the background color of the figure, in this case to color white
         plt.savefig(filename, dpi=DPI, facecolor='w')
         plt.close()
@@ -241,7 +242,7 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
 
 
 if __name__ == "__main__":
-    print(f'Batch size = {BATCH_SIZE} = # CPUs available')
+    print(f'Batch size = {BATCH_SIZE}')
 
     dataloader: torch.utils.data.DataLoader = imagenet_data_loader(root=DATASET_ROOT,
                                                                    batch_size=BATCH_SIZE,
