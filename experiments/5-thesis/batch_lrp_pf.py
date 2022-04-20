@@ -25,8 +25,8 @@ import multiprocessing
 
 
 # LRP hyperparameters
-GAMMA = 0.001
-EPSILON = 0.25
+GAMMA = 0.0001
+EPSILON = 1
 
 # Experiment parameters
 NUMBER_OF_BATCHES: int = 1
@@ -36,7 +36,7 @@ CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 9
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/gamma-{GAMMA}'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/composite-gamma-{GAMMA}-epsilon-{EPSILON}'
 DPI: float = 150
 # Toggle for plt.show() for each figure
 SHOW_PLOT: bool = False
