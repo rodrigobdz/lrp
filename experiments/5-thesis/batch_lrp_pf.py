@@ -24,6 +24,10 @@ import torch
 import multiprocessing
 
 
+# LRP hyperparameters
+GAMMA = 0.001
+EPSILON = 0.25
+
 # Experiment parameters
 NUMBER_OF_BATCHES: int = 1
 BATCH_SIZE: int = 25  # multiprocessing.cpu_count()
@@ -32,7 +36,7 @@ CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 9
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc/batch-size-{BATCH_SIZE}/gamma-0.0001'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc/batch-size-{BATCH_SIZE}/gamma-{GAMMA}'
 DPI: float = 150
 # Toggle for plt.show() for each figure
 SHOW_PLOT: bool = False
@@ -182,9 +186,9 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     name_map = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
                  {'low': low, 'high': high}),
                 (filter_by_layer_index_type(lambda n: 1 <= n <= 16), LrpGammaRule,
-                 {'gamma': 0.001}),
+                 {'gamma': GAMMA}),
                 (filter_by_layer_index_type(lambda n: 17 <= n <= 30), LrpEpsilonRule,
-                 {'epsilon': 0.25}),
+                 {'epsilon': EPSILON}),
                 (filter_by_layer_index_type(lambda n: 31 <= n), LrpZeroRule,
                  {}), ]
 
