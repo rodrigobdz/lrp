@@ -32,7 +32,7 @@ CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 9
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc/batch-size-{BATCH_SIZE}'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc/batch-size-{BATCH_SIZE}/gamma-0.0001'
 DPI: float = 150
 # Toggle for plt.show() for each figure
 SHOW_PLOT: bool = False
@@ -141,8 +141,7 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
                                              flipped_input_nchw=flipped_input_1chw,
                                              relevance_scores_nchw=relevance_scores_1chw,
                                              acc_flip_mask_nhw=acc_flip_mask_1hw,
-                                             show_plot=SHOW_PLOT,
-                                             title=title)
+                                             show_plot=SHOW_PLOT)
 
         filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-pixel-flipping-image-comparison.png'
         # Facecolor sets the background color of the figure, in this case to color white
@@ -176,12 +175,14 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     filter_by_layer_index_type: LayerFilter = LayerFilter(model)
     filter_by_layer_index_type.set_target_types(vgg16_target_types)
 
+    # TODO: Export to configure as parameter and run script with multiple values.
+    # TODO: Save values of name map to file to reconstruct parameters used.
     name_map: List[Tuple[List[str], rules.LrpRule,
                          Dict[str, Union[torch.Tensor, float]]]]
     name_map = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
                  {'low': low, 'high': high}),
                 (filter_by_layer_index_type(lambda n: 1 <= n <= 16), LrpGammaRule,
-                 {'gamma': 0.25}),
+                 {'gamma': 0.001}),
                 (filter_by_layer_index_type(lambda n: 17 <= n <= 30), LrpEpsilonRule,
                  {'epsilon': 0.25}),
                 (filter_by_layer_index_type(lambda n: 31 <= n), LrpZeroRule,
