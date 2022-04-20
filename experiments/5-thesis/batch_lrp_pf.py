@@ -25,8 +25,8 @@ import multiprocessing
 
 
 # LRP hyperparameters
-GAMMA = 0.0001
-EPSILON = 1
+# GAMMA = 0.0001
+# EPSILON = 1
 
 # Experiment parameters
 NUMBER_OF_BATCHES: int = 1
@@ -36,7 +36,7 @@ CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 9
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/composite-gamma-{GAMMA}-epsilon-{EPSILON}'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
 DPI: float = 150
 # Toggle for plt.show() for each figure
 SHOW_PLOT: bool = False
@@ -185,12 +185,14 @@ def run_lrp_experiment(image_batch: torch.Tensor,
                          Dict[str, Union[torch.Tensor, float]]]]
     name_map = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
                  {'low': low, 'high': high}),
-                (filter_by_layer_index_type(lambda n: 1 <= n <= 16), LrpGammaRule,
-                 {'gamma': GAMMA}),
-                (filter_by_layer_index_type(lambda n: 17 <= n <= 30), LrpEpsilonRule,
-                 {'epsilon': EPSILON}),
-                (filter_by_layer_index_type(lambda n: 31 <= n), LrpZeroRule,
-                 {}), ]
+                (filter_by_layer_index_type(lambda n: 1 <= n <= 10), LrpGammaRule,
+                 {'gamma': 0.5}),
+                (filter_by_layer_index_type(lambda n: 11 <= n <= 17), LrpGammaRule,
+                 {'gamma': 0.25}),
+                (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
+                 {'gamma': 0.1}),
+                (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
+                 {'gamma': 0}), ]
 
     lrp_instance: LRP = LRP(model)
     lrp_instance.convert_layers(name_map)
