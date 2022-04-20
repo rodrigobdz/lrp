@@ -36,7 +36,7 @@ CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 9
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/lrp-pf-auc/batch-size-{BATCH_SIZE}/gamma-{GAMMA}'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/gamma-{GAMMA}'
 DPI: float = 150
 # Toggle for plt.show() for each figure
 SHOW_PLOT: bool = False
