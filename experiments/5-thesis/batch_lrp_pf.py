@@ -216,9 +216,6 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
     :param relevance_scores_nchw: Relevance scores of the LRP experiment
     :param batch_index: Index of the batch
     '''
-    # TODO: Compare predicted classes with ground truth and warn in plots and console.
-    # ground_truth_labels == lrp_instance.predicted_class_indices[:, 1]
-
     pf_instance: PixelFlipping = PixelFlipping(perturbation_steps=PERTURBATION_STEPS,
                                                perturbation_size=PERTURBATION_SIZE,
                                                perturb_mode=PerturbModes.INPAINTING)
@@ -230,8 +227,8 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
     # difference between flips.
     # Access the score of predicted classes in every image in batch.
     forward_pass: Callable[[torch.Tensor], float] = lambda input_nchw: lrp_instance.model(input_nchw)[
-        lrp_instance.predicted_class_indices[:, 0],
-        lrp_instance.predicted_class_indices[:, 1]
+        lrp_instance.explained_class_indices[:, 0],
+        lrp_instance.explained_class_indices[:, 1]
     ]
 
     # Run Pixel-Flipping algorithm

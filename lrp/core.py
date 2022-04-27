@@ -29,7 +29,7 @@ class LRP:
         self.name_map: List[Tuple[List[str], rules.LrpRule,
                                   Dict[str, Union[torch.Tensor, float]]]] = []
         self.relevance_scores_nchw: Optional[torch.Tensor] = None
-        self.predicted_class_indices: Optional[torch.Tensor] = None
+        self.explained_class_indices: Optional[torch.Tensor] = None
 
     def convert_layers(self, name_map:
                        List[
@@ -131,7 +131,7 @@ class LRP:
         stacked_idx: torch.Tensor = torch.stack((i, idx), dim=1)
 
         # Indices of selected classes are particularly useful for Pixel-Flipping algorithm.
-        self.predicted_class_indices = stacked_idx
+        self.explained_class_indices = stacked_idx
 
         # 4. One-hot encoding for the predicted class in each sample.
         # This is a mask where the predicted class is True and the rest is False.
