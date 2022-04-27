@@ -75,6 +75,10 @@ def _plot_image_comparison(batch_size: int,
         ax[1][0].text(x, y, 'Relevance scores', size=size)
         ax[1][1].text(x, y, 'Perturbed Regions', size=size)
 
+        # tight_layout automatically adjusts subplot params so that subplot(s) fits into the figure area.
+        plt.rcParams["savefig.bbox"] = 'tight'
+        plt.tight_layout()
+
         if show_plot:
             # Show plots.
             plt.show()
