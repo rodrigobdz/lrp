@@ -142,7 +142,8 @@ class LRP:
                                              number_of_classes,
                                              dtype=torch.bool)
         # Set the predicted class to True
-        gradient[stacked_idx[:, 0], stacked_idx[:, 1]] = True
+        gradient[self.explained_class_indices[:, 0],
+                 self.explained_class_indices[:, 1]] = True
 
         # 5. Compute gradient of output layer for the predicted class of each sample.
         forward_pass.backward(gradient=gradient)
