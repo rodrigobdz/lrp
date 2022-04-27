@@ -12,7 +12,7 @@ from pf.perturbation_modes.constants import PerturbModes
 from lrp.core import LRP
 from lrp.zennit.types import AvgPool, Linear
 from lrp.filter import LayerFilter
-from lrp.rules import LrpZBoxRule, LrpGammaRule, LrpEpsilonRule, LrpZeroRule
+from lrp.rules import LrpZBoxRule, LrpGammaRule  # , LrpEpsilonRule, LrpZeroRule
 from data_loader.core import imagenet_data_loader
 from typing import List, Dict, Union, Tuple, Callable
 from matplotlib import pyplot as plt
@@ -21,7 +21,7 @@ import lrp.rules as rules
 import lrp.plot
 import torchvision
 import torch
-import multiprocessing
+# import multiprocessing
 
 
 # LRP hyperparameters
