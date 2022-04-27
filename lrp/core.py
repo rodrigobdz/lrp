@@ -81,13 +81,26 @@ class LRP:
 
         return None
 
-    def relevance(self, input_nchw: torch.Tensor) -> torch.Tensor:
+    def relevance(self,
+                  input_nchw: torch.Tensor,
+                  label_idx_n: Optional[torch.Tensor] = None) -> torch.Tensor:
         r'''Compute relevance for input_nchw by applying Gradient*Input
 
         Source: "Algorithm 8 LRP implementation based on forward hooks" in
         "Toward Interpretable Machine Learning: Transparent Deep Neural Networks and Beyond"
 
         :param input_nchw: Input to be explained
+        :param label_idx_n: Labels to be explained corresponding to input_nchw
+
+            The labels are used in case a specific class should be explained instead of
+            the class corresponding to the neuron with the highest activation score.
+            The tensor should have one dimension with n labels as int, where n is batch size.
+            The label is the index of the class to be explained.
+            Example for a single-element batch:
+
+            # Explain first class
+            label_idx_n = torch.tensor([0])
+
         :returns: Relevance for input_nchw
         '''
 
@@ -122,12 +135,20 @@ class LRP:
         # 1. Compute forward pass
         forward_pass: torch.Tensor = self.model(input_nchw)
 
-        # 2. Get index maximum activation in the output layer (index of the predicted class)
-        idx: torch.Tensor = forward_pass.max(dim=1).indices
+        # 2. Get index of classes to be explained
+        idx: torch.Tensor
+        if label_idx_n:
+            # Compute classes passed as argument explicitely
+            idx: torch.Tensor = label_idx_n
+        else:
+            # Get index maximum activation in the output layer (index of the predicted class)
+            idx: torch.Tensor = forward_pass.max(dim=1).indices
 
         # 3. Create new tensor where elements are tuples (i, idx[i]) with i: counter.
-        # Tensor looks like this: [0, 1, ..., len(idx)]
+        # Tensor i looks like this: [0, 1, ..., len(idx)]
         i: torch.Tensor = torch.arange(len(idx))
+        # Tensor stacked_idx looks like this: [(i, idx[i]), (i+1, idx[i+1]), ...],
+        # where i is the counter and idx[i] is the index of the maximum activation in the output layer.
         stacked_idx: torch.Tensor = torch.stack((i, idx), dim=1)
 
         # Indices of selected classes are particularly useful for Pixel-Flipping algorithm.
