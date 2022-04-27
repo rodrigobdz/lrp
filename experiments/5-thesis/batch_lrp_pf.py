@@ -154,11 +154,13 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
 
 
 def run_lrp_experiment(image_batch: torch.Tensor,
-                       batch_index: int) -> Tuple[LRP, torch.Tensor, torch.Tensor]:
+                       batch_index: int,
+                       label_idx_n: torch.Tensor) -> Tuple[LRP, torch.Tensor, torch.Tensor]:
     r'''Run LRP experiment on a batch of images.
 
     :param image_batch: Batch of images
     :param batch_index: Index of the batch
+    :param label_idx_n: Label indices of classes to explain
 
     :return: LRP instance, batch of images, relevance scores
     '''
@@ -196,8 +198,8 @@ def run_lrp_experiment(image_batch: torch.Tensor,
 
     lrp_instance: LRP = LRP(model)
     lrp_instance.convert_layers(name_map)
-    relevance_scores_nchw: torch.Tensor = lrp_instance.relevance(
-        input_nchw)
+    relevance_scores_nchw: torch.Tensor = lrp_instance.relevance(input_nchw=input_nchw,
+                                                                 label_idx_n=label_idx_n)
 
     _plot_lrp_results(relevance_scores_nchw=relevance_scores_nchw,
                       batch_index=batch_index)
@@ -274,7 +276,8 @@ if __name__ == "__main__":
 
         # Run LRP experiment
         lrp_instance, input_nchw, relevance_scores_nchw = run_lrp_experiment(image_batch=image_batch,
-                                                                             batch_index=batch_index)
+                                                                             batch_index=batch_index,
+                                                                             label_idx_n=ground_truth_labels)
 
         # Save relevance scores to file
         torch.save(relevance_scores_nchw,
