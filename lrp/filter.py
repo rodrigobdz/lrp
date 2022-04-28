@@ -8,9 +8,11 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
+from typing import Callable, Dict, List, Optional, Tuple
+
 import torch
+
 from lrp.zennit.core import collect_leaves
-from typing import List, Dict, Tuple, Callable, Optional
 
 
 class LayerFilter:

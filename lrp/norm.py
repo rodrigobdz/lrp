@@ -9,9 +9,10 @@ __status__ = 'Development'
 
 
 from typing import Callable, Union
-from torchvision import transforms
+
 import numpy
 import torch
+from torchvision import transforms
 
 
 class ImageNetNorm:

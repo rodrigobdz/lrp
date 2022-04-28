@@ -7,8 +7,8 @@ __maintainer__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
-import time
 import functools
+import time
 
 
 def timer(func):

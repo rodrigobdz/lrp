@@ -7,20 +7,24 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from pf.pixel_flipping import PixelFlipping
-from pf.perturbation_modes.constants import PerturbModes
-from lrp.core import LRP
-from lrp.zennit.types import AvgPool, Linear
-from lrp.filter import LayerFilter
-from lrp.rules import LrpZBoxRule, LrpGammaRule  # , LrpEpsilonRule, LrpZeroRule
-from data_loader.core import imagenet_data_loader
-from typing import List, Dict, Union, Tuple, Callable
-from matplotlib import pyplot as plt
 from pathlib import Path
-import lrp.rules as rules
-import lrp.plot
-import torchvision
+from typing import Callable, Dict, List, Tuple, Union
+
 import torch
+import torchvision
+from matplotlib import pyplot as plt
+
+import lrp.plot
+import lrp.rules as rules
+from data_loader.core import imagenet_data_loader
+from lrp.core import LRP
+from lrp.filter import LayerFilter
+from lrp.rules import LrpGammaRule  # , LrpEpsilonRule, LrpZeroRule
+from lrp.rules import LrpZBoxRule
+from lrp.zennit.types import AvgPool, Linear
+from pf.perturbation_modes.constants import PerturbModes
+from pf.pixel_flipping import PixelFlipping
+
 # import multiprocessing
 
 

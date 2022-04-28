@@ -8,13 +8,15 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import List, Union, Optional
+import multiprocessing
+import random
+from typing import List, Optional, Union
+
+import numpy
 import torch
 import torchvision
-import multiprocessing
+
 import lrp.norm
-import numpy
-import random
 
 
 def _seed_worker(worker_id: int) -> None:

@@ -11,9 +11,9 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
+import cv2
 import numpy
 import torch
-import cv2
 
 
 def arr_chw_to_hwc(arr_chw: numpy.array) -> numpy.array:

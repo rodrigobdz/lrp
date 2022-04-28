@@ -8,7 +8,7 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from .rules import LrpEpsilonRule, LrpGammaRule, LrpZeroRule, LrpZBoxRule
+from .rules import LrpEpsilonRule, LrpGammaRule, LrpZBoxRule, LrpZeroRule
 from .zennit.types import SubclassMeta
 
 

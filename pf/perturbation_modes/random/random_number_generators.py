@@ -7,8 +7,9 @@ __maintainer__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
-from typing import Generator, Union, Tuple
 from abc import ABC, abstractmethod
+from typing import Generator, Tuple, Union
+
 import numpy
 
 

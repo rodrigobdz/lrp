@@ -10,8 +10,10 @@ __status__ = 'Development'
 
 
 import copy
-import torch
 from typing import Callable, List, Tuple
+
+import torch
+
 from .zennit import core as zennit_core
 
 

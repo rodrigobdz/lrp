@@ -9,9 +9,10 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from torchvision import transforms
 from typing import Generator
+
 import torch
+from torchvision import transforms
 
 
 class PixelFlippingObjectives:
@@ -72,7 +73,7 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
         mask_nhw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
 
         batch_size: int = sorted_values_nm.shape[0]
-        
+
         # Loop over number of sorted value lists (number of images in batch).
         for n in range(batch_size):
             # Extract sorted value at index m for current image at batch index n.

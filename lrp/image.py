@@ -9,8 +9,9 @@ __status__ = 'Development'
 
 
 import cv2
-import torch
 import numpy
+import torch
+
 from . import norm
 
 

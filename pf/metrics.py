@@ -8,8 +8,9 @@ __status__ = 'Development'
 
 
 from typing import List, Union
-import sklearn.metrics
+
 import numpy
+import sklearn.metrics
 
 
 def area_under_the_curve(class_prediction_scores: Union[List[float], numpy.ndarray]) -> float:

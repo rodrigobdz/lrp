@@ -2,7 +2,8 @@ r'''Pixel-Flipping Algorithm for Evaluation of Explanations.
 Also called Region Perturbation when perturbation size is greater than one pixel at once.
 
 Source in Chicago citation format:
-  Samek, Wojciech, Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin, and Klaus-Robert Müller.
+  Samek, Wojciech, Alexander Binder, Grégoire Montavon, Sebastian Lapuschkin,
+  and Klaus-Robert Müller.
   "Evaluating the visualization of what a deep neural network has learned."
   IEEE transactions on neural networks and learning systems 28, no. 11 (2016): 2660-2673.
 '''
@@ -15,22 +16,24 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-import torch
 import logging
 import sys
+from typing import Callable, Generator, List, Optional, Tuple, Union
 
-from typing import Generator, Callable, Tuple, Union, Optional, List
+import torch
 from matplotlib import pyplot as plt
 
-from .perturbation_modes.random.random_number_generators import RandomNumberGenerator, UniformRNG
-from .perturbation_modes.random.flip import flip_random
-from .perturbation_modes.inpainting.flip import flip_inpainting
-from .perturbation_modes.constants import PerturbModes
-from .objectives import sort
-from .metrics import area_over_the_pertubation_curve, area_under_the_curve
-from . import utils, plot
-from .decorators import timer
 from lrp import norm
+
+from . import plot, utils
+from .decorators import timer
+from .metrics import area_over_the_pertubation_curve, area_under_the_curve
+from .objectives import sort
+from .perturbation_modes.constants import PerturbModes
+from .perturbation_modes.inpainting.flip import flip_inpainting
+from .perturbation_modes.random.flip import flip_random
+from .perturbation_modes.random.random_number_generators import (
+    RandomNumberGenerator, UniformRNG)
 
 
 class PixelFlipping:
@@ -61,7 +64,8 @@ class PixelFlipping:
             # Ensure ran_num_gen is only specified when the perturbation technique is random.
         if perturb_mode != PerturbModes.RANDOM and ran_num_gen:
             raise ValueError(
-                f'''Argument ran_num_gen is only available with PerturbModes.RANDOM and should not be passed otherwise.
+                f'''Argument ran_num_gen is only available with PerturbModes.RANDOM and \
+                    should not be passed otherwise.
 Selected perturbation mode: {perturb_mode}''')
 
         # Limit perturbation modes to the ones available in the library.
@@ -120,7 +124,8 @@ Selected perturbation mode: {perturb_mode}''')
 
         :param input_nchw: Input to be explained.
         :param relevance_scores_nchw: Relevance scores.
-        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param forward_pass: Classifier function to measure accuracy change
+            in pixel-flipping iterations.
             It should take an input tensor in NCHW format and return the class prediction
             score of a single class.
             The index in the output layer of the class to be explained should be hardcoded.
@@ -131,8 +136,9 @@ Selected perturbation mode: {perturb_mode}''')
                 # which corresponds to the castle class in ImageNet.
                 # The function assumes that all input images in the batch have the same
                 # class index 483—i.e., are castle images.
-                forward_pass: Callable[[torch.Tensor], torch.Tensor] = lambda input: lrp_instance.model(input)[
-                                                                                                 :][483].item()
+                forward_pass: Callable[
+                    [torch.Tensor],
+                    torch.Tensor] = lambda input: lrp_instance.model(input)[:][483].item()
         :param should_loop: Whether to loop over the generator or not.
 
         :yields: Tuple of flipped input and updated classification score
@@ -155,7 +161,8 @@ Selected perturbation mode: {perturb_mode}''')
         # Input has dimensions (batch_size, channels, height, width).
         # Accumulative mask has dimensions (batch_size, height, width).
         #   .sum(dim=1) is used to reduce the number of channels to 1.
-        #   I.e., to convert from (batch_size, channels, height, width) to (batch_size, height, width).
+        #   I.e., to convert from (batch_size, channels, height, width) to
+        #   (batch_size, height, width).
         self.acc_flip_mask_nhw: torch.Tensor = torch.zeros(
             *input_nchw.shape,
             dtype=torch.bool).sum(dim=1)
@@ -170,11 +177,14 @@ Selected perturbation mode: {perturb_mode}''')
         if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input_nchw):
             raise ValueError(
                 f'''perturbation_size_numel * perturbation_steps =
-{perturbation_size_numel} * {self.perturbation_steps} = {perturbation_size_numel * self.perturbation_steps}
+{perturbation_size_numel} * {self.perturbation_steps} = \
+    {perturbation_size_numel * self.perturbation_steps}
 exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
 
-        pixel_flipping_generator: Generator[Tuple[torch.Tensor, float], None, None] = self._generator(
-            input_nchw, relevance_scores_nchw, forward_pass)
+        pixel_flipping_generator: Generator[
+            Tuple[torch.Tensor, float], None, None] = self._generator(input_nchw,
+                                                                      relevance_scores_nchw,
+                                                                      forward_pass)
 
         # Toggle to return generator or loop automatically over it.
         if not should_loop:
@@ -192,7 +202,8 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         :param input_nchw: Input to be explained.
         :param relevance_scores_nchw: Relevance scores.
 
-        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param forward_pass: Classifier function to measure accuracy change
+                             in pixel-flipping iterations.
 
         :yields: Tuple of flipped input and updated classification score
         after one perturbation step.
@@ -255,7 +266,8 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
                                         perturbation_step: int) -> None:
         r'''Measure class prediction score of input using forward pass.
 
-        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param forward_pass: Classifier function to measure accuracy change
+                             in pixel-flipping iterations.
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
         '''

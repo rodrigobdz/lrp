@@ -7,12 +7,13 @@ __maintainer__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
-from typing import Any, List, Tuple, Callable, Optional
-import torch
+from typing import Any, Callable, List, Optional, Tuple
+
 import torch
 from matplotlib import pyplot as plt
-from pf.convert_img import arr_chw_to_hwc
+
 import lrp.plot
+from pf.convert_img import arr_chw_to_hwc
 
 
 def grid(results: List[Tuple[float, torch.Tensor]],

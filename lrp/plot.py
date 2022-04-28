@@ -10,15 +10,17 @@ __status__ = 'Development'
 
 
 from typing import Sequence
+
 import numpy
 import torch
+import torchvision.transforms.functional
+from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
-from pf.convert_img import arr_chw_to_hwc
-import pf.utils
+
 import lrp.plot
-import torchvision.transforms.functional
+import pf.utils
+from pf.convert_img import arr_chw_to_hwc
 
 
 def _show(imgs: Sequence) -> None:
@@ -44,7 +46,8 @@ def _show(imgs: Sequence) -> None:
 
 
 def grid_plot_imagenet(img_nchw_rgb: torch.Tensor) -> None:
-    r'''Plot a grid of images in NCHW format and RGB color format with ImageNet mean and standard deviance.
+    r'''Plot a grid of images in NCHW format and RGB color format with ImageNet mean and
+    standard deviance.
 
     :param img_nchw_rgb: Images to plot.
     '''
@@ -72,7 +75,9 @@ def plot_imagenet(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_plot: bool 
     )
 
 
-def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_plot: bool = True) -> None:
+def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
+                             ax: Figure = plt,
+                             show_plot: bool = True) -> None:
     r'''Plot an image as a tensor in NCHW format with RGB color format using matplotlib.
 
     "valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers)."

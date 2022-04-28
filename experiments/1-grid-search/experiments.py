@@ -9,14 +9,16 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Callable, Dict, List, Tuple, Union
-from pathlib import Path
 import os.path
 import pickle
-import torch
+from pathlib import Path
+from typing import Callable, Dict, List, Tuple, Union
+
 import numpy
-from lrp.core import LRP
+import torch
+
 from lrp import rules
+from lrp.core import LRP
 
 
 class Experiments:

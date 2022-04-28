@@ -9,11 +9,14 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Union, Dict, List, Tuple, Optional
-import torch
 import copy
+from typing import Dict, List, Optional, Tuple, Union
+
+import torch
+
 import pf.utils
-from . import rules, builtin, plot
+
+from . import builtin, plot, rules
 
 
 class LRP:

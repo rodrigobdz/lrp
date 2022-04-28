@@ -8,10 +8,12 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 
 
-from typing import Tuple, Union, Optional
-from .random_number_generators import RandomNumberGenerator
 import logging
+from typing import Optional, Tuple, Union
+
 import torch
+
+from .random_number_generators import RandomNumberGenerator
 
 
 def flip_random(input_nchw: torch.Tensor,
