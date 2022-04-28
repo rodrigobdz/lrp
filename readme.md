@@ -5,8 +5,15 @@ Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
 ## Requirements
 
 - `python3`
+- `pre-commit`
 
 ## Installation
+
+1. Install `pre-commit` hooks to lint changed files automatically when committing:
+
+   ```sh
+   pre-commit install
+   ```
 
 1. Install python dependencies.
 
@@ -26,6 +33,14 @@ Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
 ## Usage
 
 Refer to [lrp.ipynb](./lrp.ipynb) for an example.
+
+### Lint
+
+Lint all files manually:
+
+```sh
+ pre-commit run --all-files
+```
 
 ## Related Projects
 
@@ -50,6 +65,8 @@ This implementation is based on insights from:
 
 - [ECML/PKDD 2020 Tutorial: Explainable AI for Deep Networks: Basics and Extensions (Part 3)](http://heatmapping.org/slides/2020_ECML_3.pdf)
 
+- The structure of this readme is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme)
+
 ## License
 
-[MIT](LICENSE) © [rodrigobdz](https://github.com/rodrigobdz/).
+[MIT](LICENSE) © [rodrigobdz](https://github.com/rodrigobdz/)
