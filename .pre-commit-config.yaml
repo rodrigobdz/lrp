@@ -27,6 +27,10 @@ repos:
     rev: v2.32.0
     hooks:
       - id: pyupgrade
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.1.1
+    hooks:
+      - id: pydocstyle
   - repo: https://github.com/PyCQA/pylint
     rev: v2.13.7
     hooks:
