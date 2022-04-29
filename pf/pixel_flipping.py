@@ -104,7 +104,7 @@ Selected perturbation mode: {perturb_mode}""")
         self.perturbation_steps: int = perturbation_steps
 
         # Size of the region to flip
-        self.perturbation_size: Union[int, Tuple[int]] = perturbation_size
+        self.perturbation_size: int = perturbation_size
 
         # Name of the perturbation technique
         self.perturb_mode: str = perturb_mode
