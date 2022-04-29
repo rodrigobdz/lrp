@@ -150,6 +150,9 @@ Selected perturbation mode: {perturb_mode}""")
         """
         utils._ensure_nchw_format(input_nchw)
         utils._verify_batch_size(input_nchw, relevance_scores_nchw)
+        utils._ensure_non_overlapping_patches_possible(input_nchw,
+                                                       self.perturbation_size)
+
         self._batch_size: int = input_nchw.shape[0]
 
         # Store input for comparison at the end.
