@@ -31,10 +31,14 @@ repos:
     rev: 6.1.1
     hooks:
       - id: pydocstyle
-  - repo: https://github.com/PyCQA/pylint
-    rev: v2.13.7
+  - repo: local
     hooks:
       - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        require_serial: true
         args: ['--rcfile=.pylintrc']
   - repo: https://github.com/asottile/setup-cfg-fmt
     rev: v1.20.1
