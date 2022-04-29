@@ -2,11 +2,13 @@ r"""Objectives to sort relevance scores in Pixel-Flipping Algorithm.
 Defines the order in which the relevance scores are flipped."""
 
 
+# pylint: disable=duplicate-code
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __credits__ = ['Rodrigo Bermudez Schettino (TU Berlin)']
 __maintainer__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
+# pylint: enable=duplicate-code
 
 
 from typing import Generator

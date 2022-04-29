@@ -1,10 +1,12 @@
 r"""Run LRP and Pixel-Flipping experiments for image batches and save results to file."""
 
+# pylint: disable=duplicate-code
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __credits__ = ['Rodrigo Bermudez Schettino (TU Berlin)']
 __maintainer__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
+# pylint: enable=duplicate-code
 
 
 from pathlib import Path
