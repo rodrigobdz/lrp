@@ -94,8 +94,8 @@ Selected perturbation mode: {perturb_mode}""")
         self._low: Optional[float]
         self._high: Optional[float]
 
-        # Iterator over masks in each perturbation step.
-        self._mask_iter: Generator[torch.Tensor, None, None]
+        # Iterator over flip masks in each perturbation step.
+        self._flip_mask_generator: Generator[torch.Tensor, None, None]
 
         # Store (accumulative) masks applied to flip the input together in a single mask.
         self.acc_flip_mask_nhw: torch.Tensor
@@ -240,11 +240,9 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
             f'Initial classification score {self.class_prediction_scores_n}')
 
         # Contains N one-dimensional lists of relevance scores with m elements. Shape (N, m).
-        sorted_values_nm: torch.Tensor = sort._argsort(relevance_scores_nchw)
-        self._mask_iter: Generator[torch.Tensor, None,
-                                   None] = sort._mask_generator(relevance_scores_nchw,
-                                                                sorted_values_nm,
-                                                                self.perturbation_size)
+        self._flip_mask_generator: Generator[torch.Tensor, None,
+                                             None] = sort._mask_generator(relevance_scores_nchw,
+                                                                          self.perturbation_size)
 
         for perturbation_step in range(self.perturbation_steps):
             # Perturbation step 0 is the original input.
@@ -294,8 +292,8 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
 
         :returns: Tuple of flipped input and updated classification score
         """
-        # Mask to select which pixels to flip.
-        mask_n1hw: torch.Tensor = next(self._mask_iter)
+        # Mask with region selected for flipping.
+        mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
 
         # Flip pixels with respective perturbation technique
         if self.perturb_mode == PerturbModes.RANDOM:
