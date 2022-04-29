@@ -1,5 +1,5 @@
-r'''Composite Layer-wise Relevance Propagation using rules defined by layer
-'''
+r"""Composite Layer-wise Relevance Propagation using rules defined by layer
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -20,13 +20,13 @@ from . import builtin, plot, rules
 
 
 class LRP:
-    r'''Compute relevance propagation using Layer-wise Relevance Propagation algorithm'''
+    r"""Compute relevance propagation using Layer-wise Relevance Propagation algorithm"""
 
     def __init__(self, model: torch.nn.Module) -> None:
-        r'''Prepare model for LRP computation
+        r"""Prepare model for LRP computation
 
         :param model: Model to be explained
-        '''
+        """
         self.model = copy.deepcopy(model)
         self.model.eval()
         self.name_map: List[Tuple[List[str], rules.LrpRule,
@@ -47,10 +47,10 @@ class LRP:
                                Dict[str, Union[torch.Tensor, float]]
                            ]
                        ]) -> None:
-        r'''Add LRP support to layers according to given mapping
+        r"""Add LRP support to layers according to given mapping
 
         :param name_map: List of tuples containing layer names, LRP rule and parameters
-        '''
+        """
 
         self.name_map = name_map
 
@@ -72,11 +72,11 @@ class LRP:
             builtin.rsetattr(self.model, name, lrp_layer)
 
     def mapping(self, name: str) -> Optional[Tuple[rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]]:
-        r'''Get LRP rule and parameters for layer with given name
+        r"""Get LRP rule and parameters for layer with given name
 
         :param name: Layer name
         :return: LRP rule and parameters or None if no rule is found
-        '''
+        """
         for layer_names, rule, rule_kwargs in self.name_map:
             # Apply rule only to layers included in mapping
             if name in layer_names:
@@ -87,7 +87,7 @@ class LRP:
     def relevance(self,
                   input_nchw: torch.Tensor,
                   label_idx_n: Optional[torch.Tensor] = None) -> torch.Tensor:
-        r'''Compute relevance for input_nchw by applying Gradient*Input
+        r"""Compute relevance for input_nchw by applying Gradient*Input
 
         Source: "Algorithm 8 LRP implementation based on forward hooks" in
         "Toward Interpretable Machine Learning: Transparent Deep Neural Networks and Beyond"
@@ -105,7 +105,7 @@ class LRP:
             label_idx_n = torch.tensor([0])
 
         :returns: Relevance for input_nchw
-        '''
+        """
 
         pf.utils._ensure_nchw_format(input_nchw)
 
@@ -185,12 +185,12 @@ class LRP:
 
     @staticmethod
     def heatmap(relevance_scores_nchw: torch.Tensor, width: int = 4, height: int = 4) -> None:
-        r'''Create heatmap of relevance
+        r"""Create heatmap of relevance
 
         :param relevance_scores_nchw: Relevance tensor with N3HW format
         :param width: Width of heatmap
         :param height: Height of heatmap
-        '''
+        """
         pf.utils._ensure_nchw_format(relevance_scores_nchw)
         # Convert each heatmap from 3-channel to 1-channel.
         # Channel dimension is now omitted.

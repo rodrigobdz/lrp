@@ -1,4 +1,4 @@
-r'''Pixel-Flipping Algorithm for Evaluation of Explanations.
+r"""Pixel-Flipping Algorithm for Evaluation of Explanations.
 Also called Region Perturbation when perturbation size is greater than one pixel at once.
 
 Source in Chicago citation format:
@@ -6,7 +6,7 @@ Source in Chicago citation format:
   and Klaus-Robert Müller.
   "Evaluating the visualization of what a deep neural network has learned."
   IEEE transactions on neural networks and learning systems 28, no. 11 (2016): 2660-2673.
-'''
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -37,7 +37,7 @@ from .perturbation_modes.random.random_number_generators import (
 
 
 class PixelFlipping:
-    r'''Pixel-Flipping Algorithm.'''
+    r"""Pixel-Flipping Algorithm."""
 
     def __init__(self,
                  perturbation_steps: int = 100,
@@ -46,7 +46,7 @@ class PixelFlipping:
                  perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
                  ) -> None:
-        r'''Constructor
+        r"""Constructor
 
         :param perturbation_steps: Number of perturbation steps.
         :param perturbation_size: Size of the region to flip.
@@ -55,7 +55,7 @@ class PixelFlipping:
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
 
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
-        '''
+        """
         # Ensure perturbation size is a valid number.
         if perturbation_size < 1:
             raise ValueError(
@@ -64,9 +64,9 @@ class PixelFlipping:
             # Ensure ran_num_gen is only specified when the perturbation technique is random.
         if perturb_mode != PerturbModes.RANDOM and ran_num_gen:
             raise ValueError(
-                f'''Argument ran_num_gen is only available with PerturbModes.RANDOM and \
+                f"""Argument ran_num_gen is only available with PerturbModes.RANDOM and \
                     should not be passed otherwise.
-Selected perturbation mode: {perturb_mode}''')
+Selected perturbation mode: {perturb_mode}""")
 
         # Limit perturbation modes to the ones available in the library.
         if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
@@ -120,7 +120,7 @@ Selected perturbation mode: {perturb_mode}''')
                  forward_pass: Callable[[torch.Tensor], torch.Tensor],
                  should_loop: bool = True
                  ) -> Optional[Generator[Tuple[torch.Tensor, float], None, None]]:
-        r'''Run pixel-flipping algorithm.
+        r"""Run pixel-flipping algorithm.
 
         :param input_nchw: Input to be explained.
         :param relevance_scores_nchw: Relevance scores.
@@ -145,7 +145,7 @@ Selected perturbation mode: {perturb_mode}''')
         after one perturbation step.
 
         :returns: None if should_loop is True, otherwise a generator.
-        '''
+        """
         utils._ensure_nchw_format(input_nchw)
         utils._verify_batch_size(input_nchw, relevance_scores_nchw)
         self._batch_size: int = input_nchw.shape[0]
@@ -176,10 +176,10 @@ Selected perturbation mode: {perturb_mode}''')
         # Verify that number of flips does not exceed the number of elements in the input.
         if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input_nchw):
             raise ValueError(
-                f'''perturbation_size_numel * perturbation_steps =
+                f"""perturbation_size_numel * perturbation_steps =
 {perturbation_size_numel} * {self.perturbation_steps} = \
     {perturbation_size_numel * self.perturbation_steps}
-exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
+exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
 
         pixel_flipping_generator: Generator[
             Tuple[torch.Tensor, float], None, None] = self._generator(input_nchw,
@@ -197,7 +197,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
                    relevance_scores_nchw: torch.Tensor,
                    forward_pass: Callable[[torch.Tensor], torch.Tensor]
                    ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
-        r'''Generator to flip pixels of input according to the relevance scores.
+        r"""Generator to flip pixels of input according to the relevance scores.
 
         :param input_nchw: Input to be explained.
         :param relevance_scores_nchw: Relevance scores.
@@ -211,7 +211,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         Generators are annotated in the format: Generator[YieldType, SendType, ReturnType],
         therefore, SendType and ReturnType are set to None above.
         Source: https://docs.python.org/3/library/typing.html
-        '''
+        """
 
         if self.perturb_mode == PerturbModes.RANDOM:
             # TODO: Add support for custom low and high bounds (random number generation).
@@ -264,13 +264,13 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
                                         forward_pass: Callable[[torch.Tensor], torch.Tensor],
                                         flipped_input_nchw: torch.Tensor,
                                         perturbation_step: int) -> None:
-        r'''Measure class prediction score of input using forward pass.
+        r"""Measure class prediction score of input using forward pass.
 
         :param forward_pass: Classifier function to measure accuracy change
                              in pixel-flipping iterations.
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
-        '''
+        """
         score = forward_pass(flipped_input_nchw).detach()
         self.class_prediction_scores_n[:, perturbation_step] = score
 
@@ -283,14 +283,14 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
               flipped_input_nchw: torch.Tensor,
               perturbation_step: int
               ) -> Tuple[torch.Tensor, torch.Tensor]:
-        r'''Execute a single iteration of the Region Perturbation algorithm.
+        r"""Execute a single iteration of the Region Perturbation algorithm.
 
         :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
 
         :returns: Tuple of flipped input and updated classification score
-        '''
+        """
         # Mask to select which pixels to flip.
         mask_n1hw: torch.Tensor = next(self._mask_iter)
 
@@ -359,7 +359,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
                                      xlabel: str = '',
                                      ylabel: str = '',
                                      show_plot: bool = True) -> None:
-        r'''Plot the updated prediction scores throughout the perturbation steps of
+        r"""Plot the updated prediction scores throughout the perturbation steps of
         the pixel-flipping algorithm to visualize the accuracy of the explanation.
 
         :param title: Title of the plot.
@@ -368,7 +368,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
         :param show_plot: If True, show the plot.
 
         :raises ValueError: If class prediction scores are empty.
-        '''
+        """
 
         # Error handling
         # Check if class prediction scores are empty—i.e., initialized to zeros.
@@ -421,10 +421,10 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).''')
             plt.show()
 
     def plot_image_comparison(self, show_plot: bool = True) -> None:
-        r'''Plot the original input and the perturbed input to visualize the changes.
+        r"""Plot the original input and the perturbed input to visualize the changes.
 
         :param show_plot: If True, show the plot.
-        '''
+        """
         plot._plot_image_comparison(batch_size=self._batch_size,
                                     original_input_nchw=self.original_input_nchw,
                                     flipped_input_nchw=self.flipped_input_nchw,

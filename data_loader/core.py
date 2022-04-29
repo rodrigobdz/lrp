@@ -1,4 +1,4 @@
-r'''Helpers to load datasets and handle them effortlessly.'''
+r"""Helpers to load datasets and handle them effortlessly."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -20,13 +20,13 @@ import lrp.norm
 
 
 def _seed_worker(worker_id: int) -> None:
-    r'''Seed the worker with a random seed.
+    r"""Seed the worker with a random seed.
 
     Function imported from PyTorch tutorial:
       https://pytorch.org/docs/stable/notes/randomness.html#dataloader-workers
 
     :param worker_id: The worker id.
-    '''
+    """
     worker_seed = torch.initial_seed() % 2**32
     numpy.random.seed(worker_seed)
     random.seed(worker_seed)
@@ -35,13 +35,13 @@ def _seed_worker(worker_id: int) -> None:
 def _create_mask_for_single_dataset_class(dataset: torch.utils.data.Dataset,
                                           class_idx_or_name: Union[int, str]
                                           ) -> torch.Tensor:
-    r'''Creates a mask for a specific list of classes, which can be used to filter the dataset.
+    r"""Creates a mask for a specific list of classes, which can be used to filter the dataset.
 
     :param dataset: The dataset.
     :param class_idx_or_name: The class index or name to be included in the mask.
 
     :return: Mask with classes marked as True.
-    '''
+    """
     if not hasattr(dataset, 'class_to_idx') or not hasattr(dataset, 'targets'):
         raise ValueError(
             'The dataset does not have a \'class_to_idx\' or a \'targets\' attribute.')
@@ -61,13 +61,13 @@ def _create_mask_for_single_dataset_class(dataset: torch.utils.data.Dataset,
 
 def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,
                                      classes: Union[List[str], List[int]]) -> torch.Tensor:
-    r'''Creates a mask for a specific list of classes, which can be used to filter the dataset.
+    r"""Creates a mask for a specific list of classes, which can be used to filter the dataset.
 
     :param dataset: The dataset.
     :param classes: The list of classes to be included in the mask.
 
     :return: Mask with classes marked as True.
-    '''
+    """
 
     # Filter which includes only the targets of a certain class in the dataset.
     mask: torch.Tensor = _create_mask_for_single_dataset_class(
@@ -82,12 +82,12 @@ def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,
 
 
 def _imagenet_dataset(root: str) -> torch.utils.data.Dataset:
-    r'''Retrieve the ImageNet dataset.
+    r"""Retrieve the ImageNet dataset.
 
     :param root: The root directory where the dataset is stored.
 
     :return: The ImageNet dataset.
-    '''
+    """
     return torchvision.datasets.ImageNet(root=root,
                                          split='val', transform=lrp.norm.ImageNetNorm.transform)
 
@@ -95,7 +95,7 @@ def _imagenet_dataset(root: str) -> torch.utils.data.Dataset:
 def _data_loader(dataset: torch.utils.data.Dataset,
                  batch_size: int,
                  seed: int = 0) -> torch.utils.data.DataLoader:
-    r'''Returns a data loader for a specific dataset.
+    r"""Returns a data loader for a specific dataset.
 
     Args:
         batch_size (int): The batch size.
@@ -103,7 +103,7 @@ def _data_loader(dataset: torch.utils.data.Dataset,
 
     Returns:
         torch.utils.data.DataLoader: The data loader.
-    '''
+    """
     # Init generator with specific seed for reproducibility.
     generator: torch.Generator = torch.Generator()
     generator.manual_seed(seed)
@@ -121,7 +121,7 @@ def imagenet_data_loader(root: str,
                          classes: Optional[Union[List[str], List[int]]] = None,
                          seed: int = 0
                          ) -> torch.utils.data.DataLoader:
-    r'''Returns a data loader for the ImageNet dataset.
+    r"""Returns a data loader for the ImageNet dataset.
 
     :param root: The root directory where the dataset is stored.
     :param batch_size: Number of images to load in each batch.
@@ -129,7 +129,7 @@ def imagenet_data_loader(root: str,
     :param seed: Seed to use for reproducibility.
 
     :return: ImageNet data loader.
-    '''
+    """
     # Dataset with all classes included.
     dataset: torch.utils.data.Dataset = _imagenet_dataset(root)
 

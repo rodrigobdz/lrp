@@ -1,4 +1,4 @@
-r'''Flipping logic for Pixel-Flipping Algorithm with Perturbation Mode Random.'''
+r"""Flipping logic for Pixel-Flipping Algorithm with Perturbation Mode Random."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -23,7 +23,7 @@ def flip_random(input_nchw: torch.Tensor,
                 high: float,
                 perturbation_size: Union[int, Tuple[int]],
                 logger: Optional[logging.Logger] = None) -> torch.Tensor:
-    r'''Flip pixels of image in-place according to the relevance scores with
+    r"""Flip pixels of image in-place according to the relevance scores with
     perturbation technique random.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
@@ -43,7 +43,7 @@ def flip_random(input_nchw: torch.Tensor,
     :param logger: Logger instance to be used to print to console.
 
     :returns: Flipped image.
-    '''
+    """
     # Error handling for missing or wrong parameters
     # Initialize logger, if not provided.
     if not logger:

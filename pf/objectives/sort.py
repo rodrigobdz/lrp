@@ -1,5 +1,5 @@
-r'''Objectives to sort relevance scores in Pixel-Flipping Algorithm.
-Defines the order in which the relevance scores are flipped.'''
+r"""Objectives to sort relevance scores in Pixel-Flipping Algorithm.
+Defines the order in which the relevance scores are flipped."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -16,12 +16,12 @@ from torchvision import transforms
 
 
 class PixelFlippingObjectives:
-    r'''Objectives for Pixel-Flipping Algorithm.'''
+    r"""Objectives for Pixel-Flipping Algorithm."""
     MORF: str = 'Most Relevant First'
 
 
 def _argsort(relevance_scores_nchw: torch.Tensor, objective: str = PixelFlippingObjectives.MORF) -> torch.Tensor:
-    r'''Generator function that sorts relevance scores in order defined by objective.
+    r"""Generator function that sorts relevance scores in order defined by objective.
 
     :param relevance_scores_nchw: Relevance scores in NCHW format.
     :param objective: Sorting order for relevance scores.
@@ -29,7 +29,7 @@ def _argsort(relevance_scores_nchw: torch.Tensor, objective: str = PixelFlipping
     :returns: Sorted relevance scores as a tensor with N one-dimensional lists,
               one for each image in the batch of size and each list with m elements,
               m is # relevance scores for each image. Shape is (N, m).
-    '''
+    """
 
     if objective != PixelFlippingObjectives.MORF:
         raise NotImplementedError(f'Objective {objective} not supported.')
@@ -52,7 +52,7 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
                     sorted_values_nm: torch.Tensor,
                     perturbation_size: int
                     ) -> Generator[torch.Tensor, None, None]:
-    r'''Generator function that creates masks with one or multiple pixels selected for flipping
+    r"""Generator function that creates masks with one or multiple pixels selected for flipping
     at a time from the order in which they are sorted.
 
     :param relevance_scores_nchw: Relevance scores in NCHW format.
@@ -65,7 +65,7 @@ def _mask_generator(relevance_scores_nchw: torch.Tensor,
     The patches for region perturbation (perturbation_size > 1) are overlapping.
 
     :yields: Mask in N1HW (1-channel) format to flip pixels/patches input in order specified by sorted_values_nm.
-    '''
+    """
 
     # Loop over number of elements in each individual list of sorted values.
     for m in range(sorted_values_nm.shape[1]):

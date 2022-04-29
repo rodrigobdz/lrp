@@ -1,6 +1,6 @@
-r'''Constants for perturbation techniques available for Pixel-Flipping and
+r"""Constants for perturbation techniques available for Pixel-Flipping and
 Region Perturbation Algorithms.
-'''
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -11,8 +11,8 @@ __status__ = 'Development'
 
 
 class PerturbModes:
-    r'''Constants for perturbation techniques available for Pixel-Flipping
+    r"""Constants for perturbation techniques available for Pixel-Flipping
     and Region Perturbation Algorithms.
-    '''
+    """
     RANDOM: str = 'Random sampling'
     INPAINTING: str = 'Inpainting'

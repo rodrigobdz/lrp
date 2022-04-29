@@ -1,5 +1,5 @@
-r'''Image pre-processing and handling
-'''
+r"""Image pre-processing and handling
+"""
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __credits__ = ['Rodrigo Bermudez Schettino (TU Berlin)']
@@ -16,13 +16,13 @@ from . import norm
 
 
 def load_img_norm_zero_one(path: str) -> numpy.array:
-    r'''Load image with pixel values [0, 255] and normalize to [0, 1]
+    r"""Load image with pixel values [0, 255] and normalize to [0, 1]
 
     Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb
 
     :param path: Path to the image
     :returns: Normalized image
-    '''
+    """
     # Returns image as numpy array with HWC format in BGR color space (not RGB) and with pixel values in [0, 255]
     img_bgr_hwc = cv2.imread(path)
 
@@ -38,7 +38,7 @@ def load_img_norm_zero_one(path: str) -> numpy.array:
 
 
 def img_to_tensor(img_nhwc: numpy.array) -> torch.Tensor:
-    r'''Convert image as numpy.array to tensor
+    r"""Convert image as numpy.array to tensor
 
     Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and zennit
     Add new axis to simulate batch dimension of size 1.
@@ -54,5 +54,5 @@ def img_to_tensor(img_nhwc: numpy.array) -> torch.Tensor:
     :param img_nhwc: Image to be converted
 
     :returns: Tensor with image data
-    '''
+    """
     return torch.FloatTensor(img_nhwc[numpy.newaxis].transpose([0, 3, 1, 2]) * 1)

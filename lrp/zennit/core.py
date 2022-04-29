@@ -1,5 +1,5 @@
-r'''Imported methods from zennit's core.py with customizations.
-'''
+r"""Imported methods from zennit's core.py with customizations.
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -15,13 +15,13 @@ import torch
 
 
 def stabilize(dividend: torch.Tensor, epsilon: float = 1e-6):
-    r'''Ensure dividend is not zero, thus, guarantee safe division.
+    r"""Ensure dividend is not zero, thus, guarantee safe division.
 
     :param dividend:
     :param epsilon: Epsilon value to add to dividend to avoid division by zero
 
     :returns: Non-zero value
-    '''
+    """
     # Numerical instability happens if no heuristic is used, as shown here:
     # return dividend + epsilon
 
@@ -30,7 +30,7 @@ def stabilize(dividend: torch.Tensor, epsilon: float = 1e-6):
 
 
 def mod_params(module: torch.nn.Module, modifier: Callable, param_keys: List[str] = None):
-    r'''Modify parameter attributes (all by default) of a module.
+    r"""Modify parameter attributes (all by default) of a module.
 
     Source: https://github.com/chr5tphr/zennit/blob/6251a9e17aa31c3381799de92f92b1d259b392b2/zennit/core.py#L45-L90
     It omits require_params and context_manager.
@@ -41,7 +41,7 @@ def mod_params(module: torch.nn.Module, modifier: Callable, param_keys: List[str
         A function used to modify parameter attributes. If param_keys is empty, this is not used.
     :param param_keys: List of parameter keys to modify
         If None (default), all parameters are modified (which may be none). If [], no parameters are modified and modifier is ignored.
-    '''
+    """
     if param_keys is None:
         param_keys = [name for name,
                       _ in module.named_parameters(recurse=False)]
@@ -54,7 +54,7 @@ def mod_params(module: torch.nn.Module, modifier: Callable, param_keys: List[str
 
 
 def collect_leaves(module: torch.nn.Module) -> List[torch.nn.Module]:
-    '''Generator function to collect all leaf modules of a module.
+    """Generator function to collect all leaf modules of a module.
 
     Parameters
     ----------
@@ -65,7 +65,7 @@ def collect_leaves(module: torch.nn.Module) -> List[torch.nn.Module]:
     ------
     leaf: obj:`torch.nn.Module`
         Either a leaf of the module structure, or the module itself if it has no children.
-    '''
+    """
     is_leaf = True
 
     children = module.children()

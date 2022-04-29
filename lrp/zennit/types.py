@@ -15,12 +15,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this library. If not, see <https://www.gnu.org/licenses/>.
-r'''Type definitions for convenience.'''
+r"""Type definitions for convenience."""
 import torch
 
 
 class SubclassMeta(type):
-    '''Meta class to bundle multiple subclasses.'''
+    """Meta class to bundle multiple subclasses."""
     def __instancecheck__(cls, inst):
         """Implement isinstance(inst, cls) as subclasscheck."""
         return cls.__subclasscheck__(type(inst))
@@ -32,7 +32,7 @@ class SubclassMeta(type):
 
 
 class ConvolutionTranspose(metaclass=SubclassMeta):
-    '''Abstract base class that describes transposed convolutional modules.'''
+    """Abstract base class that describes transposed convolutional modules."""
     __subclass__ = (
         torch.nn.modules.conv.ConvTranspose1d,
         torch.nn.modules.conv.ConvTranspose2d,
@@ -41,7 +41,7 @@ class ConvolutionTranspose(metaclass=SubclassMeta):
 
 
 class ConvolutionStandard(metaclass=SubclassMeta):
-    '''Abstract base class that standard (forward) convolutional modules.'''
+    """Abstract base class that standard (forward) convolutional modules."""
     __subclass__ = (
         torch.nn.modules.conv.Conv1d,
         torch.nn.modules.conv.Conv2d,
@@ -50,7 +50,7 @@ class ConvolutionStandard(metaclass=SubclassMeta):
 
 
 class Convolution(metaclass=SubclassMeta):
-    '''Abstract base class that describes all convolutional modules.'''
+    """Abstract base class that describes all convolutional modules."""
     __subclass__ = (
         ConvolutionStandard,
         ConvolutionTranspose,
@@ -58,7 +58,7 @@ class Convolution(metaclass=SubclassMeta):
 
 
 class Linear(metaclass=SubclassMeta):
-    '''Abstract base class that describes linear modules.'''
+    """Abstract base class that describes linear modules."""
     __subclass__ = (
         Convolution,
         torch.nn.modules.linear.Linear,
@@ -66,7 +66,7 @@ class Linear(metaclass=SubclassMeta):
 
 
 class BatchNorm(metaclass=SubclassMeta):
-    '''Abstract base class that describes batch normalization modules.'''
+    """Abstract base class that describes batch normalization modules."""
     __subclass__ = (
         torch.nn.modules.batchnorm.BatchNorm1d,
         torch.nn.modules.batchnorm.BatchNorm2d,
@@ -75,7 +75,7 @@ class BatchNorm(metaclass=SubclassMeta):
 
 
 class AvgPool(metaclass=SubclassMeta):
-    '''Abstract base class that describes sum-pooling modules.'''
+    """Abstract base class that describes sum-pooling modules."""
     __subclass__ = (
         torch.nn.modules.pooling.AvgPool1d,
         torch.nn.modules.pooling.AvgPool2d,
@@ -87,7 +87,7 @@ class AvgPool(metaclass=SubclassMeta):
 
 
 class Activation(metaclass=SubclassMeta):
-    '''Abstract base class that describes activation modules.'''
+    """Abstract base class that describes activation modules."""
     __subclass__ = (
         torch.nn.modules.activation.ELU,
         torch.nn.modules.activation.Hardshrink,

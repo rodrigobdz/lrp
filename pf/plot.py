@@ -1,5 +1,5 @@
-r'''Plotting library
-'''
+r"""Plotting library
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -20,7 +20,7 @@ def _plot_image_comparison(batch_size: int,
                            relevance_scores_nchw: torch.Tensor,
                            acc_flip_mask_nhw: torch.Tensor,
                            show_plot: bool = True) -> None:
-    r'''Plot the original and flipped input images alongside the relevance scores
+    r"""Plot the original and flipped input images alongside the relevance scores
     of the pixels that were flipped.
 
     :param batch_size: Batch size of the input images.
@@ -29,7 +29,7 @@ def _plot_image_comparison(batch_size: int,
     :param relevance_scores_nchw: Relevance scores of the pixels that were flipped.
     :param acc_flip_mask_nhw: Mask of pixels that were flipped.
     :param show_plot: If True, show the plot.
-    '''
+    """
 
     # Show plot must be False here to display image grid.
     plot_kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}

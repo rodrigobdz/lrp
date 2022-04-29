@@ -1,5 +1,5 @@
-r'''Built-in extensions
-'''
+r"""Built-in extensions
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -13,7 +13,7 @@ from typing import Any
 
 
 def rsetattr(obj: object, name: str, value: Any, sep: str = '.') -> None:
-    r'''(Recursively) set attribute of an object with (nested) name dynamically.
+    r"""(Recursively) set attribute of an object with (nested) name dynamically.
     Compared to setattr, it supports nested attributes, which is needed to solve this issue:
     https://discuss.pytorch.org/t/access-replace-layer-using-its-name-string/105925
 
@@ -32,7 +32,7 @@ def rsetattr(obj: object, name: str, value: Any, sep: str = '.') -> None:
     :param value: Value to be assigned to the attribute
 
     :raises NotImplementedError: If attributes have a nested level deeper than one.
-    '''
+    """
     # Count recursion level in name
     n: int = name.count(sep)
 

@@ -1,4 +1,4 @@
-r'''Interface for simplified access to Random Number Generators.'''
+r"""Interface for simplified access to Random Number Generators."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -14,33 +14,33 @@ import numpy
 
 
 class RandomNumberGenerator(ABC):
-    r'''
+    r"""
     Base random number generator class. Acts as interface for number generator classes.
-    '''
+    """
 
     def __init__(self,
                  seed: int = 0):
-        '''
+        """
         Constructor
 
         :param seed: Seed for the random number generator.
-        '''
+        """
         self.generator: Generator = numpy.random.default_rng(seed=seed)
 
     @abstractmethod
     def draw(self) -> float:
-        r'''
+        r"""
         Draws a random number from the distribution.
-        '''
+        """
 
 
 class UniformRNG(RandomNumberGenerator):
-    r'''
+    r"""
     Uniform random number generator class.
-    '''
+    """
 
     def draw(self, low: float = 0.0, high: float = 1.0) -> float:
-        r'''
+        r"""
         Draws a random number from the distribution.
 
         The lower and upper bounds are inclusive.
@@ -50,6 +50,6 @@ class UniformRNG(RandomNumberGenerator):
         :param size: Number of random numbers to draw.
 
         :returns: A random number from the uniform distribution.
-        '''
+        """
         # TODO: Add parameter size for generating n multiple random numbers.
         return self.generator.uniform(low, high)

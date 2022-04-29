@@ -1,5 +1,5 @@
-r'''LRP rules
-'''
+r"""LRP rules
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -18,16 +18,16 @@ from .zennit import core as zennit_core
 
 
 class LrpRule(torch.nn.Module):
-    r'''Base class for LRP rules'''
+    r"""Base class for LRP rules"""
 
     def __init__(
         self, layer: torch.nn.Module, param_modifiers: List[Tuple[str, Callable]]
     ) -> None:
-        r'''
+        r"""
         :param layer: Layer to be modified
         :param param_modifiers: Tuples of (layer_name, modifier)
                 A new layer will be created for each layer_name with modifier applied
-        '''
+        """
         super().__init__()
         self.layer: torch.nn.Module = layer
 
@@ -44,12 +44,12 @@ class LrpRule(torch.nn.Module):
     def forward_mod_gradient(
         self, z: torch.Tensor, output: torch.Tensor
     ) -> torch.Tensor:
-        r'''Modifies the gradient of the layer while keeping the output unchanged.
+        r"""Modifies the gradient of the layer while keeping the output unchanged.
         The resulting gradient returns the relevance scores of LRP when invoking automatic differentiation.
 
         :param z: Input to the layer
         :return: result of original forward function
-        '''
+        """
         # Heuristic used in lrp-tutorial stabilizes both z occurrences (multiplier and denominator):
         # return zennit_core.stabilize(z) * (output / zennit_core.stabilize(z)).detach()
 
@@ -60,18 +60,18 @@ class LrpRule(torch.nn.Module):
 
 
 class _LrpGenericRule(LrpRule):
-    r'''Generic LRP rule
+    r"""Generic LRP rule
 
     Source: 10.2 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
-    '''
+    """
 
     def __init__(self, layer: torch.nn.Module, epsilon: float, gamma: float) -> None:
-        r'''Define parameter modifiers for the layer
+        r"""Define parameter modifiers for the layer
 
         :param layer: Layer to be modified
         :param epsilon: Epsilon value for LRP rule with same name
         :param gamma: Gamma value for LRP rule with same name
-        '''
+        """
         param_modifiers: List[Tuple[str, Callable]] = [
             ('copy_layer', lambda _, param: param + gamma * param.clamp(min=0))
         ]
@@ -79,11 +79,11 @@ class _LrpGenericRule(LrpRule):
         super().__init__(layer, param_modifiers)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
-        r'''Forward passes on layer and copy layer
+        r"""Forward passes on layer and copy layer
 
         :param X: Input to the layer
         :returns: Output of the layer with modified gradient
-        '''
+        """
         output: torch.Tensor = self.layer.forward(X)
         z: torch.Tensor = self.epsilon + self.copy_layer.forward(X)
 
@@ -91,52 +91,52 @@ class _LrpGenericRule(LrpRule):
 
 
 class LrpZeroRule(_LrpGenericRule):
-    r'''LRP-0 rule
+    r"""LRP-0 rule
     Source: 10.1 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
-    '''
+    """
 
     def __init__(self, layer: torch.nn.Module) -> None:
-        r'''
+        r"""
         :param layer: Layer to be modified
-        '''
+        """
         super().__init__(layer, epsilon=0, gamma=0)
 
 
 class LrpEpsilonRule(_LrpGenericRule):
-    r'''LRP-ε rule
+    r"""LRP-ε rule
     Source: 10.1 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
-    '''
+    """
 
     def __init__(self, layer: torch.nn.Module, epsilon: float) -> None:
-        r'''
+        r"""
         :param layer: Layer to be modified
         :param epsilon: Epsilon value for LRP rule with same name
-        '''
+        """
         super().__init__(layer, epsilon, gamma=0)
 
 
 class LrpGammaRule(_LrpGenericRule):
-    r'''LRP-γ rule
+    r"""LRP-γ rule
     Source: 10.1 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
-    '''
+    """
 
     def __init__(self, layer: torch.nn.Module, gamma: float) -> None:
-        r'''
+        r"""
         :param layer: Layer to be modified
         :param gamma: Gamma value for LRP rule with same name
-        '''
+        """
         super().__init__(layer, epsilon=0, gamma=gamma)
 
 
 class LrpZBoxRule(LrpRule):
-    r'''LRP-Z-Box rule
+    r"""LRP-Z-Box rule
     Source: Algorithm 7 in Appendix B section A. in https://arxiv.org/abs/2003.07631v1
-    '''
+    """
 
     def __init__(
         self, layer: torch.nn.Module, low: torch.Tensor, high: torch.Tensor
     ) -> None:
-        r'''Define parameter modifiers for the layer
+        r"""Define parameter modifiers for the layer
 
         Excerpt from the paper:
         "The functions f1+ and f1− are forward passes on copies of the first layer whose parameters
@@ -145,7 +145,7 @@ class LrpZBoxRule(LrpRule):
         :param layer: Layer to be modified
         :param low: Tensor with lowest pixel values in the image
         :param high: Tensors with highest pixel values in the image
-        '''
+        """
         param_modifiers = [
             ('low_layer', lambda _, param: param.clamp(min=0)),
             ('high_layer', lambda _, param: param.clamp(max=0)),
@@ -161,10 +161,10 @@ class LrpZBoxRule(LrpRule):
         self.high.requires_grad = True
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
-        r'''Forward passes on layer and low and high layers
+        r"""Forward passes on layer and low and high layers
 
         :param X: Input to the layer
-        '''
+        """
         output: torch.Tensor = self.layer.forward(X)
         z_low: torch.Tensor = self.low_layer.forward(self.low)
         z_high: torch.Tensor = self.high_layer.forward(self.high)

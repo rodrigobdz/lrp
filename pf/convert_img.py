@@ -1,7 +1,7 @@
-r'''Transforms for images between libraries.
+r"""Transforms for images between libraries.
 
 Considers RGB/BGR and channel order and NCHW/NHWC formats.
-'''
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -17,27 +17,27 @@ import torch
 
 
 def arr_chw_to_hwc(arr_chw: numpy.array) -> numpy.array:
-    r'''Convert numpy array from CHW to HWC format.
+    r"""Convert numpy array from CHW to HWC format.
 
     :param arr_chw: numpy array to be converted.
 
     :returns: numpy array in HWC format.
-    '''
+    """
     return arr_chw.transpose((1, 2, 0))
 
 
 def arr_hwc_to_chw(arr_hwc: numpy.array) -> numpy.array:
-    r'''Convert numpy array from HWC to CHW format.
+    r"""Convert numpy array from HWC to CHW format.
 
     :param arr_hwc: numpy array to be converted.
 
     :returns: numpy array in CHW format.
-    '''
+    """
     return arr_hwc.transpose((2, 0, 1))
 
 
 def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
-    r'''Convert image as numpy array to torch tensor.
+    r"""Convert image as numpy array to torch tensor.
     Operations performed:
         Convert color format from BGR to RGB.
         Convert from HWC to CHW format.
@@ -45,7 +45,7 @@ def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
     :param img_bgr_hwc: Numpy array with image with HWC format and BGR color format to be converted.
 
     :returns: A torch tensor with CHW format and RGB color format.
-    '''
+    """
     if not isinstance(img_bgr_hwc, numpy.ndarray):
         raise TypeError('Input must be a numpy array.')
 
@@ -58,7 +58,7 @@ def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
 
 
 def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
-    r'''Convert image as torch tensor to numpy array.
+    r"""Convert image as torch tensor to numpy array.
     Operations performed:
         Convert from CHW to HWC format.
         Convert color format from RGB to BGR.
@@ -67,7 +67,7 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
     :param grayscale: Whether to convert skip color conversions because image has only one channel.
 
     :returns: A numpy array with HWC format and BGR color format.
-    '''
+    """
     if not isinstance(img_rgb_chw, torch.Tensor):
         raise TypeError('Input must be a torch tensor.')
 
@@ -86,7 +86,7 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
 
 
 def tensor_to_opencv_inpainting(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
-    r'''Convert tensor to numpy array with requirements for inpainting with OpenCV.
+    r"""Convert tensor to numpy array with requirements for inpainting with OpenCV.
     Operations performed:
         Ensure image is in CPU memory before any operation.
         Type-cast to 8-bit integers required by OpenCV's inpainting function.
@@ -95,7 +95,7 @@ def tensor_to_opencv_inpainting(img_rgb_chw: torch.Tensor, grayscale=False) -> n
     :param grayscale: Whether to convert skip color conversions because image has only one channel.
 
     :returns: Numpy array with image in HWC format and BGR color format.
-    '''
+    """
     if not isinstance(img_rgb_chw, torch.Tensor):
         raise TypeError('Input must be a torch tensor.')
 

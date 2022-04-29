@@ -1,5 +1,5 @@
-r'''Experiments-related functions for convenience.
-'''
+r"""Experiments-related functions for convenience.
+"""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -22,21 +22,21 @@ from lrp.core import LRP
 
 
 class Experiments:
-    r'''Boilerplatte code for preparing the experiments and avoid repetition
-    '''
+    r"""Boilerplatte code for preparing the experiments and avoid repetition
+    """
 
     def __init__(self,
                  model: torch.nn.Module,
                  X: torch.Tensor,
                  name_map: List[Tuple[List[str], rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]],
                  output_dir_path: str) -> None:
-        r'''Store base variables
+        r"""Store base variables
 
         :param model: Model to be explained
         :param X: Input data
         :param name_map: List of tuples containing layer names and LRP rule
         :param output_dir_path: Path to directory where artifacts will be stored
-        '''
+        """
         self.model = model
         self.X = X
         self.name_map = name_map
@@ -47,7 +47,7 @@ class Experiments:
                                          name_map_hyperparam_setter: Callable[[
                                              float], None]
                                          ) -> List[Tuple[float, torch.Tensor]]:
-        r'''Compute multiple LRP relevances for a given set of hyperparameters.
+        r"""Compute multiple LRP relevances for a given set of hyperparameters.
         Cache the results in a file or load cached results, if possible.
         Stores the passed hyperparameters in a file for reference.
 
@@ -55,7 +55,7 @@ class Experiments:
         :param name_map_hyperparam_setter: Function to set missing hyperparameters
 
         :return: List of tuples containing hyperparameter and relevance
-        '''
+        """
         cache_filename = f'{self.output_dir_path}/results.pickle'
 
         # Check if cached results already exist and return these

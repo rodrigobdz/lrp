@@ -1,4 +1,4 @@
-r'''Decorators (mostly) for debugging functions.'''
+r"""Decorators (mostly) for debugging functions."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -12,10 +12,10 @@ import time
 
 
 def timer(func):
-    r'''Print the elapsed runtime of the decorated function.
+    r"""Print the elapsed runtime of the decorated function.
 
     :param func: Function to be decorated.
-    '''
+    """
     @functools.wraps(func)
     def wrapper_timer(*args, **kwargs):
         start_time = time.perf_counter()    # 1
@@ -28,10 +28,10 @@ def timer(func):
 
 
 def debug(func):
-    r'''Print the function signature and return value.
+    r"""Print the function signature and return value.
 
     :param func: Function to be decorated.
-    '''
+    """
     @functools.wraps(func)
     def wrapper_debug(*args, **kwargs):
         args_repr = [repr(a) for a in args]                      # 1

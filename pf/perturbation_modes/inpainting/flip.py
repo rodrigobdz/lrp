@@ -1,4 +1,4 @@
-r'''Flipping logic for Pixel-Flipping Algorithm with Perturbation Mode Inpainting.'''
+r"""Flipping logic for Pixel-Flipping Algorithm with Perturbation Mode Inpainting."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -21,7 +21,7 @@ from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 def flip_inpainting(input_nchw: torch.Tensor,
                     mask_n1hw: torch.Tensor,
                     logger: Optional[logging.Logger] = None) -> torch.Tensor:
-    r'''Flip pixels of image (not in-place) according to the relevance scores with
+    r"""Flip pixels of image (not in-place) according to the relevance scores with
     perturbation technique random.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
@@ -35,7 +35,7 @@ def flip_inpainting(input_nchw: torch.Tensor,
     :rasises ValueError: If input_nchw and mask_n1hw do not have the same batch size.
 
     :returns: Flipped image.
-    '''
+    """
     # Error handling for missing or wrong parameters
     # Initialize logger, if not provided.
     if not logger:

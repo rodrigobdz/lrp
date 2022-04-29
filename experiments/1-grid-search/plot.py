@@ -1,4 +1,4 @@
-r'''Grid plotting function for grid search experiments.'''
+r"""Grid plotting function for grid search experiments."""
 
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -27,7 +27,7 @@ def grid(results: List[Tuple[float, torch.Tensor]],
          figsize: List[int] = [10, 10],
          alpha: float = 0.2
          ) -> None:
-    r'''Plot the results of the hyperparameter grid search.
+    r"""Plot the results of the hyperparameter grid search.
 
     Source: https://stackoverflow.com/a/46616645
 
@@ -40,7 +40,7 @@ def grid(results: List[Tuple[float, torch.Tensor]],
     :param param_print: Function to print the parameter value
     :param figsize: Figure size
     :param alpha: Alpha value for the reference image
-    '''
+    """
 
     # Settings
     grid_rows, grid_cols = gridsize

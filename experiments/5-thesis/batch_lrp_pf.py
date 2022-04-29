@@ -1,4 +1,4 @@
-r'''Run LRP and Pixel-Flipping experiments for image batches and save results to file.'''
+r"""Run LRP and Pixel-Flipping experiments for image batches and save results to file."""
 
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
 __credits__ = ['Rodrigo Bermudez Schettino (TU Berlin)']
@@ -64,12 +64,12 @@ torch.manual_seed(SEED)
 def _save_image_batch(image_batch: torch.Tensor,
                       batch_index: int,
                       suffix: str = '') -> None:
-    r'''Plot the image batch and save results to file.
+    r"""Plot the image batch and save results to file.
 
     :param image_batch: Image batch
     :param batch_index: Index of the batch
     :param suffix: Prefix for the filename
-    '''
+    """
     for image_index, image_chw in enumerate(image_batch):
         image_1chw: torch.Tensor = image_chw.unsqueeze(dim=0)
         lrp.plot.plot_imagenet(image_1chw, show_plot=SHOW_PLOT)
@@ -82,11 +82,11 @@ def _save_image_batch(image_batch: torch.Tensor,
 
 def _plot_lrp_results(relevance_scores_nchw: torch.Tensor,
                       batch_index: int) -> None:
-    r'''Plot the results of the LRP experiment and save results to file.
+    r"""Plot the results of the LRP experiment and save results to file.
 
     :param relevance_scores_nchw: Relevance scores of the LRP experiment
     :param batch_index: Index of the batch
-    '''
+    """
 
     # Convert each heatmap from 3-channel to 1-channel.
     # Channel dimension is now omitted.
@@ -108,19 +108,19 @@ def _plot_lrp_results(relevance_scores_nchw: torch.Tensor,
 
 def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
                                  batch_index: int) -> None:
-    r'''Plot the results of the pixel flipping experiment and save results to file.
+    r"""Plot the results of the pixel flipping experiment and save results to file.
 
     :param pf_instance: Pixel flipping instance with experiment results
     :param batch_index: Index of the batch
-    '''
+    """
 
     # Plot classification scores throughout perturbation steps
-    title: str = f'''Region Perturbation
+    title: str = f"""Region Perturbation
         Perturbation steps: {pf_instance.perturbation_steps}
         Perturbation size: {pf_instance.perturbation_size}x{pf_instance.perturbation_size}
         Perturbation mode: {pf_instance.perturb_mode}
         Batch size: {pf_instance._batch_size}
-        Batch index/Total number of batches: {batch_index+1}/{NUMBER_OF_BATCHES}'''
+        Batch index/Total number of batches: {batch_index+1}/{NUMBER_OF_BATCHES}"""
     xlabel: str = 'Perturbation step'
     ylabel: str = 'Classification score'
 
@@ -160,14 +160,14 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
 def run_lrp_experiment(image_batch: torch.Tensor,
                        batch_index: int,
                        label_idx_n: torch.Tensor) -> Tuple[LRP, torch.Tensor, torch.Tensor]:
-    r'''Run LRP experiment on a batch of images.
+    r"""Run LRP experiment on a batch of images.
 
     :param image_batch: Batch of images
     :param batch_index: Index of the batch
     :param label_idx_n: Label indices of classes to explain
 
     :return: LRP instance, batch of images, relevance scores
-    '''
+    """
     input_nchw: torch.Tensor = image_batch.to(DEVICE)
 
     model = torchvision.models.vgg16(pretrained=True)
@@ -215,13 +215,13 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
                                   input_nchw: torch.Tensor,
                                   relevance_scores_nchw: torch.Tensor,
                                   batch_index: int) -> None:
-    r'''Run the pixel flipping experiment.
+    r"""Run the pixel flipping experiment.
 
     :param lrp_instance: LRP instance
     :param input_nchw: Input image
     :param relevance_scores_nchw: Relevance scores of the LRP experiment
     :param batch_index: Index of the batch
-    '''
+    """
     pf_instance: PixelFlipping = PixelFlipping(perturbation_steps=PERTURBATION_STEPS,
                                                perturbation_size=PERTURBATION_SIZE,
                                                perturb_mode=PerturbModes.INPAINTING)
