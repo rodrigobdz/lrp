@@ -10,7 +10,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 from abc import ABC, abstractmethod
-from typing import Generator, Tuple, Union
+from typing import Generator
 
 import numpy
 

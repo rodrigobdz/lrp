@@ -287,7 +287,8 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
               ) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Execute a single iteration of the Region Perturbation algorithm.
 
-        :param forward_pass: Classifier function to measure accuracy change in pixel-flipping iterations.
+        :param forward_pass: Classifier function to measure accuracy change in
+                             pixel-flipping iterations.
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
 
@@ -392,7 +393,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
             mean_class_prediction_scores_n.detach().numpy()
         )
         plt.plot(mean_class_prediction_scores_n,
-                 label=f'Mean',
+                 label='Mean',
                  linewidth=5,
                  alpha=0.9,
                  color='black')
