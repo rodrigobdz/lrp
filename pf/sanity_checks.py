@@ -10,7 +10,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 import torch
-import utils
+from . import utils
 
 
 def ensure_nchw_format(input_nchw: torch.Tensor) -> None:
@@ -110,17 +110,16 @@ def verify_perturbation_args(input_nchw: torch.Tensor,
 
     :raises ValueError: If the perturbation arguments are invalid.
     """
-    # Count number of pixels affected by the perturbation.
-    #
-    # If perturbation size is one, then we only need to flip one pixel.
-    # Otherwise, we need to flip a patch of size nxn = # affected pixels.
-    perturbation_size_numel: int = perturbation_size**2
+    verify_square_input(input_nchw)
 
-    # TODO: Add sanity check for perturbation_steps according to perturbation_size
-    # Verify that number of flips does not exceed the number of elements in the input.
-    if (perturbation_size_numel * perturbation_steps) > torch.numel(input_nchw):
-        raise ValueError(
-            f"""perturbation_size_numel * perturbation_steps =
-  {perturbation_size_numel} * {perturbation_steps} = \
-      {perturbation_size_numel * perturbation_steps}
-  exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
+    _, width = utils.get_height_width(input_nchw)
+
+    # FIXME: Calculation is only valid if a patch is removed each step.
+    # Get number of patches per image.
+    num_patches_per_img: int = width // perturbation_size
+    max_num_patches: int = num_patches_per_img * num_patches_per_img
+    max_perturbation_steps: int = max_num_patches
+
+    if perturbation_steps > max_perturbation_steps:
+        raise ValueError(f"""Perturbation steps ({perturbation_steps}) cannot be greater than
+the maximum number of steps ({max_perturbation_steps}).""")
