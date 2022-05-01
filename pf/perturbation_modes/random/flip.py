@@ -15,6 +15,8 @@ from typing import Optional, Tuple, Union
 
 import torch
 
+from pf import utils
+
 from .random_number_generators import RandomNumberGenerator
 
 
@@ -51,7 +53,7 @@ def flip_random(input_nchw: torch.Tensor,
     if not logger:
         logger = logging.getLogger(__name__)
 
-    batch_size: int = input_nchw.shape[0]
+    batch_size: int =utils.get_batch_size(input_nchw=input_nchw)
 
     # Loop over all images and masks in batch
     for n in range(batch_size):

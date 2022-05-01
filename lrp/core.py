@@ -1,5 +1,4 @@
-r"""Composite Layer-wise Relevance Propagation using rules defined by layer
-"""
+r"""Composite Layer-wise Relevance Propagation using rules defined by layer"""
 
 
 # pylint: disable=duplicate-code
@@ -16,13 +15,14 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 
+import pf.sanity_checks
 import pf.utils
 
 from . import builtin, plot, rules
 
 
 class LRP:
-    r"""Compute relevance propagation using Layer-wise Relevance Propagation algorithm"""
+    r"""Compute relevance propagation using Layer-wise Relevance Propagation algorithm."""
 
     def __init__(self, model: torch.nn.Module) -> None:
         r"""Prepare model for LRP computation
@@ -49,7 +49,7 @@ class LRP:
                                Dict[str, Union[torch.Tensor, float]]
                            ]
                        ]) -> None:
-        r"""Add LRP support to layers according to given mapping
+        r"""Add LRP support to layers according to given mapping.
 
         :param name_map: List of tuples containing layer names, LRP rule and parameters
         """
@@ -74,7 +74,7 @@ class LRP:
             builtin.rsetattr(self.model, name, lrp_layer)
 
     def mapping(self, name: str) -> Optional[Tuple[rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]]:
-        r"""Get LRP rule and parameters for layer with given name
+        r"""Get LRP rule and parameters for layer with given name.
 
         :param name: Layer name
         :return: LRP rule and parameters or None if no rule is found
@@ -89,7 +89,7 @@ class LRP:
     def relevance(self,
                   input_nchw: torch.Tensor,
                   label_idx_n: Optional[torch.Tensor] = None) -> torch.Tensor:
-        r"""Compute relevance for input_nchw by applying Gradient*Input
+        r"""Compute relevance for input_nchw by applying Gradient*Input.
 
         Source: "Algorithm 8 LRP implementation based on forward hooks" in
         "Toward Interpretable Machine Learning: Transparent Deep Neural Networks and Beyond"
@@ -108,8 +108,8 @@ class LRP:
 
         :returns: Relevance for input_nchw
         """
-
-        pf.utils.ensure_nchw_format(input_nchw)
+        pf.sanity_checks.ensure_nchw_format(input_nchw)
+        pf.sanity_checks.verify_square_input(input_nchw)
 
         # Prepare to compute input gradient
         # Reset gradient
@@ -161,7 +161,7 @@ class LRP:
 
         # 4. One-hot encoding for the predicted class in each sample.
         # This is a mask where the predicted class is True and the rest is False.
-        batch_size: int = input_nchw.shape[0]
+        batch_size: int = pf.utils.get_batch_size(input_nchw=input_nchw)
         number_of_classes: int = forward_pass.shape[1]
         # Init zeros tensor for one-hot encoding
         gradient: torch.Tensor = torch.zeros(batch_size,
@@ -187,13 +187,13 @@ class LRP:
 
     @staticmethod
     def heatmap(relevance_scores_nchw: torch.Tensor, width: int = 4, height: int = 4) -> None:
-        r"""Create heatmap of relevance
+        r"""Create heatmap of relevance.
 
         :param relevance_scores_nchw: Relevance tensor with N3HW format
         :param width: Width of heatmap
         :param height: Height of heatmap
         """
-        pf.utils.ensure_nchw_format(relevance_scores_nchw)
+        pf.sanity_checks.ensure_nchw_format(relevance_scores_nchw)
         # Convert each heatmap from 3-channel to 1-channel.
         # Channel dimension is now omitted.
         r_nhw = relevance_scores_nchw.sum(dim=1)

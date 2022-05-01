@@ -27,7 +27,7 @@ from matplotlib import pyplot as plt
 
 from lrp import norm
 
-from . import plot, utils, sanity_checks
+from . import plot, sanity_checks, utils
 from .decorators import timer
 from .metrics import area_over_the_pertubation_curve, area_under_the_curve
 from .objectives import sort
@@ -149,6 +149,7 @@ Selected perturbation mode: {perturb_mode}""")
         :returns: None if should_loop is True, otherwise a generator.
         """
         sanity_checks.ensure_nchw_format(input_nchw)
+        sanity_checks.verify_square_input(input_nchw, relevance_scores_nchw)
         sanity_checks.verify_batch_size(input_nchw, relevance_scores_nchw)
         sanity_checks.ensure_non_overlapping_patches_possible(input_nchw,
                                                               self.perturbation_size)
@@ -156,7 +157,7 @@ Selected perturbation mode: {perturb_mode}""")
                                                perturbation_size=self.perturbation_size,
                                                perturbation_steps=self.perturbation_steps)
 
-        self._batch_size: int = input_nchw.shape[0]
+        self._batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
 
         # Store input for comparison at the end.
         self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
@@ -184,7 +185,7 @@ Selected perturbation mode: {perturb_mode}""")
         if not should_loop:
             return pixel_flipping_generator
 
-        utils.loop(pixel_flipping_generator)
+        return utils.loop(pixel_flipping_generator)
 
     def _generator(self,
                    input_nchw: torch.Tensor,

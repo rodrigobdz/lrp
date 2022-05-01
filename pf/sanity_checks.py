@@ -10,6 +10,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 import torch
+import utils
 
 
 def ensure_nchw_format(input_nchw: torch.Tensor) -> None:
@@ -49,20 +50,33 @@ def ensure_non_overlapping_patches_possible(input_nchw: torch.Tensor,
 
     :raise ValueError: If the input cannot be divided into non-overlapping patches.
     """
-    # Ensure input image has square shape (equal height and width).
-    input_height: int = input_nchw.size(dim=2)
-    input_width: int = input_nchw.size(dim=3)
-    if input_height != input_width:
-        raise ValueError(
-            f'Input image has shape {input_nchw.size()} which is not square.')
+    verify_square_input(input_nchw)
+    height, _ = utils.get_height_width(input_nchw)
 
     # Ensure perturbation size is evenly divisible by the dimensions of the input image.
     # This requirement ensures that regions are non-overlapping.
-    if input_height % perturbation_size == 0:
+    if height % perturbation_size == 0:
         return
     raise ValueError(f"""Perturbation size ({perturbation_size}) is not evenly divisible by
-input image height ({input_height}).
+input image height ({height}).
 Dividing the input image into non-overlapping patches is not possible.""")
+
+
+def verify_square_input(*tensors) -> None:
+    r"""Verify that the input is square (equal height and width).
+
+    :param tensors: Tensors to verify.
+
+    :raises ValueError: If the input is not square.
+    """
+    for n, tensor in enumerate(tensors):
+        height, width = utils.get_height_width(tensor)
+
+        if width == height:
+            return
+
+        raise ValueError(f"""Input tensor must be square.
+Tensor {n} has width {width} and height {height}.""")
 
 
 def verify_batch_size(*tensors) -> None:
@@ -72,7 +86,7 @@ def verify_batch_size(*tensors) -> None:
 
     :raises ValueError: If the batch sizes are different.
     """
-    batch_size: int = tensors[0].shape[0]
+    batch_size: int = utils.get_batch_size(input_nchw=tensors[0])
 
     for n, tensor in enumerate(tensors):
         ensure_nchw_format(tensor)
@@ -82,7 +96,7 @@ def verify_batch_size(*tensors) -> None:
             continue
 
         raise ValueError(f"""All tensors must have the same batch size.
-Batch size is {batch_size} but tensor {n} has shape {tensor.shape[0]}.""")
+Batch size is {batch_size} but tensor {n} has batch size {utils.get_batch_size(tensor)}.""")
 
 
 def verify_perturbation_args(input_nchw: torch.Tensor,

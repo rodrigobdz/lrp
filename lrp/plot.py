@@ -88,7 +88,7 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
     :param ax: Axis to plot on (default: plt)
     :param show_plot: Show plot or not
     """
-    pf.utils.ensure_nchw_format(img_nchw_rgb)
+    pf.sanity_checks.ensure_nchw_format(img_nchw_rgb)
 
     for img_chw_rgb in img_nchw_rgb:
         # Convert from NCHW to HWC format and from tensor to numpy array.
