@@ -26,7 +26,7 @@ from pf.convert_img import arr_chw_to_hwc
 
 
 def _show(imgs: Sequence) -> None:
-    r"""Show a batch of images
+    r"""Show a batch of images.
 
     Function imported directly from:
         https://pytorch.org/vision/stable/auto_examples/plot_visualization_utils.html#sphx-glr-auto-examples-plot-visualization-utils-py
@@ -107,8 +107,8 @@ def heatmap(relevance_scores: numpy.ndarray,
             height: float = 2,
             fig: Figure = plt,
             show_plot: bool = True,
-            dpi: float = 100.0
-            ) -> None:
+            dpi: float = 100.0,
+            show_axis: bool = False) -> None:
     r"""Plot heatmap of relevance scores.
 
     :param relevance_scores: Relevance scores in pixel layer only
@@ -117,6 +117,7 @@ def heatmap(relevance_scores: numpy.ndarray,
 
     :param fig: Figure to plot on
     :param show_plot: Show plot or not
+    :param show_axis: Show axis or not
     """
     CMAP: ListedColormap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
     CMAP[:, 0:3] *= 0.85
@@ -128,7 +129,9 @@ def heatmap(relevance_scores: numpy.ndarray,
         fig.figure(figsize=(width, height), dpi=dpi)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-    fig.axis('off')
+    if not show_axis:
+        fig.axis('off')
+
     fig.imshow(relevance_scores, cmap=CMAP, vmin=-abs_bound,
                vmax=abs_bound, interpolation='nearest')
 

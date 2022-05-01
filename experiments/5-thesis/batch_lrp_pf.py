@@ -151,6 +151,7 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
                                             flipped_input_nchw=flipped_input_1chw,
                                             relevance_scores_nchw=relevance_scores_1chw,
                                             acc_flip_mask_nhw=acc_flip_mask_1hw,
+                                            perturbation_size=pf_instance.perturbation_size,
                                             show_plot=SHOW_PLOT)
 
         filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-pixel-flipping-image-comparison.png'

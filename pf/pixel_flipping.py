@@ -416,4 +416,5 @@ Selected perturbation mode: {perturb_mode}""")
                                    flipped_input_nchw=self.flipped_input_nchw,
                                    relevance_scores_nchw=self.relevance_scores_nchw,
                                    acc_flip_mask_nhw=self.acc_flip_mask_nhw,
+                                   perturbation_size=self.perturbation_size,
                                    show_plot=show_plot)

@@ -12,6 +12,7 @@ __status__ = 'Development'
 
 import torch
 from matplotlib import pyplot as plt
+import matplotlib.ticker as plticker
 
 import lrp.plot
 
@@ -21,6 +22,7 @@ def plot_image_comparison(batch_size: int,
                           flipped_input_nchw: torch.Tensor,
                           relevance_scores_nchw: torch.Tensor,
                           acc_flip_mask_nhw: torch.Tensor,
+                          perturbation_size: int,
                           show_plot: bool = True) -> None:
     r"""Plot the original and flipped input images alongside the relevance scores
     of the pixels that were flipped.
@@ -30,6 +32,7 @@ def plot_image_comparison(batch_size: int,
     :param flipped_input_nchw: Flipped input images.
     :param relevance_scores_nchw: Relevance scores of the pixels that were flipped.
     :param acc_flip_mask_nhw: Mask of pixels that were flipped.
+    :param perturbation_size: Size of the perturbation.
     :param show_plot: If True, show the plot.
     """
 
@@ -62,11 +65,34 @@ def plot_image_comparison(batch_size: int,
             ax=ax[0][1],
             show_plot=plot_kwargs['show_plot'])
 
+        # Rotate ticks on x axis to make them readable.
+        # FIXME: Only works for last image in grid.
+        plt.xticks(rotation=80)
+        # Turn on grid for selected heatmaps.
+        for heatmap_idx in [1]:
+            # Show grid to distinguish patches from each other in perturbed regions plot.
+            # Set the gridding interval: here we use the major tick interval
+            locator = plticker.MultipleLocator(base=perturbation_size)
+            ax[1][heatmap_idx].xaxis.set_major_locator(locator)
+            ax[1][heatmap_idx].yaxis.set_major_locator(locator)
+            ax[1][heatmap_idx].grid(visible=True,
+                                    which='major',
+                                    axis='both',
+                                    linestyle='-',
+                                    color='w',
+                                    linewidth=1)
+
         # Plot heatmaps.
-        lrp.plot.heatmap(relevance_scores_hw.detach().numpy(),
-                         fig=ax[1][0], **plot_kwargs)
+        lrp.plot.heatmap(relevance_scores=relevance_scores_hw.detach().numpy(),
+                         fig=ax[1][0],
+                         show_axis=True,
+                         **plot_kwargs)
+
         # Plot heatmap of perturbed regions.
-        lrp.plot.heatmap(acc_flip_mask_hw, fig=ax[1][1], **plot_kwargs)
+        lrp.plot.heatmap(relevance_scores=acc_flip_mask_hw,
+                         fig=ax[1][1],
+                         show_axis=True,
+                         **plot_kwargs)
 
         x: int = 75
         y: int = -10
