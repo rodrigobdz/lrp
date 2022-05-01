@@ -69,9 +69,9 @@ def _ensure_non_overlapping_patches_possible(input_nchw: torch.Tensor,
     # This requirement ensures that regions are non-overlapping.
     if input_height % perturbation_size == 0:
         return
-    raise ValueError(f'Perturbation size ({perturbation_size}) is not evenly \
-        divisible by input image height ({input_height}).\
-        Dividing the input image into non-overlapping patches is not possible.')
+    raise ValueError(f"""Perturbation size ({perturbation_size}) is not evenly divisible by
+input image height ({input_height}).
+Dividing the input image into non-overlapping patches is not possible.""")
 
 
 def _verify_batch_size(*tensors) -> None:
@@ -90,5 +90,5 @@ def _verify_batch_size(*tensors) -> None:
         if tensor.shape[0] == batch_size:
             continue
 
-        raise ValueError(
-            f'All tensors must have the same batch size. Batch size is {batch_size} but tensor {n} has shape {tensor.shape[0]}.')
+        raise ValueError(f"""All tensors must have the same batch size.
+Batch size is {batch_size} but tensor {n} has shape {tensor.shape[0]}.""")
