@@ -49,8 +49,8 @@ def ensure_chw_format(input_chw: torch.Tensor) -> None:
 Got {input_chw.dim()} dimensions and shape {input_chw.shape}.""")
 
 
-def _ensure_non_overlapping_patches_possible(input_nchw: torch.Tensor,
-                                             perturbation_size: int) -> None:
+def ensure_non_overlapping_patches_possible(input_nchw: torch.Tensor,
+                                            perturbation_size: int) -> None:
     r"""Ensure input can be divided into non-overlapping patches of said size.
 
     :param input_nchw: Input tensor in NCHW format.
