@@ -35,18 +35,18 @@ def plot_image_comparison(batch_size: int,
 
     # Show plot must be False here to display image grid.
     plot_kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
-    for n in range(batch_size):
+    for batch_index in range(batch_size):
 
         # tensor[n] returns an image tensor of shape (C, W, H)
         # unsqueeze adds a new dimension to the tensor to make it of shape (1, C, W, H)
-        original_input_1chw: torch.Tensor = original_input_nchw[n].unsqueeze(
+        original_input_1chw: torch.Tensor = original_input_nchw[batch_index].unsqueeze(
             0)
-        flipped_input_1chw: torch.Tensor = flipped_input_nchw[n].unsqueeze(
+        flipped_input_1chw: torch.Tensor = flipped_input_nchw[batch_index].unsqueeze(
             0)
         # sum along the channel dimension to convert from (C, W, H) to (W, H)
-        relevance_scores_hw: torch.Tensor = relevance_scores_nchw[n].sum(
+        relevance_scores_hw: torch.Tensor = relevance_scores_nchw[batch_index].sum(
             dim=0)
-        acc_flip_mask_hw: torch.Tensor = acc_flip_mask_nhw[n]
+        acc_flip_mask_hw: torch.Tensor = acc_flip_mask_nhw[batch_index]
 
         # Create grid of original and perturbed images.
         _, ax = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])

@@ -315,11 +315,11 @@ Selected perturbation mode: {perturb_mode}""")
                 f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
         # Loop for debugging purposes only.
-        for n in range(self._batch_size):
+        for batch_index in range(self._batch_size):
             # Mask with all pixels previously flipped.
-            old_acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[n]
+            old_acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[batch_index]
             # Mask with pixels flipped only in this perturbation step.
-            mask_hw: torch.Tensor = mask_n1hw.squeeze()[n]
+            mask_hw: torch.Tensor = mask_n1hw.squeeze()[batch_index]
             # Mask with all pixels flipped as of this perturbation step (including previous flips).
             new_acc_flip_mask_hw: torch.Tensor = torch.logical_or(
                 old_acc_flip_mask_hw, mask_hw)
@@ -334,7 +334,7 @@ Selected perturbation mode: {perturb_mode}""")
                 flipped_pixel_count
 
             self.logger.info(
-                f'Batch image {n}: Flipped {flipped_pixel_count} pixels.')
+                f'Batch image {batch_index}: Flipped {flipped_pixel_count} pixels.')
 
         # Squeeze mask to empty channel dimension and convert from (N, 1, H, W) to (N, H, W).
         mask_nhw: torch.Tensor = mask_n1hw.squeeze()

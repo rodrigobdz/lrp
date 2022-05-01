@@ -56,12 +56,12 @@ def flip_inpainting(input_nchw: torch.Tensor,
     batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
 
     # Loop over all images and masks in batch
-    for n in range(batch_size):
-        mask_1hw: torch.Tensor = mask_n1hw[n]
-        input_chw: torch.Tensor = input_nchw[n]
+    for batch_index in range(batch_size):
+        mask_1hw: torch.Tensor = mask_n1hw[batch_index]
+        input_chw: torch.Tensor = input_nchw[batch_index]
 
-        logger.debug(
-            f'Mask {n} will flip a total of {mask_1hw.count_nonzero().item()} elements in image.')
+        logger.debug(f"""Mask {batch_index} will flip a total
+of {mask_1hw.count_nonzero().item()} elements in image.""")
 
         # Reduce number of channels in mask from 3 to 1.
         mask_arr_hw1: numpy.ndarray = tensor_to_opencv_inpainting(
@@ -69,8 +69,10 @@ def flip_inpainting(input_nchw: torch.Tensor,
         img_bgr_hwc: numpy.ndarray = tensor_to_opencv_inpainting(
             img_rgb_chw=input_chw)
 
-        inpainted_img_bgr_hwc: numpy.ndarray = cv2.inpaint(
-            img_bgr_hwc, mask_arr_hw1, 3, cv2.INPAINT_TELEA)
+        inpainted_img_bgr_hwc: numpy.ndarray = cv2.inpaint(img_bgr_hwc,
+                                                           mask_arr_hw1,
+                                                           3,
+                                                           cv2.INPAINT_TELEA)
 
         # Convert back inpainted image to tensor
         inpainted_img_rgb_chw: torch.Tensor = opencv_to_tensor(
