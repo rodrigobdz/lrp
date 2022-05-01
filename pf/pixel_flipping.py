@@ -381,9 +381,6 @@ Selected perturbation mode: {perturb_mode}""")
         auc: float = area_under_the_curve(
             mean_class_prediction_scores_n.detach().numpy()
         )
-        aopc: float = area_over_the_pertubation_curve(
-            mean_class_prediction_scores_n.detach().numpy()
-        )
         plt.plot(mean_class_prediction_scores_n,
                  label='Mean',
                  linewidth=5,
@@ -391,12 +388,6 @@ Selected perturbation mode: {perturb_mode}""")
                  color='black')
 
         x: List[int] = range(len(mean_class_prediction_scores_n))
-        plt.fill_between(x=x,
-                         y1=mean_class_prediction_scores_n,
-                         y2=plt.ylim()[1],
-                         facecolor='thistle',
-                         label=f'AOPC={aopc}',
-                         alpha=0.2)
         plt.fill_between(x=x,
                          y1=mean_class_prediction_scores_n,
                          facecolor='wheat',

@@ -40,6 +40,7 @@ def arr_hwc_to_chw(arr_hwc: numpy.ndarray) -> numpy.ndarray:
 
 def opencv_to_tensor(img_bgr_hwc: numpy.ndarray) -> torch.Tensor:
     r"""Convert image as numpy array to torch tensor.
+
     Operations performed:
         Convert color format from BGR to RGB.
         Convert from HWC to CHW format.
@@ -89,6 +90,7 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarra
 
 def tensor_to_opencv_inpainting(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarray:
     r"""Convert tensor to numpy array with requirements for inpainting with OpenCV.
+
     Operations performed:
         Ensure image is in CPU memory before any operation.
         Type-cast to 8-bit integers required by OpenCV's inpainting function.
