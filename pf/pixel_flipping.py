@@ -20,14 +20,14 @@ __status__ = 'Development'
 
 import logging
 import sys
-from typing import Callable, Generator, List, Optional, Tuple, Union
+from typing import Callable, Generator, List, Optional, Tuple
 
 import torch
 from matplotlib import pyplot as plt
 
 from lrp import norm
 
-from . import plot, utils
+from . import plot, utils, sanity_checks
 from .decorators import timer
 from .metrics import area_over_the_pertubation_curve, area_under_the_curve
 from .objectives import sort
@@ -148,10 +148,13 @@ Selected perturbation mode: {perturb_mode}""")
 
         :returns: None if should_loop is True, otherwise a generator.
         """
-        utils.ensure_nchw_format(input_nchw)
-        utils.verify_batch_size(input_nchw, relevance_scores_nchw)
-        utils.ensure_non_overlapping_patches_possible(input_nchw,
-                                                      self.perturbation_size)
+        sanity_checks.ensure_nchw_format(input_nchw)
+        sanity_checks.verify_batch_size(input_nchw, relevance_scores_nchw)
+        sanity_checks.ensure_non_overlapping_patches_possible(input_nchw,
+                                                              self.perturbation_size)
+        sanity_checks.verify_perturbation_args(input_nchw=input_nchw,
+                                               perturbation_size=self.perturbation_size,
+                                               perturbation_steps=self.perturbation_steps)
 
         self._batch_size: int = input_nchw.shape[0]
 
@@ -171,20 +174,6 @@ Selected perturbation mode: {perturb_mode}""")
         self.acc_flip_mask_nhw: torch.Tensor = torch.zeros(
             *input_nchw.shape,
             dtype=torch.bool).sum(dim=1)
-
-        # Count number of pixels affected by the perturbation.
-        #
-        # If perturbation size is one, then we only need to flip one pixel.
-        # Otherwise, we need to flip a patch of size nxn = # affected pixels.
-        perturbation_size_numel: int = self.perturbation_size**2
-
-        # Verify that number of flips does not exceed the number of elements in the input.
-        if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input_nchw):
-            raise ValueError(
-                f"""perturbation_size_numel * perturbation_steps =
-{perturbation_size_numel} * {self.perturbation_steps} = \
-    {perturbation_size_numel * self.perturbation_steps}
-exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
 
         pixel_flipping_generator: Generator[
             Tuple[torch.Tensor, float], None, None] = self._generator(input_nchw,
