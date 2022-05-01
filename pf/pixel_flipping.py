@@ -29,7 +29,7 @@ from lrp import norm
 
 from . import plot, sanity_checks, utils
 from .decorators import timer
-from .metrics import area_over_the_pertubation_curve, area_under_the_curve
+from .metrics import area_under_the_curve
 from .objectives import sort
 from .perturbation_modes.constants import PerturbModes
 from .perturbation_modes.inpainting.flip import flip_inpainting
