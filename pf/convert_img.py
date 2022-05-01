@@ -18,7 +18,7 @@ import numpy
 import torch
 
 
-def arr_chw_to_hwc(arr_chw: numpy.array) -> numpy.array:
+def arr_chw_to_hwc(arr_chw: numpy.ndarray) -> numpy.ndarray:
     r"""Convert numpy array from CHW to HWC format.
 
     :param arr_chw: numpy array to be converted.
@@ -28,7 +28,7 @@ def arr_chw_to_hwc(arr_chw: numpy.array) -> numpy.array:
     return arr_chw.transpose((1, 2, 0))
 
 
-def arr_hwc_to_chw(arr_hwc: numpy.array) -> numpy.array:
+def arr_hwc_to_chw(arr_hwc: numpy.ndarray) -> numpy.ndarray:
     r"""Convert numpy array from HWC to CHW format.
 
     :param arr_hwc: numpy array to be converted.
@@ -38,7 +38,7 @@ def arr_hwc_to_chw(arr_hwc: numpy.array) -> numpy.array:
     return arr_hwc.transpose((2, 0, 1))
 
 
-def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
+def opencv_to_tensor(img_bgr_hwc: numpy.ndarray) -> torch.Tensor:
     r"""Convert image as numpy array to torch tensor.
     Operations performed:
         Convert color format from BGR to RGB.
@@ -52,14 +52,14 @@ def opencv_to_tensor(img_bgr_hwc: numpy.array) -> torch.Tensor:
         raise TypeError('Input must be a numpy array.')
 
     # Convert from BGR to RGB color space
-    img_rgb_hwc: numpy.array = cv2.cvtColor(img_bgr_hwc, cv2.COLOR_BGR2RGB)
+    img_rgb_hwc: numpy.ndarray = cv2.cvtColor(img_bgr_hwc, cv2.COLOR_BGR2RGB)
 
     # Convert from HWC to CHW format.
-    img_rgb_chw: numpy.array = arr_hwc_to_chw(img_rgb_hwc)
+    img_rgb_chw: numpy.ndarray = arr_hwc_to_chw(img_rgb_hwc)
     return torch.from_numpy(img_rgb_chw)
 
 
-def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
+def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarray:
     r"""Convert image as torch tensor to numpy array.
     Operations performed:
         Convert from CHW to HWC format.
@@ -74,20 +74,20 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
         raise TypeError('Input must be a torch tensor.')
 
     # Convert to numpy array and from CHW to HWC format
-    img_rgb_hwc: numpy.array = arr_chw_to_hwc(img_rgb_chw.detach().numpy())
+    img_rgb_hwc: numpy.ndarray = arr_chw_to_hwc(img_rgb_chw.detach().numpy())
 
     if grayscale:
         # Skip color format conversion
         return img_rgb_hwc
 
     # Convert from RGB to BGR color space and to 8-bit integer data type
-    img_bgr_hwc: numpy.array = cv2.cvtColor(
+    img_bgr_hwc: numpy.ndarray = cv2.cvtColor(
         img_rgb_hwc.astype(numpy.uint8), cv2.COLOR_RGB2BGR)
 
     return img_bgr_hwc
 
 
-def tensor_to_opencv_inpainting(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.array:
+def tensor_to_opencv_inpainting(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarray:
     r"""Convert tensor to numpy array with requirements for inpainting with OpenCV.
     Operations performed:
         Ensure image is in CPU memory before any operation.

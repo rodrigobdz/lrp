@@ -46,7 +46,7 @@ class ImageNetNorm:
     ])
 
 
-def _verify_range(img: Union[numpy.array, torch.Tensor], low: float, high: float) -> None:
+def _verify_range(img: Union[numpy.ndarray, torch.Tensor], low: float, high: float) -> None:
     r"""Verify that image has values in the range [low, high].
 
     :param img: Image to be verified
@@ -69,8 +69,8 @@ def _verify_range(img: Union[numpy.array, torch.Tensor], low: float, high: float
             f'Image has values outside of expected range [{low}, {high}]. Actual range [{img.min()}, {img.max()}]')
 
 
-def denorm_img_pxls(img: Union[numpy.array, torch.Tensor],
-                    max: float = 255.0) -> Union[numpy.array, torch.Tensor]:
+def denorm_img_pxls(img: Union[numpy.ndarray, torch.Tensor],
+                    max: float = 255.0) -> Union[numpy.ndarray, torch.Tensor]:
     r"""Denormalize pixel values in image from [0, 1] to [0, max].
 
     :param img: Image with values to be denormalized/re-scaled.
@@ -84,9 +84,9 @@ def denorm_img_pxls(img: Union[numpy.array, torch.Tensor],
     return img * max
 
 
-def norm_img_pxls(src_img: numpy.array,
+def norm_img_pxls(src_img: numpy.ndarray,
                   min: float = 0.,
-                  max: float = 255.0) -> numpy.array:
+                  max: float = 255.0) -> numpy.ndarray:
     r"""Normalize pixel values in image from [min, max] to [0, 1].
 
     Divide pixels in image by 'max' to normalize pixel values to [0, 1].
@@ -104,7 +104,7 @@ def norm_img_pxls(src_img: numpy.array,
     _verify_range(src_img, min, max)
 
     # Normalize pixel values to [0, 1]
-    target_img: numpy.array = src_img / max
+    target_img: numpy.ndarray = src_img / max
 
     _verify_range(target_img, 0, 1)
 

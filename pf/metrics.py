@@ -24,7 +24,7 @@ def area_under_the_curve(class_prediction_scores: Union[List[float], numpy.ndarr
 
     :return: Area under the curve.
     """
-    x: numpy.array = numpy.arange(0, len(class_prediction_scores))
+    x: numpy.ndarray = numpy.arange(0, len(class_prediction_scores))
     return numpy.round_(sklearn.metrics.auc(x=x, y=class_prediction_scores), decimals=2)
 
 
@@ -41,7 +41,7 @@ def area_over_the_pertubation_curve(class_prediction_scores: Union[List[float], 
 
     :return: Area over the perturbation curve.
     """
-    y: numpy.array = numpy.array(class_prediction_scores)
+    y: numpy.ndarray = numpy.array(class_prediction_scores)
 
     # L stands for the number of perturbation steps
     L: int = len(y)

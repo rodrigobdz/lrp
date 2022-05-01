@@ -92,7 +92,8 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
 
     for img_chw_rgb in img_nchw_rgb:
         # Convert from NCHW to HWC format and from tensor to numpy array.
-        img_hwc_rgb: numpy.array = arr_chw_to_hwc(img_chw_rgb.detach().numpy())
+        img_hwc_rgb: numpy.ndarray = arr_chw_to_hwc(
+            img_chw_rgb.detach().numpy())
 
         # Plot image
         ax.imshow(img_hwc_rgb)
@@ -101,14 +102,14 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
             plt.show()
 
 
-def heatmap(relevance_scores: numpy.array,
+def heatmap(relevance_scores: numpy.ndarray,
             width: float = 2,
             height: float = 2,
             fig: Figure = plt,
             show_plot: bool = True,
             dpi: float = 100.0
             ) -> None:
-    r"""Plot heatmap of relevance scores
+    r"""Plot heatmap of relevance scores.
 
     :param relevance_scores: Relevance scores in pixel layer only
     :param width: Size of the image in x-direction
