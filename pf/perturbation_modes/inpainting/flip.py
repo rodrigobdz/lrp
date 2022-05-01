@@ -17,7 +17,7 @@ import cv2
 import numpy
 import torch
 
-from pf import utils
+from pf import utils, sanity_checks
 from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 
 
@@ -47,10 +47,7 @@ def flip_inpainting(input_nchw: torch.Tensor,
     if input_nchw.is_floating_point():
         raise TypeError('Tensor must be of integer data type.')
 
-    # Verify that input and mask have the same batch size.
-    if input_nchw.shape[0] != mask_n1hw.shape[0]:
-        raise ValueError(
-            f'Number of images in input ({input_nchw.shape[0]}) must equal number of masks ({mask_n1hw.shape[0]})')
+    sanity_checks.verify_batch_size(input_nchw, mask_n1hw)
 
     inpainted_img_rgb_nchw: torch.Tensor = torch.zeros(0, dtype=torch.float)
     batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
