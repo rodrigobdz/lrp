@@ -109,7 +109,7 @@ class LRP:
         :returns: Relevance for input_nchw
         """
 
-        pf.utils._ensure_nchw_format(input_nchw)
+        pf.utils.ensure_nchw_format(input_nchw)
 
         # Prepare to compute input gradient
         # Reset gradient
@@ -193,7 +193,7 @@ class LRP:
         :param width: Width of heatmap
         :param height: Height of heatmap
         """
-        pf.utils._ensure_nchw_format(relevance_scores_nchw)
+        pf.utils.ensure_nchw_format(relevance_scores_nchw)
         # Convert each heatmap from 3-channel to 1-channel.
         # Channel dimension is now omitted.
         r_nhw = relevance_scores_nchw.sum(dim=1)

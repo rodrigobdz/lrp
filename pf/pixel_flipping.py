@@ -148,7 +148,7 @@ Selected perturbation mode: {perturb_mode}""")
 
         :returns: None if should_loop is True, otherwise a generator.
         """
-        utils._ensure_nchw_format(input_nchw)
+        utils.ensure_nchw_format(input_nchw)
         utils._verify_batch_size(input_nchw, relevance_scores_nchw)
         utils._ensure_non_overlapping_patches_possible(input_nchw,
                                                        self.perturbation_size)

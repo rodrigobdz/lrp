@@ -21,7 +21,7 @@ def _loop(generator) -> None:
         pass
 
 
-def _ensure_nchw_format(input_nchw: torch.Tensor) -> None:
+def ensure_nchw_format(input_nchw: torch.Tensor) -> None:
     r"""Ensure that the input tensor is in NCHW format.
 
     :param input_nchw: Input tensor in NCHW format.
@@ -69,7 +69,7 @@ def _verify_batch_size(*tensors) -> None:
     batch_size: int = tensors[0].shape[0]
 
     for n, tensor in enumerate(tensors):
-        _ensure_nchw_format(tensor)
+        ensure_nchw_format(tensor)
 
         # Verify that tensor has the same batch size.
         if tensor.shape[0] == batch_size:
