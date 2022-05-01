@@ -88,15 +88,15 @@ def verify_batch_size(*tensors) -> None:
     """
     batch_size: int = utils.get_batch_size(input_nchw=tensors[0])
 
-    for n, tensor in enumerate(tensors):
+    for batch_index, tensor in enumerate(tensors):
         ensure_nchw_format(tensor)
 
         # Verify that tensor has the same batch size.
-        if tensor.shape[0] == batch_size:
+        if utils.get_batch_size(tensor) == batch_size:
             continue
 
-        raise ValueError(f"""All tensors must have the same batch size.
-Batch size is {batch_size} but tensor {n} has batch size {utils.get_batch_size(tensor)}.""")
+        raise ValueError(f"""All tensors must have the same batch size. Batch size
+is {batch_size} but tensor {batch_index} has batch size {utils.get_batch_size(tensor)}.""")
 
 
 def verify_perturbation_args(input_nchw: torch.Tensor,
