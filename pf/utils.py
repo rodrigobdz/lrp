@@ -12,7 +12,7 @@ __status__ = 'Development'
 import torch
 
 
-def _loop(generator) -> None:
+def loop(generator) -> None:
     r"""Loop over a generator without retrieving any values.
 
     :param generator: Generator to loop over.
@@ -74,7 +74,7 @@ input image height ({input_height}).
 Dividing the input image into non-overlapping patches is not possible.""")
 
 
-def _verify_batch_size(*tensors) -> None:
+def verify_batch_size(*tensors) -> None:
     r"""Verify that all tensors have the same batch size.
 
     :param tensors: Tensors to verify.
