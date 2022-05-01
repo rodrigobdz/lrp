@@ -1,5 +1,4 @@
-r"""Plotting library
-"""
+r"""Plotting library."""
 
 
 # pylint: disable=duplicate-code
@@ -10,9 +9,9 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 # pylint: enable=duplicate-code
 
+import matplotlib.ticker as plticker
 import torch
 from matplotlib import pyplot as plt
-import matplotlib.ticker as plticker
 
 import lrp.plot
 
@@ -24,8 +23,7 @@ def plot_image_comparison(batch_size: int,
                           acc_flip_mask_nhw: torch.Tensor,
                           perturbation_size: int,
                           show_plot: bool = True) -> None:
-    r"""Plot the original and flipped input images alongside the relevance scores
-    of the pixels that were flipped.
+    r"""Plot original and flipped input images alongside the relevances scores that were flipped.
 
     :param batch_size: Batch size of the input images.
     :param original_input_nchw: Original input images.
@@ -35,7 +33,6 @@ def plot_image_comparison(batch_size: int,
     :param perturbation_size: Size of the perturbation.
     :param show_plot: If True, show the plot.
     """
-
     # Show plot must be False here to display image grid.
     plot_kwargs: dict = {'width': 5, 'height': 5, 'show_plot': False}
     for batch_index in range(batch_size):

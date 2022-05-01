@@ -17,15 +17,14 @@ import cv2
 import numpy
 import torch
 
-from pf import utils, sanity_checks
+from pf import sanity_checks, utils
 from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 
 
 def flip_inpainting(input_nchw: torch.Tensor,
                     mask_n1hw: torch.Tensor,
                     logger: Optional[logging.Logger] = None) -> torch.Tensor:
-    r"""Flip pixels of image (not in-place) according to the relevance scores with
-    perturbation technique random.
+    r"""Flip pixels of image (not in-place) according to relevance scores with inpainting.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.

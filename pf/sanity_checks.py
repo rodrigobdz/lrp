@@ -10,6 +10,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 import torch
+
 from . import utils
 
 
@@ -69,14 +70,14 @@ def verify_square_input(*tensors) -> None:
 
     :raises ValueError: If the input is not square.
     """
-    for n, tensor in enumerate(tensors):
+    for tensor_idx, tensor in enumerate(tensors):
         height, width = utils.get_height_width(tensor)
 
         if width == height:
             return
 
         raise ValueError(f"""Input tensor must be square.
-Tensor {n} has width {width} and height {height}.""")
+Tensor {tensor_idx} has width {width} and height {height}.""")
 
 
 def verify_batch_size(*tensors) -> None:
