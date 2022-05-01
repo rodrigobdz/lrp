@@ -420,9 +420,9 @@ Selected perturbation mode: {perturb_mode}""")
 
         :param show_plot: If True, show the plot.
         """
-        plot._plot_image_comparison(batch_size=self._batch_size,
-                                    original_input_nchw=self.original_input_nchw,
-                                    flipped_input_nchw=self.flipped_input_nchw,
-                                    relevance_scores_nchw=self.relevance_scores_nchw,
-                                    acc_flip_mask_nhw=self.acc_flip_mask_nhw,
-                                    show_plot=show_plot)
+        plot.plot_image_comparison(batch_size=self._batch_size,
+                                   original_input_nchw=self.original_input_nchw,
+                                   flipped_input_nchw=self.flipped_input_nchw,
+                                   relevance_scores_nchw=self.relevance_scores_nchw,
+                                   acc_flip_mask_nhw=self.acc_flip_mask_nhw,
+                                   show_plot=show_plot)

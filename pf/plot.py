@@ -16,12 +16,12 @@ from matplotlib import pyplot as plt
 import lrp.plot
 
 
-def _plot_image_comparison(batch_size: int,
-                           original_input_nchw: torch.Tensor,
-                           flipped_input_nchw: torch.Tensor,
-                           relevance_scores_nchw: torch.Tensor,
-                           acc_flip_mask_nhw: torch.Tensor,
-                           show_plot: bool = True) -> None:
+def plot_image_comparison(batch_size: int,
+                          original_input_nchw: torch.Tensor,
+                          flipped_input_nchw: torch.Tensor,
+                          relevance_scores_nchw: torch.Tensor,
+                          acc_flip_mask_nhw: torch.Tensor,
+                          show_plot: bool = True) -> None:
     r"""Plot the original and flipped input images alongside the relevance scores
     of the pixels that were flipped.
 
