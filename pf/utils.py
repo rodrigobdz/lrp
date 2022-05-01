@@ -30,8 +30,23 @@ def ensure_nchw_format(input_nchw: torch.Tensor) -> None:
     """
     if input_nchw.dim() == 4:
         return
-    raise ValueError(
-        f'Input tensor must be in NCHW format. Got {input_nchw.dim()} dimensions and shape {input_nchw.shape}.')
+
+    raise ValueError(f"""Input tensor must be in NCHW format.
+Got {input_nchw.dim()} dimensions and shape {input_nchw.shape}.""")
+
+
+def ensure_chw_format(input_chw: torch.Tensor) -> None:
+    r"""Ensure that the input tensor is in CHW format.
+
+    :param input_chw: Input tensor in CHW format.
+
+    :raise ValueError: If the input tensor is not in CHW format.
+    """
+    if input_chw.dim() == 3:
+        return
+
+    raise ValueError(f"""Input tensor must be in CHW format.
+Got {input_chw.dim()} dimensions and shape {input_chw.shape}.""")
 
 
 def _ensure_non_overlapping_patches_possible(input_nchw: torch.Tensor,
