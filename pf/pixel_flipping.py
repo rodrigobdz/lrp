@@ -265,7 +265,7 @@ Selected perturbation mode: {perturb_mode}""")
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
         """
-        score = forward_pass(flipped_input_nchw).detach()
+        score: float = forward_pass(flipped_input_nchw).detach()
         self.class_prediction_scores_n[:, perturbation_step] = score
 
         self.logger.debug(
