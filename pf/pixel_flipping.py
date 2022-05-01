@@ -243,9 +243,10 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
             f'Initial classification score {self.class_prediction_scores_n}')
 
         # Contains N one-dimensional lists of relevance scores with m elements. Shape (N, m).
-        self._flip_mask_generator: Generator[torch.Tensor, None,
-                                             None] = sort._mask_generator(relevance_scores_nchw,
-                                                                          self.perturbation_size)
+        self._flip_mask_generator: Generator[
+            torch.Tensor, None, None
+        ] = sort.flip_mask_generator(relevance_scores_nchw,
+                                     self.perturbation_size)
 
         for perturbation_step in range(self.perturbation_steps):
             # Perturbation step 0 is the original input.
