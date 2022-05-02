@@ -395,10 +395,10 @@ Selected perturbation mode: {perturb_mode}""")
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.margins(0, tight=True)
+        plt.margins(0.01, tight=True)
         # Add padding for better alignment of (sup)title
         # Source: https://stackoverflow.com/a/45161551
-        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.tight_layout(rect=[0, 0, 1, 1])
 
         plt.legend(loc='upper right')
         if show_plot:
