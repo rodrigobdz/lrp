@@ -39,7 +39,7 @@ NUMBER_OF_BATCHES: int = 1
 BATCH_SIZE: int = 25  # multiprocessing.cpu_count()
 PERTURBATION_STEPS: int = 100
 CLASSES: List[str] = ['axolotl']
-PERTURBATION_SIZE: int = 9
+PERTURBATION_SIZE: int = 8
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
 EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
