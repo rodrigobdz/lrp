@@ -91,15 +91,30 @@ def plot_image_comparison(batch_size: int,
                          show_axis=True,
                          **plot_kwargs)
 
-        x: int = 75
-        y: int = -10
+        x_position: int = 75
+        y_position: int = -10
         size: int = 12
 
         # Add captions.
-        ax[0][0].text(x, y, 'Original Input', size=size)
-        ax[0][1].text(x, y, 'Flipped Input', size=size)
-        ax[1][0].text(x, y, 'Relevance scores', size=size)
-        ax[1][1].text(x, y, 'Perturbed Regions', size=size)
+        ax[0][0].text(x=x_position,
+                      y=y_position,
+                      s='Original Input',
+                      size=size)
+
+        ax[0][1].text(x=x_position,
+                      y=y_position,
+                      s='Flipped Input',
+                      size=size)
+
+        ax[1][0].text(x=x_position,
+                      y=y_position,
+                      s='Relevance scores',
+                      size=size)
+
+        ax[1][1].text(x=x_position,
+                      y=y_position,
+                      s='Perturbed Regions',
+                      size=size)
 
         # tight_layout automatically adjusts subplot params so that subplot(s) fits into the figure area.
         plt.rcParams["savefig.bbox"] = 'tight'

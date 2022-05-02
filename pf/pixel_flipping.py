@@ -48,14 +48,13 @@ class PixelFlipping:
                  perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
                  ) -> None:
-        r"""Constructor
+        r"""Initialize PixelFlipping class.
 
         :param perturbation_steps: Number of perturbation steps.
         :param perturbation_size: Size of the region to flip.
         A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
-
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         """
         # Ensure perturbation size is a valid number.
@@ -364,7 +363,6 @@ Selected perturbation mode: {perturb_mode}""")
 
         :raises ValueError: If class prediction scores are empty.
         """
-
         # Error handling
         # Check if class prediction scores are empty—i.e., initialized to zeros.
         if (self.class_prediction_scores_n == 0).all():
@@ -387,8 +385,8 @@ Selected perturbation mode: {perturb_mode}""")
                  alpha=0.9,
                  color='black')
 
-        x: List[int] = range(len(mean_class_prediction_scores_n))
-        plt.fill_between(x=x,
+        x_values: List[int] = range(len(mean_class_prediction_scores_n))
+        plt.fill_between(x=x_values,
                          y1=mean_class_prediction_scores_n,
                          facecolor='wheat',
                          label=f'AUC={auc}',
