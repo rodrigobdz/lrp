@@ -20,7 +20,7 @@ __status__ = 'Development'
 
 import logging
 import sys
-from typing import Callable, Generator, List, Optional, Tuple
+from typing import Callable, Dict, Generator, List, Optional, Tuple
 
 import torch
 from matplotlib import pyplot as plt
@@ -73,6 +73,29 @@ Selected perturbation mode: {perturb_mode}""")
         if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
             raise NotImplementedError(
                 f'Perturbation mode \'{perturb_mode}\' not implemented yet.')
+
+        # TODO: Add safety check for number_flips_per_step to avoid exceeding number of elements.
+        # Flip more values at the beginning to skip the uninteresting part of flipping
+        # and arrive with less computation time to the end of the flipping.
+        #
+        # Example allocation of number_flips_per_step for multi_flip_steps=5:
+        # number_flips_per_step = {0: 2**5,
+        #                          1: 2**4,
+        #                          2: 2**3,
+        #                          3: 2**2,
+        #                          4: 2**1
+        #                         }
+        #
+        #                       = {0: 32,
+        #                          1: 16,
+        #                          2: 8,
+        #                          3: 4,
+        #                          4: 2
+        #                         }
+        self.number_flips_per_step: Dict[int, int] = {}
+        multi_flip_steps: int = perturbation_size
+        for step_number, exp_val in enumerate(reversed(range(multi_flip_steps))):
+            self.number_flips_per_step[step_number] = 2**(exp_val+1)
 
         logging.basicConfig(
             stream=sys.stderr,
@@ -285,8 +308,27 @@ Selected perturbation mode: {perturb_mode}""")
 
         :returns: Tuple of flipped input and updated classification score
         """
-        # Mask with region selected for flipping.
-        mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
+        # Default number of consecutive flips to perform per step in case number_flips_per_step
+        # is not defined for perturbation_step.
+        default_flips_per_step: int = 1
+        number_flips_current_step: int = self.number_flips_per_step.get(perturbation_step,
+                                                                        default_flips_per_step)
+
+        if number_flips_current_step == default_flips_per_step:
+            self.number_flips_per_step[perturbation_step] = number_flips_current_step
+
+        # Mask to store regions to flip in current perturbation step.
+        mask_n1hw: torch.Tensor
+        for multi_flip_index in range(number_flips_current_step):
+            # Mask with region selected for flipping.
+            next_mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
+
+            # Set value of base mask for first iteration.
+            if multi_flip_index == 0:
+                mask_n1hw = next_mask_n1hw
+
+            # Merge multiple masks into one for a single perturbation step.
+            mask_n1hw = torch.logical_or(mask_n1hw, next_mask_n1hw)
 
         # Flip pixels with respective perturbation technique
         if self.perturb_mode == PerturbModes.RANDOM:
