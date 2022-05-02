@@ -17,14 +17,14 @@ import cv2
 import numpy
 import torch
 
+from pf import sanity_checks, utils
 from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 
 
 def flip_inpainting(input_nchw: torch.Tensor,
                     mask_n1hw: torch.Tensor,
                     logger: Optional[logging.Logger] = None) -> torch.Tensor:
-    r"""Flip pixels of image (not in-place) according to the relevance scores with
-    perturbation technique random.
+    r"""Flip pixels of image (not in-place) according to relevance scores with inpainting.
 
     Pixels to be flipped will be replaced by random samples drawn from the interval
     between the values of the low and high parameters.
@@ -46,30 +46,29 @@ def flip_inpainting(input_nchw: torch.Tensor,
     if input_nchw.is_floating_point():
         raise TypeError('Tensor must be of integer data type.')
 
-    # Verify that input and mask have the same batch size.
-    if input_nchw.shape[0] != mask_n1hw.shape[0]:
-        raise ValueError(
-            f'Number of images in input ({input_nchw.shape[0]}) must equal number of masks ({mask_n1hw.shape[0]})')
+    sanity_checks.verify_batch_size(input_nchw, mask_n1hw)
 
     inpainted_img_rgb_nchw: torch.Tensor = torch.zeros(0, dtype=torch.float)
-    batch_size: int = input_nchw.shape[0]
+    batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
 
     # Loop over all images and masks in batch
-    for n in range(batch_size):
-        mask_1hw: torch.Tensor = mask_n1hw[n]
-        input_chw: torch.Tensor = input_nchw[n]
+    for batch_index in range(batch_size):
+        mask_1hw: torch.Tensor = mask_n1hw[batch_index]
+        input_chw: torch.Tensor = input_nchw[batch_index]
 
-        logger.debug(
-            f'Mask {n} will flip a total of {mask_1hw.count_nonzero().item()} elements in image.')
+        logger.debug(f"""Mask {batch_index} will flip a total
+of {mask_1hw.count_nonzero().item()} elements in image.""")
 
         # Reduce number of channels in mask from 3 to 1.
-        mask_arr_hw1: numpy.array = tensor_to_opencv_inpainting(
+        mask_arr_hw1: numpy.ndarray = tensor_to_opencv_inpainting(
             img_rgb_chw=mask_1hw, grayscale=True)
-        img_bgr_hwc: numpy.array = tensor_to_opencv_inpainting(
+        img_bgr_hwc: numpy.ndarray = tensor_to_opencv_inpainting(
             img_rgb_chw=input_chw)
 
-        inpainted_img_bgr_hwc: numpy.array = cv2.inpaint(
-            img_bgr_hwc, mask_arr_hw1, 3, cv2.INPAINT_TELEA)
+        inpainted_img_bgr_hwc: numpy.ndarray = cv2.inpaint(img_bgr_hwc,
+                                                           mask_arr_hw1,
+                                                           3,
+                                                           cv2.INPAINT_TELEA)
 
         # Convert back inpainted image to tensor
         inpainted_img_rgb_chw: torch.Tensor = opencv_to_tensor(

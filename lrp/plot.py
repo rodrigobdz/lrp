@@ -26,7 +26,7 @@ from pf.convert_img import arr_chw_to_hwc
 
 
 def _show(imgs: Sequence) -> None:
-    r"""Show a batch of images
+    r"""Show a batch of images.
 
     Function imported directly from:
         https://pytorch.org/vision/stable/auto_examples/plot_visualization_utils.html#sphx-glr-auto-examples-plot-visualization-utils-py
@@ -88,11 +88,12 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
     :param ax: Axis to plot on (default: plt)
     :param show_plot: Show plot or not
     """
-    pf.utils._ensure_nchw_format(img_nchw_rgb)
+    pf.sanity_checks.ensure_nchw_format(img_nchw_rgb)
 
     for img_chw_rgb in img_nchw_rgb:
         # Convert from NCHW to HWC format and from tensor to numpy array.
-        img_hwc_rgb: numpy.array = arr_chw_to_hwc(img_chw_rgb.detach().numpy())
+        img_hwc_rgb: numpy.ndarray = arr_chw_to_hwc(
+            img_chw_rgb.detach().numpy())
 
         # Plot image
         ax.imshow(img_hwc_rgb)
@@ -101,14 +102,14 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
             plt.show()
 
 
-def heatmap(relevance_scores: numpy.array,
+def heatmap(relevance_scores: numpy.ndarray,
             width: float = 2,
             height: float = 2,
             fig: Figure = plt,
             show_plot: bool = True,
-            dpi: float = 100.0
-            ) -> None:
-    r"""Plot heatmap of relevance scores
+            dpi: float = 100.0,
+            show_axis: bool = False) -> None:
+    r"""Plot heatmap of relevance scores.
 
     :param relevance_scores: Relevance scores in pixel layer only
     :param width: Size of the image in x-direction
@@ -116,6 +117,7 @@ def heatmap(relevance_scores: numpy.array,
 
     :param fig: Figure to plot on
     :param show_plot: Show plot or not
+    :param show_axis: Show axis or not
     """
     CMAP: ListedColormap = plt.cm.seismic(numpy.arange(plt.cm.seismic.N))
     CMAP[:, 0:3] *= 0.85
@@ -127,7 +129,9 @@ def heatmap(relevance_scores: numpy.array,
         fig.figure(figsize=(width, height), dpi=dpi)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-    fig.axis('off')
+    if not show_axis:
+        fig.axis('off')
+
     fig.imshow(relevance_scores, cmap=CMAP, vmin=-abs_bound,
                vmax=abs_bound, interpolation='nearest')
 

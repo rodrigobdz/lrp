@@ -39,7 +39,7 @@ NUMBER_OF_BATCHES: int = 1
 BATCH_SIZE: int = 25  # multiprocessing.cpu_count()
 PERTURBATION_STEPS: int = 100
 CLASSES: List[str] = ['axolotl']
-PERTURBATION_SIZE: int = 9
+PERTURBATION_SIZE: int = 8
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/unterlagen/bildung/uni/master/masterarbeit'
 EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
@@ -146,12 +146,13 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
             dim=0)
         acc_flip_mask_1hw: torch.Tensor = pf_instance.acc_flip_mask_nhw[image_index].unsqueeze(
             dim=0)
-        PixelFlipping._plot_image_comparison(batch_size=1,
-                                             original_input_nchw=original_input_1chw,
-                                             flipped_input_nchw=flipped_input_1chw,
-                                             relevance_scores_nchw=relevance_scores_1chw,
-                                             acc_flip_mask_nhw=acc_flip_mask_1hw,
-                                             show_plot=SHOW_PLOT)
+        PixelFlipping.plot_image_comparison(batch_size=1,
+                                            original_input_nchw=original_input_1chw,
+                                            flipped_input_nchw=flipped_input_1chw,
+                                            relevance_scores_nchw=relevance_scores_1chw,
+                                            acc_flip_mask_nhw=acc_flip_mask_1hw,
+                                            perturbation_size=pf_instance.perturbation_size,
+                                            show_plot=SHOW_PLOT)
 
         filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-pixel-flipping-image-comparison.png'
         # Facecolor sets the background color of the figure, in this case to color white

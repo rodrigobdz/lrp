@@ -4,7 +4,7 @@ Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
 
 ## Requirements
 
-- `python3`
+- `python3` >= 3.9
 - `pre-commit`
 
 ## Installation

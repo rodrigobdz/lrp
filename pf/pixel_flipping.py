@@ -20,16 +20,16 @@ __status__ = 'Development'
 
 import logging
 import sys
-from typing import Callable, Generator, List, Optional, Tuple, Union
+from typing import Callable, Dict, Generator, List, Optional, Tuple
 
 import torch
 from matplotlib import pyplot as plt
 
 from lrp import norm
 
-from . import plot, utils
+from . import plot, sanity_checks, utils
 from .decorators import timer
-from .metrics import area_over_the_pertubation_curve, area_under_the_curve
+from .metrics import area_under_the_curve
 from .objectives import sort
 from .perturbation_modes.constants import PerturbModes
 from .perturbation_modes.inpainting.flip import flip_inpainting
@@ -43,19 +43,18 @@ class PixelFlipping:
 
     def __init__(self,
                  perturbation_steps: int = 100,
-                 perturbation_size: int = 9,
+                 perturbation_size: int = 8,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
                  ) -> None:
-        r"""Constructor
+        r"""Initialize PixelFlipping class.
 
         :param perturbation_steps: Number of perturbation steps.
         :param perturbation_size: Size of the region to flip.
         A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
-
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         """
         # Ensure perturbation size is a valid number.
@@ -74,6 +73,29 @@ Selected perturbation mode: {perturb_mode}""")
         if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
             raise NotImplementedError(
                 f'Perturbation mode \'{perturb_mode}\' not implemented yet.')
+
+        # TODO: Add safety check for number_flips_per_step to avoid exceeding number of elements.
+        # Flip more values at the beginning to skip the uninteresting part of flipping
+        # and arrive with less computation time to the end of the flipping.
+        #
+        # Example allocation of number_flips_per_step for multi_flip_steps=5:
+        # number_flips_per_step = {0: 2**5,
+        #                          1: 2**4,
+        #                          2: 2**3,
+        #                          3: 2**2,
+        #                          4: 2**1
+        #                         }
+        #
+        #                       = {0: 32,
+        #                          1: 16,
+        #                          2: 8,
+        #                          3: 4,
+        #                          4: 2
+        #                         }
+        self.number_flips_per_step: Dict[int, int] = {}
+        multi_flip_steps: int = perturbation_size
+        for step_number, exp_val in enumerate(reversed(range(multi_flip_steps))):
+            self.number_flips_per_step[step_number] = 2**(exp_val+1)
 
         logging.basicConfig(
             stream=sys.stderr,
@@ -94,8 +116,8 @@ Selected perturbation mode: {perturb_mode}""")
         self._low: Optional[float]
         self._high: Optional[float]
 
-        # Iterator over masks in each perturbation step.
-        self._mask_iter: Generator[torch.Tensor, None, None]
+        # Iterator over flip masks in each perturbation step.
+        self._flip_mask_generator: Generator[torch.Tensor, None, None]
 
         # Store (accumulative) masks applied to flip the input together in a single mask.
         self.acc_flip_mask_nhw: torch.Tensor
@@ -104,7 +126,7 @@ Selected perturbation mode: {perturb_mode}""")
         self.perturbation_steps: int = perturbation_steps
 
         # Size of the region to flip
-        self.perturbation_size: Union[int, Tuple[int]] = perturbation_size
+        self.perturbation_size: int = perturbation_size
 
         # Name of the perturbation technique
         self.perturb_mode: str = perturb_mode
@@ -148,9 +170,16 @@ Selected perturbation mode: {perturb_mode}""")
 
         :returns: None if should_loop is True, otherwise a generator.
         """
-        utils._ensure_nchw_format(input_nchw)
-        utils._verify_batch_size(input_nchw, relevance_scores_nchw)
-        self._batch_size: int = input_nchw.shape[0]
+        sanity_checks.ensure_nchw_format(input_nchw)
+        sanity_checks.verify_square_input(input_nchw, relevance_scores_nchw)
+        sanity_checks.verify_batch_size(input_nchw, relevance_scores_nchw)
+        sanity_checks.ensure_non_overlapping_patches_possible(input_nchw,
+                                                              self.perturbation_size)
+        sanity_checks.verify_perturbation_args(input_nchw=input_nchw,
+                                               perturbation_size=self.perturbation_size,
+                                               perturbation_steps=self.perturbation_steps)
+
+        self._batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
 
         # Store input for comparison at the end.
         self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
@@ -169,20 +198,6 @@ Selected perturbation mode: {perturb_mode}""")
             *input_nchw.shape,
             dtype=torch.bool).sum(dim=1)
 
-        # Count number of pixels affected by the perturbation.
-        #
-        # If perturbation size is one, then we only need to flip one pixel.
-        # Otherwise, we need to flip a patch of size nxn = # affected pixels.
-        perturbation_size_numel: int = self.perturbation_size**2
-
-        # Verify that number of flips does not exceed the number of elements in the input.
-        if (perturbation_size_numel * self.perturbation_steps) > torch.numel(input_nchw):
-            raise ValueError(
-                f"""perturbation_size_numel * perturbation_steps =
-{perturbation_size_numel} * {self.perturbation_steps} = \
-    {perturbation_size_numel * self.perturbation_steps}
-exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
-
         pixel_flipping_generator: Generator[
             Tuple[torch.Tensor, float], None, None] = self._generator(input_nchw,
                                                                       relevance_scores_nchw,
@@ -192,7 +207,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
         if not should_loop:
             return pixel_flipping_generator
 
-        utils._loop(pixel_flipping_generator)
+        return utils.loop(pixel_flipping_generator)
 
     def _generator(self,
                    input_nchw: torch.Tensor,
@@ -240,11 +255,10 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
             f'Initial classification score {self.class_prediction_scores_n}')
 
         # Contains N one-dimensional lists of relevance scores with m elements. Shape (N, m).
-        sorted_values_nm: torch.Tensor = sort._argsort(relevance_scores_nchw)
-        self._mask_iter: Generator[torch.Tensor, None,
-                                   None] = sort._mask_generator(relevance_scores_nchw,
-                                                                sorted_values_nm,
-                                                                self.perturbation_size)
+        self._flip_mask_generator: Generator[
+            torch.Tensor, None, None
+        ] = sort.flip_mask_generator(relevance_scores_nchw,
+                                     self.perturbation_size)
 
         for perturbation_step in range(self.perturbation_steps):
             # Perturbation step 0 is the original input.
@@ -273,7 +287,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
         """
-        score = forward_pass(flipped_input_nchw).detach()
+        score: float = forward_pass(flipped_input_nchw).detach()
         self.class_prediction_scores_n[:, perturbation_step] = score
 
         self.logger.debug(
@@ -294,8 +308,24 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
 
         :returns: Tuple of flipped input and updated classification score
         """
-        # Mask to select which pixels to flip.
-        mask_n1hw: torch.Tensor = next(self._mask_iter)
+        # Default number of consecutive flips to perform per step in case number_flips_per_step
+        # is not defined for perturbation_step.
+        default_flips_per_step: int = 1
+        number_flips_current_step: int = self.number_flips_per_step.get(perturbation_step,
+                                                                        default_flips_per_step)
+
+        # Mask to store regions to flip in current perturbation step.
+        mask_n1hw: torch.Tensor
+        for multi_flip_index in range(number_flips_current_step):
+            # Mask with region selected for flipping.
+            next_mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
+
+            # Set value of base mask for first iteration.
+            if multi_flip_index == 0:
+                mask_n1hw = next_mask_n1hw
+
+            # Merge multiple masks into one for a single perturbation step.
+            mask_n1hw = torch.logical_or(mask_n1hw, next_mask_n1hw)
 
         # Flip pixels with respective perturbation technique
         if self.perturb_mode == PerturbModes.RANDOM:
@@ -323,11 +353,11 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
                 f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
         # Loop for debugging purposes only.
-        for n in range(self._batch_size):
+        for batch_index in range(self._batch_size):
             # Mask with all pixels previously flipped.
-            old_acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[n]
+            old_acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[batch_index]
             # Mask with pixels flipped only in this perturbation step.
-            mask_hw: torch.Tensor = mask_n1hw.squeeze()[n]
+            mask_hw: torch.Tensor = mask_n1hw.squeeze()[batch_index]
             # Mask with all pixels flipped as of this perturbation step (including previous flips).
             new_acc_flip_mask_hw: torch.Tensor = torch.logical_or(
                 old_acc_flip_mask_hw, mask_hw)
@@ -342,7 +372,7 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
                 flipped_pixel_count
 
             self.logger.info(
-                f'Batch image {n}: Flipped {flipped_pixel_count} pixels.')
+                f'Batch image {batch_index}: Flipped {flipped_pixel_count} pixels.')
 
         # Squeeze mask to empty channel dimension and convert from (N, 1, H, W) to (N, H, W).
         mask_nhw: torch.Tensor = mask_n1hw.squeeze()
@@ -372,7 +402,6 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
 
         :raises ValueError: If class prediction scores are empty.
         """
-
         # Error handling
         # Check if class prediction scores are empty—i.e., initialized to zeros.
         if (self.class_prediction_scores_n == 0).all():
@@ -389,23 +418,14 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
         auc: float = area_under_the_curve(
             mean_class_prediction_scores_n.detach().numpy()
         )
-        aopc: float = area_over_the_pertubation_curve(
-            mean_class_prediction_scores_n.detach().numpy()
-        )
         plt.plot(mean_class_prediction_scores_n,
                  label='Mean',
                  linewidth=5,
                  alpha=0.9,
                  color='black')
 
-        x: List[int] = range(len(mean_class_prediction_scores_n))
-        plt.fill_between(x=x,
-                         y1=mean_class_prediction_scores_n,
-                         y2=plt.ylim()[1],
-                         facecolor='thistle',
-                         label=f'AOPC={aopc}',
-                         alpha=0.2)
-        plt.fill_between(x=x,
+        x_values: List[int] = range(len(mean_class_prediction_scores_n))
+        plt.fill_between(x=x_values,
                          y1=mean_class_prediction_scores_n,
                          facecolor='wheat',
                          label=f'AUC={auc}',
@@ -414,10 +434,10 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.margins(0, tight=True)
+        plt.margins(0.01, tight=True)
         # Add padding for better alignment of (sup)title
         # Source: https://stackoverflow.com/a/45161551
-        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.tight_layout(rect=[0, 0, 1, 1])
 
         plt.legend(loc='upper right')
         if show_plot:
@@ -428,9 +448,15 @@ exceeds the number of elements in the input ({torch.numel(input_nchw)}).""")
 
         :param show_plot: If True, show the plot.
         """
-        plot._plot_image_comparison(batch_size=self._batch_size,
-                                    original_input_nchw=self.original_input_nchw,
-                                    flipped_input_nchw=self.flipped_input_nchw,
-                                    relevance_scores_nchw=self.relevance_scores_nchw,
-                                    acc_flip_mask_nhw=self.acc_flip_mask_nhw,
-                                    show_plot=show_plot)
+        plot.plot_image_comparison(batch_size=self._batch_size,
+                                   original_input_nchw=self.original_input_nchw,
+                                   flipped_input_nchw=self.flipped_input_nchw,
+                                   relevance_scores_nchw=self.relevance_scores_nchw,
+                                   acc_flip_mask_nhw=self.acc_flip_mask_nhw,
+                                   perturbation_size=self.perturbation_size,
+                                   show_plot=show_plot)
+
+    def plot_number_flips_per_step(self) -> None:
+        r"""Plot the number of flipped pixels per perturbation step."""
+        plot.plot_number_flips_per_step(
+            number_flips_per_step=self.number_flips_per_step)

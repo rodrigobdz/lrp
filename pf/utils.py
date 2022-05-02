@@ -9,10 +9,12 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 # pylint: enable=duplicate-code
 
+from typing import Tuple
+
 import torch
 
 
-def _loop(generator) -> None:
+def loop(generator) -> None:
     r"""Loop over a generator without retrieving any values.
 
     :param generator: Generator to loop over.
@@ -21,34 +23,24 @@ def _loop(generator) -> None:
         pass
 
 
-def _ensure_nchw_format(input_nchw: torch.Tensor) -> None:
-    r"""Ensure that the input tensor is in NCHW format.
+def get_batch_size(input_nchw: torch.Tensor) -> int:
+    r"""Get the batch size of the input tensor.
 
     :param input_nchw: Input tensor in NCHW format.
 
-    :raise ValueError: If the input tensor is not in NCHW format.
+    :return: Batch size.
     """
-    if input_nchw.dim() == 4:
-        return
-    raise ValueError(
-        f'Input tensor must be in NCHW format. Got {input_nchw.dim()} dimensions and shape {input_nchw.shape}.')
+    return input_nchw.size(dim=0)
 
 
-def _verify_batch_size(*tensors) -> None:
-    r"""Verify that all tensors have the same batch size.
+def get_height_width(input_nchw: torch.Tensor) -> Tuple[int, int]:
+    r"""Get the height and width of the input tensor.
 
-    :param tensors: Tensors to verify.
+    :param input_nchw: Input tensor in NCHW format.
 
-    :raises ValueError: If the batch sizes are different.
+    :return: Tuple containing the height and width of the input tensor.
     """
-    batch_size: int = tensors[0].shape[0]
+    height: int = input_nchw.size(dim=2)
+    width: int = input_nchw.size(dim=3)
 
-    for n, tensor in enumerate(tensors):
-        _ensure_nchw_format(tensor)
-
-        # Verify that tensor has the same batch size.
-        if tensor.shape[0] == batch_size:
-            continue
-
-        raise ValueError(
-            f'All tensors must have the same batch size. Batch size is {batch_size} but tensor {n} has shape {tensor.shape[0]}.')
+    return height, width

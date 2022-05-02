@@ -15,6 +15,8 @@ from typing import Optional, Tuple, Union
 
 import torch
 
+from pf import utils
+
 from .random_number_generators import RandomNumberGenerator
 
 
@@ -51,12 +53,12 @@ def flip_random(input_nchw: torch.Tensor,
     if not logger:
         logger = logging.getLogger(__name__)
 
-    batch_size: int = input_nchw.shape[0]
+    batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
 
     # Loop over all images and masks in batch
-    for n in range(batch_size):
-        mask_1hw: torch.Tensor = mask_n1hw[n]
-        input_chw: torch.Tensor = input_nchw[n]
+    for batch_index in range(batch_size):
+        mask_1hw: torch.Tensor = mask_n1hw[batch_index]
+        input_chw: torch.Tensor = input_nchw[batch_index]
 
         # Convert mask from (1, H, W) to (C, H, W) where C is the number of channels in the image.
         # Expanding a tensor does not allocate new memory.

@@ -17,7 +17,7 @@ import torch
 from . import norm
 
 
-def load_img_norm_zero_one(path: str) -> numpy.array:
+def load_img_norm_zero_one(path: str) -> numpy.ndarray:
     r"""Load image with pixel values [0, 255] and normalize to [0, 1]
 
     Source: https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb
@@ -36,11 +36,11 @@ def load_img_norm_zero_one(path: str) -> numpy.array:
 
     # img_rgb_hwc.shape is (224, 224, 3), where 3 corresponds to RGB channels
 
-    return norm.norm_img_pxls(img_rgb_hwc, min=0., max=255.)
+    return norm.norm_img_pxls(img_rgb_hwc, min_pixel_val=0., max_pixel_val=255.)
 
 
-def img_to_tensor(img_nhwc: numpy.array) -> torch.Tensor:
-    r"""Convert image as numpy.array to tensor
+def img_to_tensor(img_nhwc: numpy.ndarray) -> torch.Tensor:
+    r"""Convert image as numpy.ndarray to tensor
 
     Inspired by https://git.tu-berlin.de/gmontavon/lrp-tutorial/-/blob/38831a1ce9eeb9268e9bb03561d8b9f4828d7e3d/tutorial.ipynb and zennit
     Add new axis to simulate batch dimension of size 1.

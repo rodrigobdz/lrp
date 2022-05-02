@@ -1,5 +1,4 @@
-r"""Type definitions for type checking
-"""
+r"""Type definitions for type checking."""
 
 # pylint: disable=duplicate-code
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
