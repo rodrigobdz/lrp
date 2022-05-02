@@ -314,9 +314,6 @@ Selected perturbation mode: {perturb_mode}""")
         number_flips_current_step: int = self.number_flips_per_step.get(perturbation_step,
                                                                         default_flips_per_step)
 
-        if number_flips_current_step == default_flips_per_step:
-            self.number_flips_per_step[perturbation_step] = number_flips_current_step
-
         # Mask to store regions to flip in current perturbation step.
         mask_n1hw: torch.Tensor
         for multi_flip_index in range(number_flips_current_step):
@@ -458,3 +455,8 @@ Selected perturbation mode: {perturb_mode}""")
                                    acc_flip_mask_nhw=self.acc_flip_mask_nhw,
                                    perturbation_size=self.perturbation_size,
                                    show_plot=show_plot)
+
+    def plot_number_flips_per_step(self) -> None:
+        r"""Plot the number of flipped pixels per perturbation step."""
+        plot.plot_number_flips_per_step(
+            number_flips_per_step=self.number_flips_per_step)
