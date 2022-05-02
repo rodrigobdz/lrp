@@ -10,6 +10,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 from typing import Dict
+
 import matplotlib.ticker as plticker
 import torch
 from matplotlib import pyplot as plt
