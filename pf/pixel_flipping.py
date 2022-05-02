@@ -387,6 +387,24 @@ Selected perturbation mode: {perturb_mode}""")
         # return flipped_input_nchw, self.class_prediction_scores_n[..., -1:]
         return flipped_input_nchw, self.class_prediction_scores_n
 
+    def _calculate_percentage_flipped(self) -> float:
+        r"""Calculate percentage of pixels flipped in all perturbation steps.
+
+        :returns: Percentage of pixels flipped in all perturbation steps.
+        """
+        # Calculate for first image because all images have the same number of perturbation steps.
+        # Select one arbitrary channel to calculate max. number of elements.
+        original_input_hw: torch.Tensor = self.original_input_nchw[0][0].squeeze(
+        )
+        acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[0]
+
+        # Calculate max. number of pixels and number of pixels flipped.
+        max_num_elem_to_flip: int = original_input_hw.numel()
+        num_elem_flipped: int = acc_flip_mask_hw.count_nonzero().item()
+
+        # Calculate percentage with rule of three and round to two decimal places.
+        return round((num_elem_flipped*100)/max_num_elem_to_flip, 2)
+
     def plot_class_prediction_scores(self,
                                      show_plot: bool = True) -> None:
         r"""Plot the updated prediction scores throughout the perturbation steps of
@@ -428,6 +446,7 @@ Selected perturbation mode: {perturb_mode}""")
         title: str = f"""Pixel-Flipping
         Perturbation steps: {self.perturbation_steps}
         Perturbation size: {self.perturbation_size}x{self.perturbation_size}
+        Percentage flipped: {self._calculate_percentage_flipped()}%
         Perturbation mode: {self.perturb_mode}"""
         plt.title(title)
         plt.xlabel('Perturbation step')
