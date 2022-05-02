@@ -21,8 +21,7 @@ from torchvision import transforms
 from pf import sanity_checks, utils
 
 
-# pylint: disable=too-few-public-methods
-class PixelFlippingObjectives:
+class PixelFlippingObjectives:  # pylint: disable=too-few-public-methods
     r"""Objectives for Pixel-Flipping Algorithm."""
 
     MORF: str = 'Most Relevant First'
