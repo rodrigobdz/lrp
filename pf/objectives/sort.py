@@ -33,7 +33,7 @@ def _argsort(patches_nmmpp: torch.Tensor,
              objective: str = PixelFlippingObjectives.MORF) -> torch.Tensor:
     r"""Sort relevance scores in order defined by objective.
 
-    :param patches_nmmpp: Relevance scores in NCHW format.
+    :param patches_nmmpp: Patches in NMMPP format.
     :param objective: Sorting order for relevance scores.
 
     :returns: Sorted relevance scores as a tensor with N one-dimensional lists,
@@ -119,7 +119,7 @@ def _create_flip_mask(order_nm_flat: torch.Tensor,
 
     # Convert index of patch to flip from 1D to 2D
     # pylint: disable=unbalanced-tuple-unpacking
-    l, k = numpy.unravel_index(indices=flat_index,
+    i, j = numpy.unravel_index(indices=flat_index,
                                shape=(num_patches_per_img, num_patches_per_img))
 
     # Create mask to flip pixels/patches in input located at the index of the
@@ -136,8 +136,8 @@ def _create_flip_mask(order_nm_flat: torch.Tensor,
     #
     # i and j are the origin coordinates of the selected patch.
     return transforms.functional.erase(img=mask_1hw,
-                                       i=l*perturbation_size,
-                                       j=k*perturbation_size,
+                                       i=i*perturbation_size,
+                                       j=j*perturbation_size,
                                        h=perturbation_size,
                                        w=perturbation_size,
                                        v=True)
