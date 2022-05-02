@@ -388,16 +388,10 @@ Selected perturbation mode: {perturb_mode}""")
         return flipped_input_nchw, self.class_prediction_scores_n
 
     def plot_class_prediction_scores(self,
-                                     title: str = '',
-                                     xlabel: str = '',
-                                     ylabel: str = '',
                                      show_plot: bool = True) -> None:
         r"""Plot the updated prediction scores throughout the perturbation steps of
         the pixel-flipping algorithm to visualize the accuracy of the explanation.
 
-        :param title: Title of the plot.
-        :param xlabel: Label of the x-axis.
-        :param ylabel: Label of the y-axis.
         :param show_plot: If True, show the plot.
 
         :raises ValueError: If class prediction scores are empty.
@@ -431,9 +425,13 @@ Selected perturbation mode: {perturb_mode}""")
                          label=f'AUC={auc}',
                          alpha=0.2)
 
+        title: str = f"""Pixel-Flipping
+        Perturbation steps: {self.perturbation_steps}
+        Perturbation size: {self.perturbation_size}x{self.perturbation_size}
+        Perturbation mode: {self.perturb_mode}"""
         plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
+        plt.xlabel('Perturbation step')
+        plt.ylabel('Classification score')
         plt.margins(0.01, tight=True)
         # Add padding for better alignment of (sup)title
         # Source: https://stackoverflow.com/a/45161551
