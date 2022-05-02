@@ -36,7 +36,7 @@ def load_img_norm_zero_one(path: str) -> numpy.ndarray:
 
     # img_rgb_hwc.shape is (224, 224, 3), where 3 corresponds to RGB channels
 
-    return norm.norm_img_pxls(img_rgb_hwc, min=0., max=255.)
+    return norm.norm_img_pxls(img_rgb_hwc, min_pixel_val=0., max_pixel_val=255.)
 
 
 def img_to_tensor(img_nhwc: numpy.ndarray) -> torch.Tensor:
