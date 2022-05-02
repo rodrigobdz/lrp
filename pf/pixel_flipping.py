@@ -70,7 +70,7 @@ class PixelFlipping:
 Selected perturbation mode: {perturb_mode}""")
 
         # Limit perturbation modes to the ones available in the library.
-        if perturb_mode != PerturbModes.INPAINTING and perturb_mode != PerturbModes.RANDOM:
+        if perturb_mode not in (PerturbModes.INPAINTING, PerturbModes.RANDOM):
             raise NotImplementedError(
                 f'Perturbation mode \'{perturb_mode}\' not implemented yet.')
 

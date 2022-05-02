@@ -121,6 +121,8 @@ def verify_perturbation_args(input_nchw: torch.Tensor,
     max_num_patches: int = num_patches_per_img * num_patches_per_img
     max_perturbation_steps: int = max_num_patches
 
-    if perturbation_steps > max_perturbation_steps:
-        raise ValueError(f"""Perturbation steps ({perturbation_steps}) cannot be greater than
+    if perturbation_steps <= max_perturbation_steps:
+        return
+
+    raise ValueError(f"""Perturbation steps ({perturbation_steps}) cannot be greater than
 the maximum number of steps ({max_perturbation_steps}).""")
