@@ -17,6 +17,8 @@ import cv2
 import numpy
 import torch
 
+from pf.sanity_checks import ensure_chw_format
+
 
 def arr_chw_to_hwc(arr_chw: numpy.ndarray) -> numpy.ndarray:
     r"""Convert numpy array from CHW to HWC format.
@@ -62,6 +64,7 @@ def opencv_to_tensor(img_bgr_hwc: numpy.ndarray) -> torch.Tensor:
 
 def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarray:
     r"""Convert image as torch tensor to numpy array.
+
     Operations performed:
         Convert from CHW to HWC format.
         Convert color format from RGB to BGR.
@@ -73,6 +76,8 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarra
     """
     if not isinstance(img_rgb_chw, torch.Tensor):
         raise TypeError('Input must be a torch tensor.')
+
+    ensure_chw_format(input_chw=img_rgb_chw)
 
     # Convert to numpy array and from CHW to HWC format
     img_rgb_hwc: numpy.ndarray = arr_chw_to_hwc(img_rgb_chw.detach().numpy())

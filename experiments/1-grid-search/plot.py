@@ -11,11 +11,13 @@ __status__ = 'Development'
 
 from typing import Any, Callable, List, Optional, Tuple
 
+import numpy
 import torch
 from matplotlib import pyplot as plt
 
 import lrp.plot
 from pf.convert_img import arr_chw_to_hwc
+from pf.sanity_checks import ensure_chw_format
 
 
 def grid(results: List[Tuple[float, torch.Tensor]],
@@ -33,8 +35,9 @@ def grid(results: List[Tuple[float, torch.Tensor]],
 
     Source: https://stackoverflow.com/a/46616645
 
-    :param results: List of tuples of the form (rule_param, R)
-    :param image_chw_rgb: Reference image in CHW format with RGB color format used to calculate the relevance scores
+    :param results: List of tuples of the form (rule_param, relevance_scores_nchw)
+    :param image_chw_rgb: Reference image in CHW format with RGB color format used
+                          to calculate the relevance scores
     :param title: Title of the plot
     :param filename: Name of the file to save the plot to
     :param gridsize: Number of rows and columns in the grid
@@ -43,6 +46,7 @@ def grid(results: List[Tuple[float, torch.Tensor]],
     :param figsize: Figure size
     :param alpha: Alpha value for the reference image
     """
+    ensure_chw_format(input_chw=image_chw_rgb)
 
     # Settings
     grid_rows, grid_cols = gridsize
@@ -50,32 +54,33 @@ def grid(results: List[Tuple[float, torch.Tensor]],
     dpi = 150
 
     # Create figure (fig), and array of axes (ax)
-    fig, ax = plt.subplots(nrows=grid_rows, ncols=grid_cols, figsize=figsize)
+    fig, axes = plt.subplots(nrows=grid_rows, ncols=grid_cols, figsize=figsize)
     fig.suptitle(title, fontsize=fontsize)
 
     # Plot simple raster image on each sub-plot
     # axi is equivalent with ax[row][col]
-    for i, axi in enumerate(ax.flat):
-        rule_param, R = results[i]
-        relevance_scores = R[0].sum(dim=0).detach().numpy()
+    for i, axis_i in enumerate(axes.flat):
+        rule_param, relevance_scores_nchw = results[i]
+        relevance_scores_arr: numpy.ndarray = relevance_scores_nchw[0].sum(
+            dim=0).detach().numpy()
 
-        axi.set_title(f'{param_name}={param_print(rule_param)}',
-                      fontsize=fontsize*0.5)
+        axis_i.set_title(f'{param_name}={param_print(rule_param)}',
+                         fontsize=fontsize*0.5)
 
         # Plot heatmap
-        lrp.plot.heatmap(relevance_scores=relevance_scores,
-                         width=1, height=1, fig=axi,
+        lrp.plot.heatmap(relevance_scores=relevance_scores_arr,
+                         width=1, height=1, fig=axis_i,
                          show_plot=False, dpi=dpi)
 
         # Plot reference image
         if transform:
             img_hwc = arr_chw_to_hwc(transform(image_chw_rgb).detach().numpy())
-            axi.imshow(img_hwc, alpha=alpha)
+            axis_i.imshow(img_hwc, alpha=alpha)
         else:
-            axi.imshow(arr_chw_to_hwc(image_chw_rgb), alpha=alpha)
+            axis_i.imshow(arr_chw_to_hwc(image_chw_rgb), alpha=alpha)
 
-        # Hide axis
-        axi.axis('off')
+        # Hide axes
+        axis_i.axis('off')
 
     # Add padding for better alignment of suptitle
     # Source: https://stackoverflow.com/a/45161551
