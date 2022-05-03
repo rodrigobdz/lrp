@@ -69,27 +69,27 @@ def _argsort(patches_nmmpp: torch.Tensor,
     return order_nm2
 
 
-def _patchify(input_chw: torch.Tensor,
+def _patchify(input_n1hw: torch.Tensor,
               perturbation_size: int) -> torch.Tensor:
     r"""Divide tensor into patches of desired size.
 
-    :param input_chw: Input tensor in NCHW format.
+    :param input_n1hw: Input tensor in NCHW format.
     :param perturbation_size: Size of the patch to flip.
 
     :returns: Patched input tensor in NCHW format.
     """
-    sanity_checks.ensure_chw_format(input_chw=input_chw)
+    sanity_checks.ensure_nchw_format(input_nchw=input_n1hw)
 
     # Patch size.
     kernel_size: int = perturbation_size
     # Stride of kernel size ensures non-overlapping patches.
     stride: int = perturbation_size
 
-    return input_chw.data.unfold(dimension=1,
-                                 size=kernel_size,
-                                 step=stride).unfold(dimension=2,
-                                                     size=kernel_size,
-                                                     step=stride)
+    return input_n1hw.data.unfold(dimension=2,
+                                  size=kernel_size,
+                                  step=stride).unfold(dimension=3,
+                                                      size=kernel_size,
+                                                      step=stride)
 
 
 def _create_flip_mask(order_nm_flat: torch.Tensor,
@@ -165,6 +165,22 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
     # Reduce number of channels to one.
     relevance_scores_n1hw: torch.Tensor = transforms.Grayscale()(relevance_scores_nchw)
 
+    # 1. Divide tensor into patches
+    # Notation:
+    #   p: perturbation_size
+    #   m: modified width = original width/p.
+    #      Eg. m=224/8=28, p=8, original width=224
+    #      28 is the number of patches of size 8 in the image.
+    #
+    # Shape of patches_nmmpp: (batch_size, m, m, p, p) = (batch_size, 28, 28, 8, 8)
+    patches_nmmpp: torch.Tensor = _patchify(input_n1hw=relevance_scores_n1hw,
+                                            perturbation_size=perturbation_size)
+
+    # 2. Sort patches by their sum
+    order_nm_flat: torch.Tensor = _argsort(patches_nmmpp,
+                                           perturbation_size,
+                                           objective=PixelFlippingObjectives.MORF)
+
     # Loop over patches to remove.
     for patch_index in range(max_num_patches):
         # Create empty boolean tensor of size 0.
@@ -172,23 +188,6 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
 
         # Loop over images in batch.
         for batch_index in range(batch_size):
-            # Select the relevance scores for the current image in batch.
-            relevance_scores_1hw: torch.Tensor = relevance_scores_n1hw[batch_index]
-
-            # 1. Divide tensor into patches
-            # Notation:
-            #   p: perturbation_size
-            #   m: modified width = original width/p.
-            #      Eg. m=224/8=28, p=8, original width=224
-            #      28 is the number of patches of size 8 in the image.
-            patches_nmmpp: torch.Tensor = _patchify(input_chw=relevance_scores_1hw,
-                                                    perturbation_size=perturbation_size)
-
-            # 2. Sort patches by their sum
-            order_nm_flat: torch.Tensor = _argsort(patches_nmmpp,
-                                                   perturbation_size,
-                                                   objective=PixelFlippingObjectives.MORF)
-
             # 3. Create mask from individual patch
             flip_mask_1hw: torch.Tensor = _create_flip_mask(order_nm_flat=order_nm_flat,
                                                             num_patches_per_img=num_patches_per_img,
