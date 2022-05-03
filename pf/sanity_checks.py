@@ -116,6 +116,7 @@ def verify_perturbation_args(input_nchw: torch.Tensor,
     _, width = utils.get_height_width(input_nchw)
 
     # FIXME: Calculation is only valid if a patch is removed each step.
+    # TODO: Add documentation for max_num_patches
     # Get number of patches per image.
     num_patches_per_img: int = width // perturbation_size
     max_num_patches: int = num_patches_per_img * num_patches_per_img
