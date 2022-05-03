@@ -9,28 +9,41 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-docstring-first
+
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.31.1
     hooks:
       - id: markdownlint
+
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.9.0
     hooks:
       - id: python-use-type-annotations
       - id: python-no-log-warn
+
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
       - id: isort
         name: isort (python)
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.32.0
     hooks:
       - id: pyupgrade
+
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.1.1
     hooks:
       - id: pydocstyle
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v0.950'
+    hooks:
+      - id: mypy
+        exclude: 'experiments'
+
+  # https://stackoverflow.com/a/61238571
   - repo: local
     hooks:
       - id: pylint
@@ -40,14 +53,17 @@ repos:
         types: [python]
         require_serial: true
         args: ['--rcfile=.pylintrc']
+
   - repo: https://github.com/asottile/setup-cfg-fmt
     rev: v1.20.1
     hooks:
       - id: setup-cfg-fmt
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.6.2
     hooks:
       - id: prettier
+
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.3.1
     hooks:
