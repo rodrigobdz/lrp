@@ -100,8 +100,7 @@ def verify_batch_size(*tensors) -> None:
 is {batch_size} but tensor {batch_index} has batch size {utils.get_batch_size(tensor)}.""")
 
 
-def verify_perturbation_args(input_nchw: torch.Tensor,
-                             perturbation_steps: int,
+def verify_perturbation_args(perturbation_steps: int,
                              max_perturbation_steps: int) -> None:
     r"""Verify that the perturbation arguments are valid.
 
@@ -111,8 +110,6 @@ def verify_perturbation_args(input_nchw: torch.Tensor,
 
     :raises ValueError: If the perturbation arguments are invalid.
     """
-    verify_square_input(input_nchw)
-
     if perturbation_steps <= max_perturbation_steps:
         return
 
