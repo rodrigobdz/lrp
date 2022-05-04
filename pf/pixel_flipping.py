@@ -372,8 +372,9 @@ Selected perturbation mode: {perturb_mode}""")
             flipped_pixel_count = new_acc_flip_mask_hw.count_nonzero().item() - \
                 flipped_pixel_count
 
-            self.logger.info(
-                f'Batch image {batch_index}: Flipped {flipped_pixel_count} pixels.')
+            self.logger.info("Batch image %s: Flipped %s pixels.",
+                             batch_index,
+                             flipped_pixel_count)
 
         # Squeeze mask to empty channel dimension and convert from (N, 1, H, W) to (N, H, W).
         mask_nhw: torch.Tensor = mask_n1hw.squeeze()
