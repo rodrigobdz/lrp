@@ -101,26 +101,17 @@ is {batch_size} but tensor {batch_index} has batch size {utils.get_batch_size(te
 
 
 def verify_perturbation_args(input_nchw: torch.Tensor,
-                             perturbation_size: int,
-                             perturbation_steps: int) -> None:
+                             perturbation_steps: int,
+                             max_perturbation_steps: int) -> None:
     r"""Verify that the perturbation arguments are valid.
 
     :param input_nchw: Input tensor in NCHW format.
-    :param perturbation_size: Size of the patches.
     :param perturbation_steps: Number of steps to take in the perturbation.
+    :param max_perturbation_steps: Maximum number of steps for perturbation.
 
     :raises ValueError: If the perturbation arguments are invalid.
     """
     verify_square_input(input_nchw)
-
-    _, width = utils.get_height_width(input_nchw)
-
-    # FIXME: Calculation is only valid if a patch is removed each step.
-    # TODO: Add documentation for max_num_patches
-    # Get number of patches per image.
-    num_patches_per_img: int = width // perturbation_size
-    max_num_patches: int = num_patches_per_img * num_patches_per_img
-    max_perturbation_steps: int = max_num_patches
 
     if perturbation_steps <= max_perturbation_steps:
         return
