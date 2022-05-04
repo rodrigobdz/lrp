@@ -18,18 +18,18 @@ from matplotlib import pyplot as plt
 import lrp.plot
 
 
-def plot_number_of_flips_per_step(number_of_flips_per_step: Dict[int, int]) -> None:
+def plot_number_of_flips_per_step(number_of_flips_per_step_dict: Dict[int, int]) -> None:
     r"""Plot number of flips per step.
 
-    :param number_of_flips_per_step: Number of pixels that were flipped per step.
+    :param number_of_flips_per_step_dict: Number of pixels that were flipped per step.
     """
     # Plot number of flips per step.
-    plt.plot(number_of_flips_per_step.values(), marker='.', linestyle='')
+    plt.plot(number_of_flips_per_step_dict.values(), marker='.', linestyle='')
 
     # Add offset to avoid overlapping markers with function values.
     offset: float = 0.2
     # Annotate plot with number of steps as text next to each marker.
-    for idx, val in enumerate(number_of_flips_per_step.values()):
+    for idx, val in enumerate(number_of_flips_per_step_dict.values()):
         if val == 1:
             break
         plt.annotate(val, xy=(idx+offset, val))

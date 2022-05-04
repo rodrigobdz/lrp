@@ -478,4 +478,5 @@ Selected perturbation mode: {perturb_mode}""")
     def plot_number_of_flips_per_step(self) -> None:
         r"""Plot the number of flipped pixels per perturbation step."""
         plot.plot_number_of_flips_per_step(
-            number_of_flips_per_step=self.number_of_flips_per_step)
+            number_of_flips_per_step_dict=self.number_of_flips_per_step_dict
+        )
