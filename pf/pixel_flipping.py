@@ -288,8 +288,8 @@ Selected perturbation mode: {perturb_mode}""")
         :param flipped_input_nchw: Input to be explained.
         :param perturbation_step: Current perturbation step.
         """
-        score: float = forward_pass(flipped_input_nchw).detach()
-        self.class_prediction_scores_n[:, perturbation_step] = score
+        scores: torch.Tensor = forward_pass(flipped_input_nchw).detach()
+        self.class_prediction_scores_n[:, perturbation_step] = scores
 
         self.logger.debug("Classification score: %s",
                           self.class_prediction_scores_n[:, perturbation_step])

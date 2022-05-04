@@ -235,7 +235,7 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
     # Function should return the (single-class) classification score for the given input to measure
     # difference between flips.
     # Access the score of predicted classes in every image in batch.
-    forward_pass: Callable[[torch.Tensor], float] = lambda input_nchw: lrp_instance.model(input_nchw)[
+    forward_pass: Callable[[torch.Tensor], torch.Tensor] = lambda input_nchw: lrp_instance.model(input_nchw)[
         lrp_instance.explained_class_indices[:, 0],
         lrp_instance.explained_class_indices[:, 1]
     ]
