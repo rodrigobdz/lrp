@@ -251,8 +251,8 @@ Selected perturbation mode: {perturb_mode}""")
         self._measure_class_prediction_score(
             forward_pass, flipped_input_nchw, perturbation_step=0)
 
-        self.logger.debug(
-            f'Initial classification score {self.class_prediction_scores_n}')
+        self.logger.debug("Initial classification score %s",
+                          self.class_prediction_scores_n)
 
         # Contains N one-dimensional lists of relevance scores with m elements. Shape (N, m).
         self._flip_mask_generator: Generator[
@@ -265,7 +265,8 @@ Selected perturbation mode: {perturb_mode}""")
             # Shift perturbation step by one to start from 1.
             shifted_perturbation_step: int = perturbation_step + 1
 
-            self.logger.debug(f'Step {shifted_perturbation_step}')
+            self.logger.debug("Step %s",
+                              shifted_perturbation_step)
 
             # Run a perturbation step.
             flipped_input_nchw, last_class_prediction_score = self._flip(
@@ -290,8 +291,8 @@ Selected perturbation mode: {perturb_mode}""")
         score: float = forward_pass(flipped_input_nchw).detach()
         self.class_prediction_scores_n[:, perturbation_step] = score
 
-        self.logger.debug(
-            f'Classification score: {self.class_prediction_scores_n[:, perturbation_step]}')
+        self.logger.debug("Classification score: %s",
+                          self.class_prediction_scores_n[:, perturbation_step])
 
     @timer
     def _flip(self,

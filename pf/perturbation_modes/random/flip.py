@@ -65,7 +65,7 @@ def flip_random(input_nchw: torch.Tensor,
         # Expanding a tensor basically duplicates tensor C times.
         expanded_mask_chw: torch.Tensor = mask_1hw.expand(input_chw.shape)
 
-        logger.debug(f'Expanded mask has shape {expanded_mask_chw.shape}.')
+        logger.debug("Expanded mask has shape %s.", expanded_mask_chw.shape)
 
         # Draw a random number.
         # Size of perturbation/patch is NxN, where N is perturbation_size.
@@ -80,8 +80,10 @@ def flip_random(input_nchw: torch.Tensor,
         flip_indices = mask_n1hw.nonzero().flatten().tolist()
         # Count how many elements are set to True—i.e., would be flipped.
         flip_count: int = input_chw[expanded_mask_chw].count_nonzero().item()
-        logger.debug(
-            f'Flipping input_chw{flip_indices} to {flip_value}: {flip_count} element(s).')
+        logger.debug("Flipping input_chw %s to %s: %s element(s).",
+                     flip_indices,
+                     flip_value,
+                     flip_count)
 
         # Flip pixels/patch in-place. Changes are reflected in input_nchw.
         # Disable gradient computation for the pixel-flipping operations.

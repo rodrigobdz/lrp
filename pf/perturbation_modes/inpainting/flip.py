@@ -56,8 +56,9 @@ def flip_inpainting(input_nchw: torch.Tensor,
         mask_1hw: torch.Tensor = mask_n1hw[batch_index]
         input_chw: torch.Tensor = input_nchw[batch_index]
 
-        logger.debug(f"""Mask {batch_index} will flip a total
-of {mask_1hw.count_nonzero().item()} elements in image.""")
+        logger.debug("Mask %s will flip a total of %s elements in image.",
+                     batch_index,
+                     mask_1hw.count_nonzero().item())
 
         # Reduce number of channels in mask from 3 to 1.
         mask_arr_hw1: numpy.ndarray = tensor_to_opencv_inpainting(
