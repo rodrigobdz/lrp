@@ -22,6 +22,7 @@ import logging
 import sys
 from typing import Callable, Dict, Generator, List, Optional, Tuple
 
+import numpy
 import torch
 from matplotlib import pyplot as plt
 
@@ -42,7 +43,7 @@ class PixelFlipping:
     r"""Pixel-Flipping Algorithm."""
 
     def __init__(self,
-                 perturbation_steps: int = 100,
+                 perturbation_steps: int = 11,
                  perturbation_size: int = 8,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
@@ -74,29 +75,6 @@ Selected perturbation mode: {perturb_mode}""")
         if perturb_mode not in (PerturbModes.INPAINTING, PerturbModes.RANDOM):
             raise NotImplementedError(
                 f'Perturbation mode \'{perturb_mode}\' not implemented yet.')
-
-        # TODO: Add safety check for number_flips_per_step to avoid exceeding number of elements.
-        # Flip more values at the beginning to skip the uninteresting part of flipping
-        # and arrive with less computation time to the end of the flipping.
-        #
-        # Example allocation of number_flips_per_step for multi_flip_steps=5:
-        # number_flips_per_step = {0: 2**5,
-        #                          1: 2**4,
-        #                          2: 2**3,
-        #                          3: 2**2,
-        #                          4: 2**1
-        #                         }
-        #
-        #                       = {0: 32,
-        #                          1: 16,
-        #                          2: 8,
-        #                          3: 4,
-        #                          4: 2
-        #                         }
-        self.number_flips_per_step: Dict[int, int] = {}
-        multi_flip_steps: int = perturbation_size
-        for step_number, exp_val in enumerate(reversed(range(multi_flip_steps))):
-            self.number_flips_per_step[step_number] = 2**(exp_val+1)
 
         logging.basicConfig(
             stream=sys.stderr,
@@ -176,14 +154,18 @@ Selected perturbation mode: {perturb_mode}""")
         sanity_checks.verify_batch_size(input_nchw, relevance_scores_nchw)
         sanity_checks.ensure_non_overlapping_patches_possible(input_nchw,
                                                               self.perturbation_size)
-        sanity_checks.verify_perturbation_args(input_nchw=input_nchw,
-                                               perturbation_size=self.perturbation_size,
-                                               perturbation_steps=self.perturbation_steps)
 
         self._batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
         # Store original input for comparison at the end.
         self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
         self.relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.detach().clone()
+
+        self.number_of_flips_per_step_dict: Dict[int,
+                                                 int] = self._define_number_of_flips_per_step_dict()
+        max_perturbation_steps: int = len(self.number_of_flips_per_step_dict)
+
+        sanity_checks.verify_perturbation_args(perturbation_steps=self.perturbation_steps,
+                                               max_perturbation_steps=max_perturbation_steps)
 
         # Initialize accumulative mask to False.
         # Each mask used to flip the input will be stored in this tensor with logical OR.
@@ -292,6 +274,101 @@ Selected perturbation mode: {perturb_mode}""")
         self.logger.debug("Classification score: %s",
                           self.class_prediction_scores_n[:, perturbation_step])
 
+    def _define_number_of_flips_per_step_dict(self) -> Dict[int, int]:
+        r"""Define number of flips per step.
+
+        At the beginning few regions are flipped, then the number of regions flipped in each step
+        progressively increases using the power of two to calculate the exact number.
+
+        :param input_nchw: Input to be explained.
+        :param perturbation_size: Number of pixels to perturb per step.
+
+        :returns: Number of flips per step as a dictionary with
+                    keys: perturbation step, value: number of flips.
+
+        Example:
+            Setup:
+                perturbation_size = 8
+                input_nchw.shape = (N, C, 224, 224)
+
+            Intermediate calculations:
+                width = 224
+                num_patches_per_img_1d = 224//8 = 28
+
+                total_num_patches = 28 * 28 = 784
+                max_power_of_two_possible = int(log2(784)) = 9
+
+                power_of_two_exponents = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                power_of_two_vals = [ 1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+                number_of_flips_per_step_arr =  [1, 1, 2, 4, 8, 16, 32, 64, 128, 256]
+
+                num_patches_to_flip_with_power_of_two = 512
+                rest_patches_count = 272
+
+                number_of_flips_per_step_arr = [1, 1, 2, 4, 8, 16, 32, 64, 128, 256, 272]
+                number_of_flips_per_step_arr.sum() = 784
+
+            Result:
+                {0: 1, 1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32, 7: 64, 8: 128, 9: 256, 10: 272}
+        """
+        _, width = utils.get_height_width(self.original_input_nchw)
+
+        # Get number of patches per image in a dimension (width or height).
+        # I.e., how many patches of size perturbation_size can fit horizontally or vertically
+        # in the new grid of patches.
+        num_patches_per_img_1d: int = width // self.perturbation_size
+
+        # Get total number of patches of size perturbation_size in image.
+        total_num_patches: int = num_patches_per_img_1d * num_patches_per_img_1d
+
+        # Calculate maximum power of two possible which is less than the total number of patches.
+        max_power_of_two_possible: int = int(numpy.log2(total_num_patches))
+
+        # Calculate power of two values to increasingly flip patches of pixels.
+        # Add one because the range starts at 0.
+        power_of_two_exponents: numpy.ndarray = numpy.arange(
+            max_power_of_two_possible + 1)
+        power_of_two_vals: numpy.ndarray = 2**power_of_two_exponents
+
+        # Calculate the differences between consecutive elements of an array and prepend
+        # an element with value 1 at the beginning. The goal is to "slow start" and then
+        # progressively flip more elements as step count increases.
+        number_of_flips_per_step_arr: numpy.ndarray = numpy.ediff1d(power_of_two_vals,
+                                                                    to_begin=1)
+
+        # Sum the total number of flips in all steps.
+        num_patches_to_flip_with_power_of_two: int = number_of_flips_per_step_arr.sum()
+
+        # Sanity check. The total number of patches flipped in all steps with power of two values
+        # should be less than or equal to the total number of patches in image.
+        if total_num_patches <= num_patches_to_flip_with_power_of_two:
+            raise ValueError(f"""Total number of patches {total_num_patches} is less than the sum
+of number of patches flipped in all steps {num_patches_to_flip_with_power_of_two}.""")
+
+        # Calculate number of patches pending to be flipped.
+        # These patches are not included in the power of two because the next exponent
+        # would exceed the total number of patches, that's why the last element is calculated
+        # this way, manually.
+        rest_patches_count: int = total_num_patches - \
+            num_patches_to_flip_with_power_of_two
+
+        number_of_flips_per_step_arr = numpy.append(number_of_flips_per_step_arr,
+                                                    rest_patches_count)
+
+        # Sanity check. The total number of patches flipped in all steps altogether should
+        # be equal to the total number of patches in image.
+        if total_num_patches != number_of_flips_per_step_arr.sum():
+            raise ValueError(f"""Total number of patches {total_num_patches} is not equal to the sum
+of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}.""")
+
+        # Convert array of number of patches to flip per step to dictionary with keys:
+        # perturbation step, value: number of flips.
+        number_of_flips_per_step_dict: Dict[int, int] = dict(
+            enumerate(number_of_flips_per_step_arr)
+        )
+
+        return number_of_flips_per_step_dict
+
     @timer
     def _flip(self,
               forward_pass: Callable[[torch.Tensor], torch.Tensor],
@@ -307,11 +384,8 @@ Selected perturbation mode: {perturb_mode}""")
 
         :returns: Tuple of flipped input and updated classification score
         """
-        # Default number of consecutive flips to perform per step in case number_flips_per_step
-        # is not defined for perturbation_step.
-        default_flips_per_step: int = 1
-        number_flips_current_step: int = self.number_flips_per_step.get(perturbation_step,
-                                                                        default_flips_per_step)
+        number_of_flips_in_current_step: int = self.number_of_flips_per_step_dict[
+            perturbation_step]
 
         # Mask to store regions to flip in current perturbation step.
         mask_n1hw: torch.Tensor
