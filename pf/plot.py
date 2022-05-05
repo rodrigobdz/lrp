@@ -12,6 +12,7 @@ __status__ = 'Development'
 from typing import List
 
 import matplotlib.ticker as plticker
+import numpy
 import torch
 from matplotlib import pyplot as plt
 
@@ -23,16 +24,21 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int]) -> No
 
     :param number_of_flips_per_step_dict: Number of pixels that were flipped per step.
     """
+    xticks = numpy.arange(1, len(number_of_flips_per_step_arr)+1)
+
     # Plot number of flips per step.
-    plt.plot(number_of_flips_per_step_arr, marker='.', linestyle='')
+    plt.plot(xticks, number_of_flips_per_step_arr, marker='.', linestyle='')
 
     # Add offset to avoid overlapping markers with function values.
     offset: float = 0.2
     # Annotate plot with number of steps as text next to each marker.
-    for idx, val in enumerate(number_of_flips_per_step_arr):
+    for idx, val in enumerate(number_of_flips_per_step_arr, 1):
         plt.annotate(val, xy=(idx+offset, val))
 
-    plt.title('Number of simultaneous flip per step')
+    plt.xticks(xticks)
+    plt.title(f'Total number of flips: {sum(number_of_flips_per_step_arr)}')
+    plt.ylabel('Number of simultaneous flip per step')
+    plt.xlabel('Perturbation step')
     plt.margins(0.1, tight=True)
     # Add padding for better alignment of (sup)title
     # Source: https://stackoverflow.com/a/45161551

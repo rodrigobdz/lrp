@@ -527,7 +527,11 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         plt.title(title)
         plt.xlabel('Perturbation step')
         plt.ylabel('Classification score')
-        plt.margins(0.01, tight=True)
+
+        horizontal_margin: float = 0.03
+        vertical_margin: float = 0.1
+        plt.margins(horizontal_margin, vertical_margin, tight=True)
+
         # Add padding for better alignment of (sup)title
         # Source: https://stackoverflow.com/a/45161551
         plt.tight_layout(rect=[0, 0, 1, 1])
