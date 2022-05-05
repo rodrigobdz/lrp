@@ -243,7 +243,7 @@ Selected perturbation mode: {perturb_mode}""")
 
         # Perturbation step 0 is the original input.
         # Shift perturbation step by one to start from 1.
-        for perturbation_step in range(1, self.perturbation_steps):
+        for perturbation_step in range(0, self.perturbation_steps):
 
             self.logger.debug("Step %s",
                               perturbation_step)
