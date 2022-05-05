@@ -30,8 +30,6 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_dict: Dict[int, int])
     offset: float = 0.2
     # Annotate plot with number of steps as text next to each marker.
     for idx, val in enumerate(number_of_flips_per_step_dict.values()):
-        if val == 1:
-            break
         plt.annotate(val, xy=(idx+offset, val))
 
     plt.title('Number of simultaneous flip per step')
@@ -76,17 +74,17 @@ def plot_image_comparison(batch_size: int,
         acc_flip_mask_hw: torch.Tensor = acc_flip_mask_nhw[batch_index]
 
         # Create grid of original and perturbed images.
-        _, ax = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])
+        _, axes = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])
 
         # Plot images.
         lrp.plot.plot_imagenet(
             original_input_1chw,
-            ax=ax[0][0],
+            ax=axes[0][0],
             show_plot=plot_kwargs['show_plot'])
 
         lrp.plot.plot_imagenet(
             flipped_input_1chw,
-            ax=ax[0][1],
+            ax=axes[0][1],
             show_plot=plot_kwargs['show_plot'])
 
         # Rotate ticks on x axis to make them readable.
@@ -97,24 +95,24 @@ def plot_image_comparison(batch_size: int,
             # Show grid to distinguish patches from each other in perturbed regions plot.
             # Set the gridding interval: here we use the major tick interval
             locator = plticker.MultipleLocator(base=perturbation_size)
-            ax[1][heatmap_idx].xaxis.set_major_locator(locator)
-            ax[1][heatmap_idx].yaxis.set_major_locator(locator)
-            ax[1][heatmap_idx].grid(visible=True,
-                                    which='major',
-                                    axis='both',
-                                    linestyle='-',
-                                    color='w',
-                                    linewidth=1)
+            axes[1][heatmap_idx].xaxis.set_major_locator(locator)
+            axes[1][heatmap_idx].yaxis.set_major_locator(locator)
+            axes[1][heatmap_idx].grid(visible=True,
+                                      which='major',
+                                      axis='both',
+                                      linestyle='-',
+                                      color='w',
+                                      linewidth=1)
 
         # Plot heatmaps.
         lrp.plot.heatmap(relevance_scores=relevance_scores_hw.detach().numpy(),
-                         fig=ax[1][0],
+                         fig=axes[1][0],
                          show_axis=True,
                          **plot_kwargs)
 
         # Plot heatmap of perturbed regions.
         lrp.plot.heatmap(relevance_scores=acc_flip_mask_hw,
-                         fig=ax[1][1],
+                         fig=axes[1][1],
                          show_axis=True,
                          **plot_kwargs)
 
@@ -123,27 +121,28 @@ def plot_image_comparison(batch_size: int,
         size: int = 12
 
         # Add captions.
-        ax[0][0].text(x=x_position,
-                      y=y_position,
-                      s='Original Input',
-                      size=size)
+        axes[0][0].text(x=x_position,
+                        y=y_position,
+                        s='Original Input',
+                        size=size)
 
-        ax[0][1].text(x=x_position,
-                      y=y_position,
-                      s='Flipped Input',
-                      size=size)
+        axes[0][1].text(x=x_position,
+                        y=y_position,
+                        s='Flipped Input',
+                        size=size)
 
-        ax[1][0].text(x=x_position,
-                      y=y_position,
-                      s='Relevance scores',
-                      size=size)
+        axes[1][0].text(x=x_position,
+                        y=y_position,
+                        s='Relevance scores',
+                        size=size)
 
-        ax[1][1].text(x=x_position,
-                      y=y_position,
-                      s='Perturbed Regions',
-                      size=size)
+        axes[1][1].text(x=x_position,
+                        y=y_position,
+                        s='Perturbed Regions',
+                        size=size)
 
-        # tight_layout automatically adjusts subplot params so that subplot(s) fits into the figure area.
+        # tight_layout automatically adjusts subplot params so that
+        # subplot(s) fits into the figure area.
         plt.rcParams["savefig.bbox"] = 'tight'
         plt.tight_layout()
 
