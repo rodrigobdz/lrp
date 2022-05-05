@@ -52,7 +52,8 @@ class PixelFlipping:
 
         :param perturbation_steps: Number of perturbation steps.
         :param perturbation_size: Size of the region to flip.
-        A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
+                                    A size of 1 corresponds to single pixels,
+                                    whereas a higher number to patches of size nxn.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
@@ -180,10 +181,8 @@ Selected perturbation mode: {perturb_mode}""")
                                                perturbation_steps=self.perturbation_steps)
 
         self._batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
-
-        # Store input for comparison at the end.
+        # Store original input for comparison at the end.
         self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
-
         self.relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.detach().clone()
 
         # Initialize accumulative mask to False.
@@ -260,17 +259,16 @@ Selected perturbation mode: {perturb_mode}""")
         ] = sort.flip_mask_generator(relevance_scores_nchw,
                                      self.perturbation_size)
 
-        for perturbation_step in range(self.perturbation_steps):
-            # Perturbation step 0 is the original input.
-            # Shift perturbation step by one to start from 1.
-            shifted_perturbation_step: int = perturbation_step + 1
+        # Perturbation step 0 is the original input.
+        # Shift perturbation step by one to start from 1.
+        for perturbation_step in range(1, self.perturbation_steps):
 
             self.logger.debug("Step %s",
-                              shifted_perturbation_step)
+                              perturbation_step)
 
             # Run a perturbation step.
             flipped_input_nchw, last_class_prediction_score = self._flip(
-                forward_pass, flipped_input_nchw, shifted_perturbation_step)
+                forward_pass, flipped_input_nchw, perturbation_step)
 
             # Store flipped input for comparison at the end with the original input.
             self.flipped_input_nchw: torch.Tensor = flipped_input_nchw
