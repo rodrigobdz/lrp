@@ -153,7 +153,7 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
     :raises ValueError: If relevance scores are not in square format.
 
     :yields: Mask in N1HW (1-channel) format to flip pixels/patches input in order specified
-    by sorted_values_nm.
+    by objective.
     """
     batch_size: int = utils.get_batch_size(input_nchw=relevance_scores_nchw)
     height, width = utils.get_height_width(relevance_scores_nchw)

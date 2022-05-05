@@ -249,8 +249,9 @@ Selected perturbation mode: {perturb_mode}""")
                               perturbation_step)
 
             # Run a perturbation step.
-            flipped_input_nchw, last_class_prediction_score = self._flip(
-                forward_pass, flipped_input_nchw, perturbation_step)
+            flipped_input_nchw, last_class_prediction_score = self._flip(forward_pass,
+                                                                         flipped_input_nchw,
+                                                                         perturbation_step)
 
             # Store flipped input for comparison at the end with the original input.
             self.flipped_input_nchw: torch.Tensor = flipped_input_nchw
