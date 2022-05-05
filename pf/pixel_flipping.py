@@ -162,7 +162,8 @@ Selected perturbation mode: {perturb_mode}""")
 
         self.number_of_flips_per_step_dict: Dict[int,
                                                  int] = self._define_number_of_flips_per_step_dict()
-        max_perturbation_steps: int = len(self.number_of_flips_per_step_dict)
+        max_perturbation_steps: int = len(
+            self.number_of_flips_per_step_dict)
 
         sanity_checks.verify_perturbation_args(perturbation_steps=self.perturbation_steps,
                                                max_perturbation_steps=max_perturbation_steps)
@@ -550,6 +551,8 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
     def plot_number_of_flips_per_step(self) -> None:
         r"""Plot the number of flipped pixels per perturbation step."""
+        number_of_flips_per_step_arr: List[int] = list(
+            self.number_of_flips_per_step_dict.values()
+        )[:self.perturbation_steps]
         plot.plot_number_of_flips_per_step(
-            number_of_flips_per_step_dict=self.number_of_flips_per_step_dict
-        )
+            number_of_flips_per_step_arr=number_of_flips_per_step_arr)

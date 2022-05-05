@@ -9,7 +9,7 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 # pylint: enable=duplicate-code
 
-from typing import Dict
+from typing import List
 
 import matplotlib.ticker as plticker
 import torch
@@ -18,18 +18,18 @@ from matplotlib import pyplot as plt
 import lrp.plot
 
 
-def plot_number_of_flips_per_step(number_of_flips_per_step_dict: Dict[int, int]) -> None:
+def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int]) -> None:
     r"""Plot number of flips per step.
 
     :param number_of_flips_per_step_dict: Number of pixels that were flipped per step.
     """
     # Plot number of flips per step.
-    plt.plot(number_of_flips_per_step_dict.values(), marker='.', linestyle='')
+    plt.plot(number_of_flips_per_step_arr, marker='.', linestyle='')
 
     # Add offset to avoid overlapping markers with function values.
     offset: float = 0.2
     # Annotate plot with number of steps as text next to each marker.
-    for idx, val in enumerate(number_of_flips_per_step_dict.values()):
+    for idx, val in enumerate(number_of_flips_per_step_arr):
         plt.annotate(val, xy=(idx+offset, val))
 
     plt.title('Number of simultaneous flip per step')
