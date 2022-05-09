@@ -21,7 +21,7 @@ import torchvision
 import lrp.norm
 
 
-def _seed_worker(worker_id: int) -> None:
+def _seed_worker(_: int) -> None:
     r"""Seed the worker with a random seed.
 
     Function imported from PyTorch tutorial:
@@ -37,7 +37,7 @@ def _seed_worker(worker_id: int) -> None:
 def _create_mask_for_single_dataset_class(dataset: torch.utils.data.Dataset,
                                           class_idx_or_name: Union[int, str]
                                           ) -> torch.Tensor:
-    r"""Creates a mask for a specific list of classes, which can be used to filter the dataset.
+    r"""Create a mask for a specific list of classes, which can be used to filter the dataset.
 
     :param dataset: The dataset.
     :param class_idx_or_name: The class index or name to be included in the mask.
@@ -63,22 +63,21 @@ def _create_mask_for_single_dataset_class(dataset: torch.utils.data.Dataset,
 
 def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,
                                      classes: Union[List[str], List[int]]) -> torch.Tensor:
-    r"""Creates a mask for a specific list of classes, which can be used to filter the dataset.
+    r"""Create a mask for a specific list of classes, which can be used to filter the dataset.
 
     :param dataset: The dataset.
     :param classes: The list of classes to be included in the mask.
 
     :return: Mask with classes marked as True.
     """
-
     # Filter which includes only the targets of a certain class in the dataset.
     mask: torch.Tensor = _create_mask_for_single_dataset_class(
         dataset, classes[0])
 
     # Iterate over the remaining classes and add them to the mask.
-    for c in classes[1:]:
+    for clss in classes[1:]:
         # Create filter for an additional class and add to existing mask.
-        mask = mask | _create_mask_for_single_dataset_class(dataset, c)
+        mask = mask | _create_mask_for_single_dataset_class(dataset, clss)
 
     return mask
 
@@ -97,7 +96,7 @@ def _imagenet_dataset(root: str) -> torch.utils.data.Dataset:
 def _data_loader(dataset: torch.utils.data.Dataset,
                  batch_size: int,
                  seed: int = 0) -> torch.utils.data.DataLoader:
-    r"""Returns a data loader for a specific dataset.
+    r"""Return a data loader for a specific dataset.
 
     Args:
         batch_size (int): The batch size.
@@ -123,7 +122,7 @@ def imagenet_data_loader(root: str,
                          classes: Optional[Union[List[str], List[int]]] = None,
                          seed: int = 0
                          ) -> torch.utils.data.DataLoader:
-    r"""Returns a data loader for the ImageNet dataset.
+    r"""Return a data loader for the ImageNet dataset.
 
     :param root: The root directory where the dataset is stored.
     :param batch_size: Number of images to load in each batch.
