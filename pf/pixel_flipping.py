@@ -245,7 +245,7 @@ Selected perturbation mode: {perturb_mode}""")
         # Perturbation step 0 is the original input.
         # Shift perturbation step by one to start from 1.
         for perturbation_step in range(0, self.perturbation_steps):
-
+            self.current_perturbation_step: int = perturbation_step
             self.logger.debug("Step %s",
                               perturbation_step)
 
@@ -496,31 +496,37 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
-        mean_class_prediction_scores_n: torch.Tensor = torch.mean(
-            self.class_prediction_scores_n, dim=0)
+        indices: torch.Tensor = torch.arange(self.current_perturbation_step+1)
+        class_prediction_scores_sliced: torch.Tensor = self.class_prediction_scores_n.index_select(
+            dim=1, index=indices)
 
-        for _, class_prediction_scores in enumerate(self.class_prediction_scores_n):
+        mean_class_prediction_scores_n: torch.Tensor = torch.mean(
+            class_prediction_scores_sliced, dim=0)
+
+        for _, class_prediction_scores in enumerate(class_prediction_scores_sliced):
             plt.plot(class_prediction_scores,
                      color='lightgrey')
 
-        auc: float = area_under_the_curve(
-            mean_class_prediction_scores_n.detach().numpy()
-        )
-        plt.plot(mean_class_prediction_scores_n,
-                 label='Mean',
-                 linewidth=5,
-                 alpha=0.9,
-                 color='black')
+        # AUC can only be computed for at least two points.
+        if self.current_perturbation_step > 0:
+            auc: float = area_under_the_curve(
+                mean_class_prediction_scores_n.detach().numpy()
+            )
+            plt.plot(mean_class_prediction_scores_n,
+                     label='Mean',
+                     linewidth=5,
+                     alpha=0.9,
+                     color='black')
 
-        x_values: List[int] = range(len(mean_class_prediction_scores_n))
-        plt.fill_between(x=x_values,
-                         y1=mean_class_prediction_scores_n,
-                         facecolor='wheat',
-                         label=f'AUC={auc}',
-                         alpha=0.2)
+            x_values: List[int] = range(len(mean_class_prediction_scores_n))
+            plt.fill_between(x=x_values,
+                             y1=mean_class_prediction_scores_n,
+                             facecolor='wheat',
+                             label=f'AUC={auc}',
+                             alpha=0.2)
 
         title: str = f"""Pixel-Flipping
-        Perturbation steps: {self.perturbation_steps}
+        Perturbation steps: {self.current_perturbation_step+1}
         Perturbation size: {self.perturbation_size}x{self.perturbation_size}
         Percentage flipped: {self._calculate_percentage_flipped()}%
         Perturbation mode: {self.perturb_mode}"""
@@ -559,4 +565,5 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             self.number_of_flips_per_step_dict.values()
         )[:self.perturbation_steps]
         plot.plot_number_of_flips_per_step(
-            number_of_flips_per_step_arr=number_of_flips_per_step_arr)
+            number_of_flips_per_step_arr=number_of_flips_per_step_arr[
+                :self.current_perturbation_step+1])
