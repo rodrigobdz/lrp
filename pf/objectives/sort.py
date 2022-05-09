@@ -46,7 +46,7 @@ def _argsort(patches_nmmpp: torch.Tensor,
     # Set default value to descending—i.e., most relevant first.
     descending: bool = True
 
-    # TODO: Add switch case to implement the user's selected objective.
+    # TODO: Important. Add switch case to implement the user's selected objective.
 
     # Sort relevance scores according to objective
     batch_size: int = utils.get_batch_size(input_nchw=patches_nmmpp)
