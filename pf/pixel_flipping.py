@@ -1,4 +1,5 @@
 r"""Pixel-Flipping Algorithm for Evaluation of Explanations.
+
 Also called Region Perturbation when perturbation size is greater than one pixel at once.
 
 Source in Chicago citation format:
@@ -20,7 +21,7 @@ __status__ = 'Development'
 
 import logging
 import sys
-from typing import Callable, Dict, Generator, List, Optional, Tuple
+from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy
 import torch
@@ -163,7 +164,7 @@ Selected perturbation mode: {perturb_mode}""")
         self.number_of_flips_per_step_dict: Dict[int,
                                                  int] = self._define_number_of_flips_per_step_dict()
         max_perturbation_steps: int = len(
-            self.number_of_flips_per_step_dict)
+            self.number_of_flips_per_step_dict) - 1
 
         sanity_checks.verify_perturbation_args(perturbation_steps=self.perturbation_steps,
                                                max_perturbation_steps=max_perturbation_steps)
@@ -211,7 +212,6 @@ Selected perturbation mode: {perturb_mode}""")
         therefore, SendType and ReturnType are set to None above.
         Source: https://docs.python.org/3/library/typing.html
         """
-
         if self.perturb_mode == PerturbModes.RANDOM:
             # TODO: Add support for custom low and high bounds (random number generation).
             # Infer (min. and max.) bounds of input for random number generation
@@ -244,8 +244,8 @@ Selected perturbation mode: {perturb_mode}""")
 
         # Perturbation step 0 is the original input.
         # Shift perturbation step by one to start from 1.
-        for perturbation_step in range(0, self.perturbation_steps):
-            self.current_perturbation_step: int = perturbation_step
+        for perturbation_step in range(1, self.perturbation_steps+1):
+            self.current_perturbation_step: int = perturbation_step + 1
             self.logger.debug("Step %s",
                               perturbation_step)
 
@@ -362,6 +362,13 @@ of number of patches flipped in all steps {num_patches_to_flip_with_power_of_two
         if total_num_patches != number_of_flips_per_step_arr.sum():
             raise ValueError(f"""Total number of patches {total_num_patches} is not equal to the sum
 of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}.""")
+
+        # Prepend an element with value 0 at the beginning.
+        # This element represents the original input with no perturbations.
+        number_of_flips_per_step_arr = numpy.insert(arr=number_of_flips_per_step_arr,
+                                                    obj=0,
+                                                    values=0,
+                                                    axis=0)
 
         # Convert array of number of patches to flip per step to dictionary with keys:
         # perturbation step, value: number of flips.
@@ -496,7 +503,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
-        indices: torch.Tensor = torch.arange(self.current_perturbation_step+1)
+        indices: torch.Tensor = torch.arange(self.current_perturbation_step)
         class_prediction_scores_sliced: torch.Tensor = self.class_prediction_scores_n.index_select(
             dim=1, index=indices)
 
@@ -508,7 +515,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                      color='lightgrey')
 
         # AUC can only be computed for at least two points.
-        if self.current_perturbation_step > 0:
+        if self.current_perturbation_step > 1:
             auc: float = area_under_the_curve(
                 mean_class_prediction_scores_n.detach().numpy()
             )
@@ -526,13 +533,20 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                              alpha=0.2)
 
         title: str = f"""Pixel-Flipping
-        Perturbation steps: {self.current_perturbation_step+1}
+        Perturbation steps: {self.current_perturbation_step-1}
         Perturbation size: {self.perturbation_size}x{self.perturbation_size}
         Percentage flipped: {self._calculate_percentage_flipped()}%
         Perturbation mode: {self.perturb_mode}"""
         plt.title(title)
         plt.xlabel('Perturbation step')
         plt.ylabel('Classification score')
+        # Set x ticks to perturbation step indices.
+        # Step 0 corresponds to the unperturbed input.
+        xticks: List[int] = range(self.current_perturbation_step+1)
+        labels: List[Union[str, int]] = ['0\nUnperturbed'] + \
+            list(range(1, self.current_perturbation_step+1))
+        plt.xticks(ticks=xticks,
+                   labels=labels)
 
         horizontal_margin: float = 0.03
         vertical_margin: float = 0.1
@@ -561,9 +575,9 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
     def plot_number_of_flips_per_step(self) -> None:
         r"""Plot the number of flipped pixels per perturbation step."""
+        # Extract values from dictionary
         number_of_flips_per_step_arr: List[int] = list(
-            self.number_of_flips_per_step_dict.values()
-        )[:self.perturbation_steps]
+            self.number_of_flips_per_step_dict.values())
         plot.plot_number_of_flips_per_step(
             number_of_flips_per_step_arr=number_of_flips_per_step_arr[
-                :self.current_perturbation_step+1])
+                :self.current_perturbation_step])

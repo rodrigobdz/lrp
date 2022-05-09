@@ -24,15 +24,20 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int]) -> No
 
     :param number_of_flips_per_step_dict: Number of pixels that were flipped per step.
     """
-    xticks = numpy.arange(1, len(number_of_flips_per_step_arr)+1)
+    current_perturbation_step: int = len(number_of_flips_per_step_arr) - 1
+    xticks = numpy.arange(0, len(number_of_flips_per_step_arr))
 
     # Plot number of flips per step.
     plt.plot(xticks, number_of_flips_per_step_arr, marker='.', linestyle='')
 
+    offsets_by_perturbation_step: numpy.ndarray = numpy.linspace(start=0,
+                                                                 stop=0.2,
+                                                                 num=12,
+                                                                 endpoint=True)
     # Add offset to avoid overlapping markers with function values.
-    offset: float = 0.2
+    offset: float = offsets_by_perturbation_step[current_perturbation_step]
     # Annotate plot with number of steps as text next to each marker.
-    for idx, val in enumerate(number_of_flips_per_step_arr, 1):
+    for idx, val in enumerate(number_of_flips_per_step_arr):
         plt.annotate(val, xy=(idx+offset, val))
 
     plt.xticks(xticks)
