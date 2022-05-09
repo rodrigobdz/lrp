@@ -124,7 +124,7 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
         Perturbation steps: {pf_instance.perturbation_steps}
         Perturbation size: {pf_instance.perturbation_size}x{pf_instance.perturbation_size}
         Perturbation mode: {pf_instance.perturb_mode}
-        Batch size: {pf_instance._batch_size}
+        Batch size: {pf_instance.batch_size}
         Batch index/Total number of batches: {batch_index+1}/{NUMBER_OF_BATCHES}"""
     xlabel: str = 'Perturbation step'
     ylabel: str = 'Classification score'

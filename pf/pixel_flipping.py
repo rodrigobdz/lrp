@@ -155,7 +155,7 @@ Selected perturbation mode: {perturb_mode}""")
         sanity_checks.ensure_non_overlapping_patches_possible(input_nchw,
                                                               self.perturbation_size)
 
-        self._batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
+        self.batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
         # Store original input for comparison at the end.
         self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
         self.relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.detach().clone()
@@ -196,7 +196,7 @@ Selected perturbation mode: {perturb_mode}""")
                    relevance_scores_nchw: torch.Tensor,
                    forward_pass: Callable[[torch.Tensor], torch.Tensor]
                    ) -> Generator[Tuple[torch.Tensor, torch.Tensor], None, None]:
-        r"""Generator to flip pixels of input according to the relevance scores.
+        r"""Create generator to flip pixels of input according to the relevance scores.
 
         :param input_nchw: Input to be explained.
         :param relevance_scores_nchw: Relevance scores.
@@ -227,7 +227,7 @@ Selected perturbation mode: {perturb_mode}""")
         # Tensor with class prediction scores has shape (batch_size, perturbation_steps+1).
         # First perturbation step is the original class prediction score without perturbation.
         self.class_prediction_scores_n: torch.Tensor = torch.zeros(
-            (self._batch_size, self.perturbation_steps+1), dtype=torch.float)
+            (self.batch_size, self.perturbation_steps+1), dtype=torch.float)
 
         # Get initial classification score.
         self._measure_class_prediction_score(
@@ -428,7 +428,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                 f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
         # Loop for debugging purposes only.
-        for batch_index in range(self._batch_size):
+        for batch_index in range(self.batch_size):
             # Mask with all pixels previously flipped.
             old_acc_flip_mask_hw: torch.Tensor = self.acc_flip_mask_nhw[batch_index]
             # Mask with pixels flipped only in this perturbation step.
@@ -545,7 +545,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
         :param show_plot: If True, show the plot.
         """
-        plot.plot_image_comparison(batch_size=self._batch_size,
+        plot.plot_image_comparison(batch_size=self.batch_size,
                                    original_input_nchw=self.original_input_nchw,
                                    flipped_input_nchw=self.flipped_input_nchw,
                                    relevance_scores_nchw=self.relevance_scores_nchw,
