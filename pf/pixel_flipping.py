@@ -525,7 +525,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                      alpha=0.9,
                      color='black')
 
-            x_values: List[int] = range(len(mean_class_prediction_scores_n))
+            x_values: range = range(len(mean_class_prediction_scores_n))
             plt.fill_between(x=x_values,
                              y1=mean_class_prediction_scores_n,
                              facecolor='wheat',
@@ -542,7 +542,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         plt.ylabel('Classification score')
         # Set x ticks to perturbation step indices.
         # Step 0 corresponds to the unperturbed input.
-        xticks: List[int] = range(self.current_perturbation_step+1)
+        xticks: range = range(self.current_perturbation_step+1)
         labels: List[Union[str, int]] = ['0\nUnperturbed'] + \
             list(range(1, self.current_perturbation_step+1))
         plt.xticks(ticks=xticks,
