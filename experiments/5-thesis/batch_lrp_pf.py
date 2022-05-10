@@ -66,9 +66,9 @@ INPUT_SHAPE: Tuple[int, int, int, int] = (BATCH_SIZE, CHANNELS, HEIGHT, WIDTH)
 torch.manual_seed(SEED)
 
 
-def _save_image_batch(image_batch: torch.Tensor,
-                      batch_index: int,
-                      suffix: str = '') -> None:
+def _save_image_batch_plot(image_batch: torch.Tensor,
+                           batch_index: int,
+                           suffix: str = '') -> None:
     r"""Plot the image batch and save results to file.
 
     :param image_batch: Image batch
@@ -253,9 +253,9 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
                 forward_pass,
                 should_loop=True)
 
-    _save_image_batch(image_batch=pf_instance.flipped_input_nchw,
-                      batch_index=batch_index,
-                      suffix='flipped-')
+    _save_image_batch_plot(image_batch=pf_instance.flipped_input_nchw,
+                           batch_index=batch_index,
+                           suffix='flipped-')
 
     _plot_pixel_flipping_results(pf_instance=pf_instance,
                                  batch_index=batch_index)
@@ -284,9 +284,9 @@ if __name__ == "__main__":
                    f'{EXPERIMENT_DIR}/batch-{my_batch_index}-ground-truth-labels.pt')
 
         # Save images as png to file
-        _save_image_batch(image_batch=my_image_batch,
-                          batch_index=my_batch_index,
-                          suffix='original-')
+        _save_image_batch_plot(image_batch=my_image_batch,
+                               batch_index=my_batch_index,
+                               suffix='original-')
 
         # Run LRP experiment
         my_lrp_instance, my_input_nchw, my_relevance_scores_nchw = run_lrp_experiment(
