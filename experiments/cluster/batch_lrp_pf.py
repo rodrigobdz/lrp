@@ -38,28 +38,32 @@ from pf.pixel_flipping import plot as pf_plot
 # Experiment parameters
 NUMBER_OF_BATCHES: int = 1
 BATCH_SIZE: int = 25  # multiprocessing.cpu_count()
-PERTURBATION_STEPS: int = 100
+PERTURBATION_STEPS: int = 11
 CLASSES: List[str] = ['axolotl']
 PERTURBATION_SIZE: int = 8
-# Plotting parameters
+
+# PyTorch constants
+SEED: int = 0
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+# Workspace constants
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/\
     unterlagen/bildung/uni/master/masterarbeit'
 EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/lrp-pf-auc/\
     batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
-DPI: float = 150
-# Toggle for plt.show() for each figure
-SHOW_PLOT: bool = False
-
-# Constants
-SEED: int = 0
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
+
 # Model parameters
 VGG16_IMAGE_DIM: int = 224
 CHANNELS: int = 3
 HEIGHT: int = VGG16_IMAGE_DIM
 WIDTH: int = VGG16_IMAGE_DIM
 INPUT_SHAPE: Tuple[int, int, int, int] = (BATCH_SIZE, CHANNELS, HEIGHT, WIDTH)
+
+# Plotting parameters
+DPI: float = 150
+# Toggle for plt.show() for each figure
+SHOW_PLOT: bool = False
 
 
 # Enable reproducibility
@@ -119,21 +123,8 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
     :param pf_instance: Pixel flipping instance with experiment results
     :param batch_index: Index of the batch
     """
-    # Plot classification scores throughout perturbation steps
-    title: str = f"""Region Perturbation
-        Perturbation steps: {pf_instance.perturbation_steps}
-        Perturbation size: {pf_instance.perturbation_size}x{pf_instance.perturbation_size}
-        Perturbation mode: {pf_instance.perturb_mode}
-        Batch size: {pf_instance.batch_size}
-        Batch index/Total number of batches: {batch_index+1}/{NUMBER_OF_BATCHES}"""
-    xlabel: str = 'Perturbation step'
-    ylabel: str = 'Classification score'
+    pf_instance.plot_class_prediction_scores(show_plot=SHOW_PLOT)
 
-    # Save to file
-    pf_instance.plot_class_prediction_scores(title=title,
-                                             xlabel=xlabel,
-                                             ylabel=ylabel,
-                                             show_plot=SHOW_PLOT)
     filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-pixel-flipping-\
         class-prediction-scores-{BATCH_SIZE}.png'
     # Facecolor sets the background color of the figure
@@ -179,7 +170,7 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     """
     input_nchw: torch.Tensor = image_batch.to(DEVICE)
 
-    model = torchvision.models.vgg16(pretrained=True)
+    model: torch.nn.Module = torchvision.models.vgg16(pretrained=True)
     model.eval()
     model.to(DEVICE)
 
