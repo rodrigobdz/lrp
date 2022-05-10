@@ -1,4 +1,4 @@
-r"""Composite Layer-wise Relevance Propagation using rules defined by layer"""
+r"""Composite Layer-wise Relevance Propagation using rules defined by layer."""
 
 
 # pylint: disable=duplicate-code
@@ -25,7 +25,7 @@ class LRP:
     r"""Compute relevance propagation using Layer-wise Relevance Propagation algorithm."""
 
     def __init__(self, model: torch.nn.Module) -> None:
-        r"""Prepare model for LRP computation
+        r"""Prepare model for LRP computation.
 
         :param model: Model to be explained
         """
@@ -53,7 +53,6 @@ class LRP:
 
         :param name_map: List of tuples containing layer names, LRP rule and parameters
         """
-
         self.name_map = name_map
 
         for name, layer in self.model.named_modules():
@@ -73,7 +72,8 @@ class LRP:
             # Apply rule to named layer
             builtin.rsetattr(self.model, name, lrp_layer)
 
-    def mapping(self, name: str) -> Optional[Tuple[rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]]:
+    def mapping(self, name: str) -> Optional[Tuple[rules.LrpRule,
+                                                   Dict[str, Union[torch.Tensor, float]]]]:
         r"""Get LRP rule and parameters for layer with given name.
 
         :param name: Layer name
@@ -117,6 +117,10 @@ class LRP:
         input_nchw.requires_grad = True
 
         # Set default values for relevance, in case ZBoxrule is not used
+        low: Union[torch.Tensor, int] = 0
+        high: Union[torch.Tensor, int] = 0
+        c2: Union[torch.Tensor, int] = 0
+        c3: Union[torch.Tensor, int]
         low = high = c2 = c3 = 0
 
         # Vars to retrieve gradients from first layer
@@ -124,8 +128,8 @@ class LRP:
 
         if isinstance(first_layer, rules.LrpZBoxRule):
             # Access high and low copy layers in first layer.
-            low: torch.Tensor = first_layer.low
-            high: torch.Tensor = first_layer.high
+            low = first_layer.low
+            high = first_layer.high
 
             # Reset stored gradients.
             low.grad = None
@@ -144,20 +148,21 @@ class LRP:
         idx: torch.Tensor
         if label_idx_n:
             # Compute classes passed as argument explicitely
-            idx: torch.Tensor = label_idx_n
+            idx = label_idx_n
         else:
             # Get index maximum activation in the output layer (index of the predicted class)
-            idx: torch.Tensor = forward_pass.max(dim=1).indices
+            idx = forward_pass.max(dim=1).indices
 
         # 3. Create new tensor where elements are tuples (i, idx[i]) with i: counter.
         # Tensor i looks like this: [0, 1, ..., len(idx)]
         i: torch.Tensor = torch.arange(len(idx))
-        # Tensor stacked_idx looks like this: [(i, idx[i]), (i+1, idx[i+1]), ...],
-        # where i is the counter and idx[i] is the index of the maximum activation in the output layer.
-        stacked_idx: torch.Tensor = torch.stack((i, idx), dim=1)
+
+        # Stacked tensor looks like this: [(i, idx[i]), (i+1, idx[i+1]), ...],
+        # where i is the counter and idx[i] is the index of
+        # the maximum activation in the output layer.
 
         # Indices of selected classes are particularly useful for Pixel-Flipping algorithm.
-        self.explained_class_indices = stacked_idx
+        self.explained_class_indices = torch.stack((i, idx), dim=1)
 
         # 4. One-hot encoding for the predicted class in each sample.
         # This is a mask where the predicted class is True and the rest is False.
@@ -186,7 +191,9 @@ class LRP:
         return self.relevance_scores_nchw.detach()
 
     @staticmethod
-    def heatmap(relevance_scores_nchw: torch.Tensor, width: int = 4, height: int = 4) -> None:
+    def heatmap(relevance_scores_nchw: torch.Tensor,
+                width: int = 4,
+                height: int = 4) -> None:
         r"""Create heatmap of relevance.
 
         :param relevance_scores_nchw: Relevance tensor with N3HW format
