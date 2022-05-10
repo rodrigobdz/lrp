@@ -44,7 +44,7 @@ PERTURBATION_SIZE: int = 8
 # Plotting parameters
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/\
     unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/20-04-22/lrp-pf-auc/\
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/lrp-pf-auc/\
     batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
 DPI: float = 150
 # Toggle for plt.show() for each figure
@@ -238,8 +238,8 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
 
     pf_relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.clone().detach()
 
-    # Function should return the (single-class) classification score for the given input to measure
-    # difference between flips.
+    # Function should return the (single-class) classification score for
+    # the given input to measure difference between flips.
     # Access the score of predicted classes in every image in batch.
     forward_pass: Callable[[torch.Tensor],
                            torch.Tensor] = lambda input_nchw: lrp_instance.model(input_nchw)[
