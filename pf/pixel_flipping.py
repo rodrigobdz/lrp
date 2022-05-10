@@ -490,8 +490,9 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
     def plot_class_prediction_scores(self,
                                      show_plot: bool = True) -> None:
-        r"""Plot the updated prediction scores throughout the perturbation steps of
-        the pixel-flipping algorithm to visualize the accuracy of the explanation.
+        r"""Plot prediction scores throughout perturbation in pixel-flipping algorithm.
+
+        Visualize the accuracy of the explanation.
 
         :param show_plot: If True, show the plot.
 
@@ -536,7 +537,8 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         Perturbation steps: {self.current_perturbation_step-1}
         Perturbation size: {self.perturbation_size}x{self.perturbation_size}
         Percentage flipped: {self._calculate_percentage_flipped()}%
-        Perturbation mode: {self.perturb_mode}"""
+        Perturbation mode: {self.perturb_mode}
+        Batch size: {self.batch_size}"""
         plt.title(title)
         plt.xlabel('Perturbation step')
         plt.ylabel('Classification score')
