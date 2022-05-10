@@ -19,12 +19,7 @@ import torch
 from torchvision import transforms
 
 from pf import sanity_checks, utils
-
-
-class PixelFlippingObjectives:  # pylint: disable=too-few-public-methods
-    r"""Objectives for Pixel-Flipping Algorithm."""
-
-    MORF: str = 'Most Relevant First'
+from pf.objectives.constants import PixelFlippingObjectives
 
 
 def _argsort(patches_nmmpp: torch.Tensor,
