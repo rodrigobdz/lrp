@@ -116,11 +116,13 @@ class LRP:
         self.model.zero_grad()
         input_nchw.requires_grad = True
 
-        # Set default values for relevance, in case ZBoxrule is not used
-        low: Union[torch.Tensor, int] = 0
-        high: Union[torch.Tensor, int] = 0
-        c2: Union[torch.Tensor, int] = 0
+        # ZBoxrule-specific parameters
+        low: Union[torch.Tensor, int]
+        high: Union[torch.Tensor, int]
+        c2: Union[torch.Tensor, int]
         c3: Union[torch.Tensor, int]
+
+        # Set default values
         low = high = c2 = c3 = 0
 
         # Vars to retrieve gradients from first layer
