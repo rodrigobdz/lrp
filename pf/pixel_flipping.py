@@ -488,6 +488,40 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         # Calculate percentage with rule of three and round to two decimal places.
         return round((num_elem_flipped*100)/max_num_elem_to_flip, 2)
 
+    def _get_class_prediction_scores_for_step(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        r"""Get class prediction scores for current perturbation step.
+
+        :returns: Class prediction scores for current perturbation step and
+                    its mean along the batch dimension.
+        """
+        indices: torch.Tensor = torch.arange(self.current_perturbation_step)
+        class_prediction_scores_sliced: torch.Tensor = self.class_prediction_scores_n.index_select(
+            dim=1,
+            index=indices)
+        mean_class_prediction_scores_n: torch.Tensor = torch.mean(class_prediction_scores_sliced,
+                                                                  dim=0)
+
+        return class_prediction_scores_sliced, mean_class_prediction_scores_n
+
+    def calculate_auc_score(self) -> float:
+        r"""Calculate AUC score.
+
+        :raises ValueError: If the number of perturbation steps is less or equal to 1.
+        :returns: AUC score.
+        """
+        # AUC can only be computed for at least two points.
+        if self.current_perturbation_step <= 1:
+            raise ValueError('AUC can only be computed for at least two points.'
+                             'Perturbation step should therefore be higher than 1; current:'
+                             f'{self.current_perturbation_step}.')
+
+        (_, mean_class_prediction_scores_n) = self._get_class_prediction_scores_for_step()
+
+        auc: float = area_under_the_curve(
+            mean_class_prediction_scores_n.detach().numpy())
+
+        return auc
+
     def plot_class_prediction_scores(self,
                                      show_plot: bool = True) -> None:
         r"""Plot prediction scores throughout perturbation in pixel-flipping algorithm.
@@ -504,12 +538,8 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             raise ValueError(
                 'No class prediction scores to plot. Please run pixel-flipping first.')
 
-        indices: torch.Tensor = torch.arange(self.current_perturbation_step)
-        class_prediction_scores_sliced: torch.Tensor = self.class_prediction_scores_n.index_select(
-            dim=1, index=indices)
-
-        mean_class_prediction_scores_n: torch.Tensor = torch.mean(
-            class_prediction_scores_sliced, dim=0)
+        (class_prediction_scores_sliced,
+         mean_class_prediction_scores_n) = self._get_class_prediction_scores_for_step()
 
         for _, class_prediction_scores in enumerate(class_prediction_scores_sliced):
             plt.plot(class_prediction_scores,
@@ -517,9 +547,8 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
         # AUC can only be computed for at least two points.
         if self.current_perturbation_step > 1:
-            auc: float = area_under_the_curve(
-                mean_class_prediction_scores_n.detach().numpy()
-            )
+            auc: float = self.calculate_auc_score()
+
             plt.plot(mean_class_prediction_scores_n,
                      label='Mean',
                      linewidth=5,
