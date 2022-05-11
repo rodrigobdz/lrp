@@ -146,7 +146,7 @@ class LRP:
 
         # 2. Get index of classes to be explained
         idx: torch.Tensor
-        if label_idx_n:
+        if label_idx_n is not None:
             # Compute classes passed as argument explicitely
             idx = label_idx_n
         else:

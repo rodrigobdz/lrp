@@ -226,7 +226,6 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
                                                perturbation_size=PERTURBATION_SIZE,
                                                perturb_mode=PerturbModes.INPAINTING)
     pf_input_nchw: torch.Tensor = input_nchw.clone().detach()
-
     pf_relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.clone().detach()
 
     # Function should return the (single-class) classification score for
@@ -264,10 +263,7 @@ if __name__ == "__main__":
     # to save artifacts from experiments.
     Path(EXPERIMENT_DIR).mkdir(parents=True, exist_ok=True)
 
-    for my_batch_index, my_data in enumerate(my_dataloader):
-        # Unpack data from dataloader
-        my_image_batch, my_ground_truth_labels = my_data
-
+    for my_batch_index, (my_image_batch, my_ground_truth_labels) in enumerate(my_dataloader):
         # Save data to file
         torch.save(my_image_batch,
                    f'{EXPERIMENT_DIR}/batch-{my_batch_index}-input-nchw.pt')
