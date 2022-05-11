@@ -47,10 +47,10 @@ SEED: int = 0
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Workspace constants
-WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal/\
-    unterlagen/bildung/uni/master/masterarbeit'
-EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/lrp-pf-auc/\
-    batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
+WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
+    '/unterlagen/bildung/uni/master/masterarbeit'
+EXPERIMENT_DIR: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
+    f'lrp-pf-auc/batch-size-{BATCH_SIZE}/composite-gamma-decreasing'
 DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
 
 # Model parameters
