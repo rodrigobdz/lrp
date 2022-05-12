@@ -33,6 +33,7 @@ from pf.pixel_flipping import plot as pf_plot
 NUMBER_OF_BATCHES: int = 1
 BATCH_SIZE: int = 2
 IMAGE_CLASSES: List[str] = ['axolotl']
+# Experiment constants
 PERTURBATION_STEPS: int = 11
 PERTURBATION_SIZE: int = 8
 
@@ -65,7 +66,7 @@ DPI: float = 150
 SHOW_PLOT: bool = False
 
 
-def _get_name_map(filter_by_layer_index_type: LayerFilter) -> List[
+def _get_rule_layer_map(filter_by_layer_index_type: LayerFilter) -> List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
@@ -79,7 +80,7 @@ def _get_name_map(filter_by_layer_index_type: LayerFilter) -> List[
 
     # TODO: Important. Export to configure as parameter and run script with multiple values.
     # TODO: Important. Save values of name map to file to reconstruct parameters used.
-    name_map: List[
+    rule_layer_map: List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
@@ -95,7 +96,7 @@ def _get_name_map(filter_by_layer_index_type: LayerFilter) -> List[
          (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
           {'gamma': 0}), ]
 
-    return name_map
+    return rule_layer_map
 
 
 class Helpers:
@@ -248,6 +249,7 @@ def save_artifacts(lrp_instance: LRP,
                                   batch_index=batch_index,
                                   suffix='pf-perturbed')
 
+    # Save AUC score to file
     auc_score: float = pf_instance.calculate_auc_score()
     numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-area-under-the-curve.npy',
                arr=auc_score)
@@ -275,15 +277,15 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     filter_by_layer_index_type: LayerFilter = LayerFilter(model)
     filter_by_layer_index_type.set_target_types(vgg16_target_types)
 
-    name_map: List[
+    rule_layer_map: List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
         ]
-    ] = _get_name_map(filter_by_layer_index_type=filter_by_layer_index_type)
+    ] = _get_rule_layer_map(filter_by_layer_index_type=filter_by_layer_index_type)
 
     lrp_instance: LRP = LRP(model)
-    lrp_instance.convert_layers(name_map)
+    lrp_instance.convert_layers(rule_layer_map)
     relevance_scores_nchw: torch.Tensor = lrp_instance.relevance(input_nchw=input_nchw,
                                                                  label_idx_n=label_idx_n)
 

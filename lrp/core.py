@@ -31,14 +31,14 @@ class LRP:
         """
         self.model = copy.deepcopy(model)
         self.model.eval()
-        self.name_map: List[Tuple[List[str], rules.LrpRule,
+        self.rule_layer_map: List[Tuple[List[str], rules.LrpRule,
                                   Dict[str, Union[torch.Tensor, float]]]] = []
         self.input_nchw: Optional[torch.Tensor] = None
         self.label_idx_n: Optional[torch.Tensor] = None
         self.relevance_scores_nchw: Optional[torch.Tensor] = None
         self.explained_class_indices: Optional[torch.Tensor] = None
 
-    def convert_layers(self, name_map:
+    def convert_layers(self, rule_layer_map:
                        List[
                            Tuple[
                                # Layer names
@@ -53,9 +53,9 @@ class LRP:
                        ]) -> None:
         r"""Add LRP support to layers according to given mapping.
 
-        :param name_map: List of tuples containing layer names, LRP rule and parameters
+        :param rule_layer_map: List of tuples containing layer names, LRP rule and parameters
         """
-        self.name_map = name_map
+        self.rule_layer_map = rule_layer_map
 
         for name, layer in self.model.named_modules():
             # Check which rule to apply
@@ -81,7 +81,7 @@ class LRP:
         :param name: Layer name
         :return: LRP rule and parameters or None if no rule is found
         """
-        for layer_names, rule, rule_kwargs in self.name_map:
+        for layer_names, rule, rule_kwargs in self.rule_layer_map:
             # Apply rule only to layers included in mapping
             if name in layer_names:
                 return rule, rule_kwargs
