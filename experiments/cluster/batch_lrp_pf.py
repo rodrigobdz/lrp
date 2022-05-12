@@ -65,6 +65,39 @@ DPI: float = 150
 SHOW_PLOT: bool = False
 
 
+def _get_name_map(filter_by_layer_index_type: LayerFilter) -> List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]]:
+
+    # Low and high parameters for zB-rule
+    low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
+        torch.zeros(*INPUT_SHAPE))
+    high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
+        torch.ones(*INPUT_SHAPE))
+
+    # TODO: Important. Export to configure as parameter and run script with multiple values.
+    # TODO: Important. Save values of name map to file to reconstruct parameters used.
+    name_map: List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]
+    ] = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
+          {'low': low, 'high': high}),
+         (filter_by_layer_index_type(lambda n: 1 <= n <= 10), LrpGammaRule,
+          {'gamma': 0.5}),
+         (filter_by_layer_index_type(lambda n: 11 <= n <= 17), LrpGammaRule,
+          {'gamma': 0.25}),
+         (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
+          {'gamma': 0.1}),
+         (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
+          {'gamma': 0}), ]
+
+    return name_map
+
+
 def _create_directories_if_not_exists(*directories) -> None:
     r"""Create directories (if these don't already exist).
 
@@ -178,39 +211,6 @@ def _save_plot_pf_results(pf_instance: PixelFlipping,
         # Facecolor sets the background color of the figure, in this case to color white
         plt.savefig(pf_comparison_filename, dpi=DPI, facecolor='w')
         plt.close()
-
-
-def _get_name_map(filter_by_layer_index_type: LayerFilter) -> List[
-        Tuple[
-            List[str], rules.LrpRule,
-            Dict[str, Union[torch.Tensor, float]]
-        ]]:
-
-    # Low and high parameters for zB-rule
-    low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.zeros(*INPUT_SHAPE))
-    high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.ones(*INPUT_SHAPE))
-
-    # TODO: Important. Export to configure as parameter and run script with multiple values.
-    # TODO: Important. Save values of name map to file to reconstruct parameters used.
-    name_map: List[
-        Tuple[
-            List[str], rules.LrpRule,
-            Dict[str, Union[torch.Tensor, float]]
-        ]
-    ] = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
-          {'low': low, 'high': high}),
-         (filter_by_layer_index_type(lambda n: 1 <= n <= 10), LrpGammaRule,
-          {'gamma': 0.5}),
-         (filter_by_layer_index_type(lambda n: 11 <= n <= 17), LrpGammaRule,
-          {'gamma': 0.25}),
-         (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
-          {'gamma': 0.1}),
-         (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
-          {'gamma': 0}), ]
-
-    return name_map
 
 
 def save_artifacts(lrp_instance: LRP,
