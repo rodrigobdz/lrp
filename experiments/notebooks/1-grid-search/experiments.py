@@ -24,15 +24,14 @@ from lrp.core import LRP
 
 
 class Experiments:
-    r"""Boilerplatte code for preparing the experiments and avoid repetition
-    """
+    r"""Boilerplatte code for preparing the experiments and avoid repetition"""
 
     def __init__(self,
                  model: torch.nn.Module,
                  X: torch.Tensor,
                  name_map: List[Tuple[List[str], rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]],
                  output_dir_path: str) -> None:
-        r"""Store base variables
+        r"""Store base variables.
 
         :param model: Model to be explained
         :param X: Input data
