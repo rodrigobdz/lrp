@@ -22,8 +22,7 @@ from data_loader.core import imagenet_data_loader
 from lrp import rules
 from lrp.core import LRP
 from lrp.filter import LayerFilter
-from lrp.rules import LrpGammaRule  # , LrpEpsilonRule, LrpZeroRule
-from lrp.rules import LrpZBoxRule
+from lrp.rules import LrpGammaRule, LrpZBoxRule  # , LrpEpsilonRule, LrpZeroRule
 from lrp.zennit.types import AvgPool, Linear
 from pf.perturbation_modes.constants import PerturbModes
 from pf.pixel_flipping import PixelFlipping
@@ -112,7 +111,8 @@ class Helpers:
                                   exist_ok=True)
 
     @staticmethod
-    def save_torch_object(torch_object: torch.Tensor, filename: str) -> None:
+    def save_torch_object(torch_object: torch.Tensor,
+                          filename: str) -> None:
         r"""Save the torch objects to file.
 
         :param torch_object: Torch object to save
