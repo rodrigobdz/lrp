@@ -148,7 +148,7 @@ def _save_plot_pf_results(pf_instance: PixelFlipping,
     """
     pf_instance.plot_class_prediction_scores(show_plot=SHOW_PLOT)
 
-    class_scores_filename: str = f'{EXPERIMENT_ROOT}/batch-{batch_index}-size-{BATCH_SIZE}' \
+    class_scores_filename: str = f'{EXPERIMENT_ROOT}/batch-{batch_index}' \
         '-pixel-flipping-class-prediction-scores.png'
     # Facecolor sets the background color of the figure
     plt.savefig(class_scores_filename, dpi=DPI, facecolor='w')
