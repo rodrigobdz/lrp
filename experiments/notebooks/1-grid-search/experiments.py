@@ -1,5 +1,4 @@
-r"""Experiments-related functions for convenience.
-"""
+r"""Experiments-related functions for convenience."""
 
 
 # pylint: disable=duplicate-code
@@ -24,12 +23,17 @@ from lrp.core import LRP
 
 
 class Experiments:
-    r"""Boilerplatte code for preparing the experiments and avoid repetition"""
+    r"""Boilerplatte code for preparing the experiments and avoid repetition."""
 
     def __init__(self,
                  model: torch.nn.Module,
                  X: torch.Tensor,
-                 name_map: List[Tuple[List[str], rules.LrpRule, Dict[str, Union[torch.Tensor, float]]]],
+                 name_map: List[
+                     Tuple[
+                         List[str], rules.LrpRule,
+                         Dict[str, Union[torch.Tensor, float]]
+                     ]
+                 ],
                  output_dir_path: str) -> None:
         r"""Store base variables.
 
@@ -49,6 +53,7 @@ class Experiments:
                                              float], None]
                                          ) -> List[Tuple[float, torch.Tensor]]:
         r"""Compute multiple LRP relevances for a given set of hyperparameters.
+
         Cache the results in a file or load cached results, if possible.
         Stores the passed hyperparameters in a file for reference.
 
