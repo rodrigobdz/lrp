@@ -79,7 +79,6 @@ def _get_rule_layer_map(filter_by_layer_index_type: LayerFilter) -> List[
         torch.ones(*INPUT_SHAPE))
 
     # TODO: Important. Export to configure as parameter and run script with multiple values.
-    # TODO: Important. Save values of name map to file to reconstruct parameters used.
     rule_layer_map: List[
         Tuple[
             List[str], rules.LrpRule,
@@ -253,6 +252,10 @@ def save_artifacts(lrp_instance: LRP,
     auc_score: float = pf_instance.calculate_auc_score()
     numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-area-under-the-curve.npy',
                arr=auc_score)
+
+    # Save LRP rule-layer map to file
+    numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-lrp-rule-layer-map.npy',
+               arr=lrp_instance.rule_layer_map)
 
 
 def run_lrp_experiment(image_batch: torch.Tensor,
