@@ -28,18 +28,12 @@ from pf.perturbation_modes.constants import PerturbModes
 from pf.pixel_flipping import PixelFlipping
 from pf.pixel_flipping import plot as pf_plot
 
-# import multiprocessing
-
-
-# LRP hyperparameters
-# GAMMA = 0.0001
-# EPSILON = 1
 
 # Experiment parameters
 NUMBER_OF_BATCHES: int = 1
-BATCH_SIZE: int = 25  # multiprocessing.cpu_count()
-PERTURBATION_STEPS: int = 11
+BATCH_SIZE: int = 2
 CLASSES: List[str] = ['axolotl']
+PERTURBATION_STEPS: int = 11
 PERTURBATION_SIZE: int = 8
 
 # PyTorch constants
@@ -83,15 +77,15 @@ def _save_image_batch_plot(image_batch: torch.Tensor,
         image_1chw: torch.Tensor = image_chw.unsqueeze(dim=0)
         lrp.plot.plot_imagenet(image_1chw, show_plot=SHOW_PLOT)
 
-        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-\
-            {suffix}input-1chw.png'
+        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-' \
+            f'{suffix}input-1chw.png'
         # Facecolor sets the background color of the figure
         plt.savefig(filename, dpi=DPI, facecolor='w')
         plt.close()
 
 
-def _plot_lrp_results(relevance_scores_nchw: torch.Tensor,
-                      batch_index: int) -> None:
+def _save_plot_lrp_results(relevance_scores_nchw: torch.Tensor,
+                           batch_index: int) -> None:
     r"""Plot the results of the LRP experiment and save results to file.
 
     :param relevance_scores_nchw: Relevance scores of the LRP experiment
@@ -109,15 +103,15 @@ def _plot_lrp_results(relevance_scores_nchw: torch.Tensor,
                          show_plot=SHOW_PLOT,
                          dpi=DPI)
 
-        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-\
-            layerwise-relevance-propagation-heatmap.png'
+        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-' \
+            'layerwise-relevance-propagation-heatmap.png'
         # Facecolor sets the background color of the figure
         plt.savefig(filename, dpi=DPI, facecolor='w')
         plt.close()
 
 
-def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
-                                 batch_index: int) -> None:
+def _save_plot_pf_results(pf_instance: PixelFlipping,
+                          batch_index: int) -> None:
     r"""Plot the results of the pixel flipping experiment and save results to file.
 
     :param pf_instance: Pixel flipping instance with experiment results
@@ -125,8 +119,8 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
     """
     pf_instance.plot_class_prediction_scores(show_plot=SHOW_PLOT)
 
-    filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-pixel-flipping-\
-        class-prediction-scores-{BATCH_SIZE}.png'
+    filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-pixel-flipping-' \
+        f'class-prediction-scores-{BATCH_SIZE}.png'
     # Facecolor sets the background color of the figure
     plt.savefig(filename, dpi=DPI, facecolor='w')
     plt.close()
@@ -150,11 +144,74 @@ def _plot_pixel_flipping_results(pf_instance: PixelFlipping,
                                       perturbation_size=pf_instance.perturbation_size,
                                       show_plot=SHOW_PLOT)
 
-        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-pixel-flipping-\
-            image-comparison.png'
+        filename: str = f'{EXPERIMENT_DIR}/batch-{batch_index}-image-{image_index}-' \
+            'pixel-flipping-image-comparison.png'
         # Facecolor sets the background color of the figure, in this case to color white
         plt.savefig(filename, dpi=DPI, facecolor='w')
         plt.close()
+
+
+def _get_name_map(filter_by_layer_index_type: LayerFilter) -> List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]]:
+
+    # Low and high parameters for zB-rule
+    low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
+        torch.zeros(*INPUT_SHAPE))
+    high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
+        torch.ones(*INPUT_SHAPE))
+
+    # TODO: Important. Export to configure as parameter and run script with multiple values.
+    # TODO: Important. Save values of name map to file to reconstruct parameters used.
+    name_map: List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]
+    ] = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
+          {'low': low, 'high': high}),
+         (filter_by_layer_index_type(lambda n: 1 <= n <= 10), LrpGammaRule,
+          {'gamma': 0.5}),
+         (filter_by_layer_index_type(lambda n: 11 <= n <= 17), LrpGammaRule,
+          {'gamma': 0.25}),
+         (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
+          {'gamma': 0.1}),
+         (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
+          {'gamma': 0}), ]
+
+    return name_map
+
+
+def save_artifacts(lrp_instance: LRP,
+                   pf_instance: PixelFlipping,
+                   batch_index: int) -> None:
+    r"""Save artifacts of the pixel flipping experiment to file.
+
+    :param pf_instance: Pixel flipping instance with experiment results
+    :param batch_index: Index of the batch
+    """
+    original_input_nchw: torch.Tensor = lrp_instance.input_nchw
+
+    # Save data to file
+    torch.save(original_input_nchw,
+               f'{EXPERIMENT_DIR}/batch-{batch_index}-input-nchw.pt')
+
+    # Save relevance scores and ground truth labels to file
+    torch.save(lrp_instance.relevance_scores_nchw,
+               f'{EXPERIMENT_DIR}/batch-{batch_index}-relevance-scores-nchw.pt')
+    torch.save(lrp_instance.label_idx_n,
+               f'{EXPERIMENT_DIR}/batch-{batch_index}-ground-truth-labels.pt')
+
+    # Save images as png to file
+    _save_image_batch_plot(image_batch=original_input_nchw,
+                           batch_index=my_batch_index,
+                           suffix='original-')
+
+    _save_image_batch_plot(image_batch=pf_instance.flipped_input_nchw,
+                           batch_index=batch_index,
+                           suffix='flipped-')
 
 
 def run_lrp_experiment(image_batch: torch.Tensor,
@@ -174,65 +231,51 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     model.eval()
     model.to(DEVICE)
 
-    # Low and high parameters for zB-rule
-    low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.zeros(*INPUT_SHAPE))
-    high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.ones(*INPUT_SHAPE))
-
     # Init layer filter
     vgg16_target_types: Tuple[type, type] = (Linear, AvgPool)
     filter_by_layer_index_type: LayerFilter = LayerFilter(model)
     filter_by_layer_index_type.set_target_types(vgg16_target_types)
 
-    # TODO: Important. Export to configure as parameter and run script with multiple values.
-    # TODO: Important. Save values of name map to file to reconstruct parameters used.
-    name_map: List[Tuple[List[str], rules.LrpRule,
-                         Dict[str, Union[torch.Tensor, float]]]]
-    name_map = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
-                 {'low': low, 'high': high}),
-                (filter_by_layer_index_type(lambda n: 1 <= n <= 10), LrpGammaRule,
-                 {'gamma': 0.5}),
-                (filter_by_layer_index_type(lambda n: 11 <= n <= 17), LrpGammaRule,
-                 {'gamma': 0.25}),
-                (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
-                 {'gamma': 0.1}),
-                (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
-                 {'gamma': 0}), ]
+    name_map: List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]
+    ] = _get_name_map(filter_by_layer_index_type=filter_by_layer_index_type)
 
     lrp_instance: LRP = LRP(model)
     lrp_instance.convert_layers(name_map)
     relevance_scores_nchw: torch.Tensor = lrp_instance.relevance(input_nchw=input_nchw,
                                                                  label_idx_n=label_idx_n)
 
-    _plot_lrp_results(relevance_scores_nchw=relevance_scores_nchw,
-                      batch_index=batch_index)
+    _save_plot_lrp_results(relevance_scores_nchw=relevance_scores_nchw,
+                           batch_index=batch_index)
 
     return (lrp_instance, input_nchw, relevance_scores_nchw)
 
 
 def run_pixel_flipping_experiment(lrp_instance: LRP,
-                                  input_nchw: torch.Tensor,
-                                  relevance_scores_nchw: torch.Tensor,
-                                  batch_index: int) -> None:
+                                  batch_index: int) -> PixelFlipping:
     r"""Run the pixel flipping experiment.
 
     :param lrp_instance: LRP instance
-    :param input_nchw: Input image
-    :param relevance_scores_nchw: Relevance scores of the LRP experiment
     :param batch_index: Index of the batch
+
+    :return: Pixel flipping instance
     """
     pf_instance: PixelFlipping = PixelFlipping(perturbation_steps=PERTURBATION_STEPS,
                                                perturbation_size=PERTURBATION_SIZE,
                                                perturb_mode=PerturbModes.INPAINTING)
-    pf_input_nchw: torch.Tensor = input_nchw.clone().detach()
-    pf_relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.clone().detach()
+    pf_input_nchw: torch.Tensor = lrp_instance.input_nchw.clone().detach()
+    pf_relevance_scores_nchw: torch.Tensor = lrp_instance.relevance_scores_nchw.clone().detach()
 
     # Function should return the (single-class) classification score for
     # the given input to measure difference between flips.
     # Access the score of predicted classes in every image in batch.
-    forward_pass: Callable[[torch.Tensor],
-                           torch.Tensor] = lambda input_nchw: lrp_instance.model(input_nchw)[
+    forward_pass: Callable[
+        [torch.Tensor],
+        torch.Tensor
+    ] = lambda input_nchw: lrp_instance.model(input_nchw)[
         lrp_instance.explained_class_indices[:, 0],
         lrp_instance.explained_class_indices[:, 1]
     ]
@@ -243,12 +286,10 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
                 forward_pass,
                 should_loop=True)
 
-    _save_image_batch_plot(image_batch=pf_instance.flipped_input_nchw,
-                           batch_index=batch_index,
-                           suffix='flipped-')
+    _save_plot_pf_results(pf_instance=pf_instance,
+                          batch_index=batch_index)
 
-    _plot_pixel_flipping_results(pf_instance=pf_instance,
-                                 batch_index=batch_index)
+    return pf_instance
 
 
 if __name__ == "__main__":
@@ -261,37 +302,27 @@ if __name__ == "__main__":
 
     # Create root directory (with intermediate directories, if these don't already exist)
     # to save artifacts from experiments.
-    Path(EXPERIMENT_DIR).mkdir(parents=True, exist_ok=True)
+    Path(EXPERIMENT_DIR).mkdir(parents=True,
+                               exist_ok=True)
 
     for my_batch_index, (my_image_batch, my_ground_truth_labels) in enumerate(my_dataloader):
-        # Save data to file
-        torch.save(my_image_batch,
-                   f'{EXPERIMENT_DIR}/batch-{my_batch_index}-input-nchw.pt')
-        torch.save(my_ground_truth_labels,
-                   f'{EXPERIMENT_DIR}/batch-{my_batch_index}-ground-truth-labels.pt')
-
-        # Save images as png to file
-        _save_image_batch_plot(image_batch=my_image_batch,
-                               batch_index=my_batch_index,
-                               suffix='original-')
-
         # Run LRP experiment
-        my_lrp_instance, my_input_nchw, my_relevance_scores_nchw = run_lrp_experiment(
-            image_batch=my_image_batch,
-            batch_index=my_batch_index,
-            label_idx_n=my_ground_truth_labels)
-
-        # Save relevance scores to file
-        torch.save(my_relevance_scores_nchw,
-                   f'{EXPERIMENT_DIR}/batch-{my_batch_index}-relevance-scores-nchw.pt')
+        (my_lrp_instance,
+         my_input_nchw,
+         my_relevance_scores_nchw) = run_lrp_experiment(image_batch=my_image_batch,
+                                                        batch_index=my_batch_index,
+                                                        label_idx_n=my_ground_truth_labels)
 
         # Run Pixel-Flipping/Region Perturbation experiment
-        run_pixel_flipping_experiment(lrp_instance=my_lrp_instance,
-                                      input_nchw=my_input_nchw,
-                                      relevance_scores_nchw=my_relevance_scores_nchw,
-                                      batch_index=my_batch_index)
+        my_pf_instance = run_pixel_flipping_experiment(lrp_instance=my_lrp_instance,
+                                                       batch_index=my_batch_index)
+
+        save_artifacts(lrp_instance=my_lrp_instance,
+                       pf_instance=my_pf_instance,
+                       batch_index=my_batch_index)
 
         print(f'Finished batch {my_batch_index}')
+
         if my_batch_index + 1 == NUMBER_OF_BATCHES:
             print(f'Done. {my_batch_index + 1} batches processed.')
             break

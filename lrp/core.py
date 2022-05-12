@@ -33,6 +33,8 @@ class LRP:
         self.model.eval()
         self.name_map: List[Tuple[List[str], rules.LrpRule,
                                   Dict[str, Union[torch.Tensor, float]]]] = []
+        self.input_nchw: Optional[torch.Tensor] = None
+        self.label_idx_n: Optional[torch.Tensor] = None
         self.relevance_scores_nchw: Optional[torch.Tensor] = None
         self.explained_class_indices: Optional[torch.Tensor] = None
 
@@ -111,6 +113,8 @@ class LRP:
         pf.sanity_checks.ensure_nchw_format(input_nchw)
         pf.sanity_checks.verify_square_input(input_nchw)
 
+        self.input_nchw = input_nchw
+
         # Prepare to compute input gradient
         # Reset gradient
         self.model.zero_grad()
@@ -151,6 +155,9 @@ class LRP:
         if label_idx_n is not None:
             # Compute classes passed as argument explicitely
             idx = label_idx_n
+
+            # Save index of classes to be explained as instance variable
+            self.label_idx_n = label_idx_n
         else:
             # Get index maximum activation in the output layer (index of the predicted class)
             idx = forward_pass.max(dim=1).indices
