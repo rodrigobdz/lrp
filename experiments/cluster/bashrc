@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Configure environment on cluster for experiments.
+# File should be located on the server under the path ~/.bashrc
+
+# Set number of threads for numpy and scipy
+# Setting valid for default installation of these packages.
+export MKL_NUM_THREADS=1
+# Setting valid for conda installation of these packages.
+export OMP_NUM_THREADS=1
