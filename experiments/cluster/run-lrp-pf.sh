@@ -14,7 +14,7 @@
 #$ -l mem_free=16G    # request 16GB of free memory
 #$ -q all.q           # submit jobs to queue named all.q (general queue)
 #$ -cwd               # execute in current working directory
-#$ -t 1-8             # start n instances: from 1 to n
+#$ -t 0-15            # start multiple instances with identified SGE_TASK_ID from 0 to n
 #
 # Submit jobs to cluster using qsub
 #
@@ -33,20 +33,16 @@ set -o errexit  # exit on error
 set -o pipefail # exit on pipe failure
 set -o nounset  # exit on unset variable
 
-# Set experiment parameters
 case "$SGE_TASK_ID" in
-1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
-  lrp_hyperparams_id="$SGE_TASK_ID"
-  ;;
+# Verify cluster job IDs
+0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15) ;;
+# Error handling for unsupported experiment IDs
 *)
-  echo "SGE_TASK_ID $SGE_TASK_ID not supported. Exiting." && exit 1
+  echo "Unsupported SGE_TASK_ID $SGE_TASK_ID. Exiting..." && exit 1
   ;;
 esac
 
-readonly lrp_hyperparams_id
-
 # Log environment
 echo "SGE_TASK_ID: $SGE_TASK_ID"
-echo "ID of LRP hyperparameters: $lrp_hyperparams_id"
 
-python3 batch_lrp_pf.py
+python3 batch_lrp_pf.py --experiment-id "$SGE_TASK_ID"
