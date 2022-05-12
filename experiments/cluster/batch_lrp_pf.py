@@ -53,6 +53,7 @@ EXPERIMENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
 # Derivated workspace constants
 INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
 TORCH_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/pytorch-objects'
+NUMPY_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/numpy-objects'
 
 # PyTorch constants
 SEED: int = 0
@@ -284,11 +285,11 @@ class Helpers:
 
         # Save AUC score to file
         auc_score: float = pf_instance.calculate_auc_score()
-        numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-area-under-the-curve.npy',
+        numpy.save(file=f'{NUMPY_OBJECTS_DIR}/batch-{batch_index}-area-under-the-curve.npy',
                    arr=auc_score)
 
         # Save LRP rule-layer map to file
-        numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-lrp-rule-layer-map.npy',
+        numpy.save(file=f'{NUMPY_OBJECTS_DIR}/batch-{batch_index}-lrp-rule-layer-map.npy',
                    arr=lrp_instance.rule_layer_map)
 
 
@@ -406,7 +407,8 @@ def run_experiments() -> None:
 
     Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,
                                              INDIVIDUAL_RESULTS_DIR,
-                                             TORCH_OBJECTS_DIR)
+                                             TORCH_OBJECTS_DIR,
+                                             NUMPY_OBJECTS_DIR)
 
     for my_batch_index, (my_image_batch, my_ground_truth_labels) in enumerate(my_dataloader):
         # Run LRP experiment
