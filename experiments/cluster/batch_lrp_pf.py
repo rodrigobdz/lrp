@@ -9,6 +9,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 
+import argparse
 from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -22,7 +23,7 @@ from data_loader.core import imagenet_data_loader
 from lrp import rules
 from lrp.core import LRP
 from lrp.filter import LayerFilter
-from lrp.rules import LrpGammaRule, LrpZBoxRule  # , LrpEpsilonRule, LrpZeroRule
+from lrp.rules import LrpEpsilonRule, LrpGammaRule, LrpZBoxRule, LrpZeroRule
 from lrp.zennit.types import AvgPool, Linear
 from pf.perturbation_modes.constants import PerturbModes
 from pf.pixel_flipping import PixelFlipping
@@ -32,19 +33,24 @@ from pf.pixel_flipping import plot as pf_plot
 NUMBER_OF_BATCHES: int = 1
 BATCH_SIZE: int = 2
 IMAGE_CLASSES: List[str] = ['axolotl']
+EXPERIMENT_ID: int
+EXPERIMENT_NAME: str = 'composite-gamma-decreasing'
+# Total number of experiments will be this number squared.
+NUMBER_OF_HYPERPARAMETER_VALUES: int = 8
+
 # Experiment constants
 PERTURBATION_STEPS: int = 11
 PERTURBATION_SIZE: int = 8
 
 # Workspace constants
-EXPERIMENT_NAME: str = 'composite-gamma-decreasing'
 WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
     '/unterlagen/bildung/uni/master/masterarbeit'
 DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
 # Directories to be created (if they don't already exist)
 EXPERIMENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
     f'lrp-pf-auc/batch-size-{BATCH_SIZE}/{EXPERIMENT_NAME}'
-# Derivated constants
+
+# Derivated workspace constants
 INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
 TORCH_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/pytorch-objects'
 
@@ -65,34 +71,62 @@ DPI: float = 150
 SHOW_PLOT: bool = False
 
 
-def _get_rule_layer_map(filter_by_layer_index_type: LayerFilter) -> List[
+def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter) -> List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
         ]]:
+    r"""Get rule layer map by experiment id.
 
+    :param filter_by_layer_index_type: Layer filter
+    :param experiment_id: Experiment id
+
+    :return: Rule layer map
+    """
     # Low and high parameters for zB-rule
     low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
         torch.zeros(*INPUT_SHAPE))
     high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
         torch.ones(*INPUT_SHAPE))
 
-    # TODO: Important. Export to configure as parameter and run script with multiple values.
+    # Hyperparameter values for each experiment
+    # Manually add zero because log(0) = -inf
+    gammas: numpy.ndarray = numpy.logspace(start=0.00001,
+                                           stop=0.25,
+                                           num=NUMBER_OF_HYPERPARAMETER_VALUES)
+    gammas = numpy.concatenate((numpy.array([0.0]), gammas))
+
+    epsilons: numpy.ndarray = numpy.logspace(start=0.00001,
+                                             stop=0.5,
+                                             num=NUMBER_OF_HYPERPARAMETER_VALUES)
+    epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
+
+    # Compute all permutations between gammas and epsilons
+    hyperparam_permutations: List[Tuple[float, float]] = [
+        (gam, eps) for gam in gammas for eps in epsilons
+    ]
+
+    gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
+    print('Experiment ID:', EXPERIMENT_ID)
+    print('gamma', gamma)
+    print('epsilon', epsilon)
+
     rule_layer_map: List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
         ]
-    ] = [(filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
-          {'low': low, 'high': high}),
-         (filter_by_layer_index_type(lambda n: 1 <= n <= 10), LrpGammaRule,
-          {'gamma': 0.5}),
-         (filter_by_layer_index_type(lambda n: 11 <= n <= 17), LrpGammaRule,
-          {'gamma': 0.25}),
-         (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
-          {'gamma': 0.1}),
-         (filter_by_layer_index_type(lambda n: n >= 25), LrpGammaRule,
-          {'gamma': 0}), ]
+    ]
+
+    rule_layer_map = [
+        (filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
+         {'low': low, 'high': high}),
+        (filter_by_layer_index_type(lambda n: 1 <= n <= 16), LrpGammaRule,
+         {'gamma': gamma}),
+        (filter_by_layer_index_type(lambda n: 17 <= n <= 30), LrpEpsilonRule,
+         {'epsilon': epsilon}),
+        (filter_by_layer_index_type(lambda n: 31 <= n), LrpZeroRule, {}),
+    ]
 
     return rule_layer_map
 
@@ -216,46 +250,46 @@ class Helpers:
             plt.savefig(pf_comparison_filename, dpi=DPI, facecolor='w')
             plt.close()
 
+    @staticmethod
+    def save_artifacts(lrp_instance: LRP,
+                       pf_instance: PixelFlipping,
+                       batch_index: int) -> None:
+        r"""Save artifacts of the LRP and pixel flipping experiments to file.
 
-def save_artifacts(lrp_instance: LRP,
-                   pf_instance: PixelFlipping,
-                   batch_index: int) -> None:
-    r"""Save artifacts of the LRP and pixel flipping experiments to file.
+        :param pf_instance: Pixel flipping instance with experiment results
+        :param batch_index: Index of the batch
+        """
+        original_input_nchw: torch.Tensor = lrp_instance.input_nchw
 
-    :param pf_instance: Pixel flipping instance with experiment results
-    :param batch_index: Index of the batch
-    """
-    original_input_nchw: torch.Tensor = lrp_instance.input_nchw
+        # Save original input to file
+        Helpers.save_torch_object(torch_object=original_input_nchw,
+                                  filename=f'batch-{batch_index}-input-nchw.pt')
 
-    # Save original input to file
-    Helpers.save_torch_object(torch_object=original_input_nchw,
-                              filename=f'batch-{batch_index}-input-nchw.pt')
+        # Save relevance scores to file
+        Helpers.save_torch_object(torch_object=lrp_instance.relevance_scores_nchw,
+                                  filename=f'batch-{batch_index}-relevance-scores-nchw.pt')
 
-    # Save relevance scores to file
-    Helpers.save_torch_object(torch_object=lrp_instance.relevance_scores_nchw,
-                              filename=f'batch-{batch_index}-relevance-scores-nchw.pt')
+        # Save  ground truth labels to file
+        Helpers.save_torch_object(torch_object=lrp_instance.label_idx_n,
+                                  filename=f'batch-{batch_index}-ground-truth-labels.pt')
 
-    # Save  ground truth labels to file
-    Helpers.save_torch_object(torch_object=lrp_instance.label_idx_n,
-                              filename=f'batch-{batch_index}-ground-truth-labels.pt')
+        # Save images as png to file
+        Helpers.save_image_batch_plot(image_batch=original_input_nchw,
+                                      batch_index=batch_index,
+                                      suffix='original')
 
-    # Save images as png to file
-    Helpers.save_image_batch_plot(image_batch=original_input_nchw,
-                                  batch_index=batch_index,
-                                  suffix='original')
+        Helpers.save_image_batch_plot(image_batch=pf_instance.flipped_input_nchw,
+                                      batch_index=batch_index,
+                                      suffix='pf-perturbed')
 
-    Helpers.save_image_batch_plot(image_batch=pf_instance.flipped_input_nchw,
-                                  batch_index=batch_index,
-                                  suffix='pf-perturbed')
+        # Save AUC score to file
+        auc_score: float = pf_instance.calculate_auc_score()
+        numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-area-under-the-curve.npy',
+                   arr=auc_score)
 
-    # Save AUC score to file
-    auc_score: float = pf_instance.calculate_auc_score()
-    numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-area-under-the-curve.npy',
-               arr=auc_score)
-
-    # Save LRP rule-layer map to file
-    numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-lrp-rule-layer-map.npy',
-               arr=lrp_instance.rule_layer_map)
+        # Save LRP rule-layer map to file
+        numpy.save(file=f'{EXPERIMENT_ROOT}/batch-{batch_index}-lrp-rule-layer-map.npy',
+                   arr=lrp_instance.rule_layer_map)
 
 
 def run_lrp_experiment(image_batch: torch.Tensor,
@@ -285,7 +319,7 @@ def run_lrp_experiment(image_batch: torch.Tensor,
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
         ]
-    ] = _get_rule_layer_map(filter_by_layer_index_type=filter_by_layer_index_type)
+    ] = _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type=filter_by_layer_index_type)
 
     lrp_instance: LRP = LRP(model)
     lrp_instance.convert_layers(rule_layer_map)
@@ -336,6 +370,28 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
     return pf_instance
 
 
+class CommandLine():  # pylint: disable=too-few-public-methods
+    r"""Encapsulate CLI-related functions."""
+
+    @staticmethod
+    def parse_arguments() -> int:
+        r"""Parse CLI arguments.
+
+        :return: Parsed experiment ID
+        """
+        parser = argparse.ArgumentParser(description='Specify the experiment parameters.',
+                                         epilog='For more information, review function'
+                                         "called '_get_rule_layer_map_by_experiment_id'.")
+
+        parser.add_argument('-i', '--experiment-id',
+                            type=int,
+                            help='ID of experiment (LRP rule-layer map) to use',
+                            required=True)
+
+        args = parser.parse_args()
+        return args.experiment_id
+
+
 def run_experiments() -> None:
     r"""Run Layer-wise Relevance Propagation and Pixel-Flipping experiments."""
     # Enable reproducibility
@@ -362,9 +418,9 @@ def run_experiments() -> None:
         my_pf_instance = run_pixel_flipping_experiment(lrp_instance=my_lrp_instance,
                                                        batch_index=my_batch_index)
 
-        save_artifacts(lrp_instance=my_lrp_instance,
-                       pf_instance=my_pf_instance,
-                       batch_index=my_batch_index)
+        Helpers.save_artifacts(lrp_instance=my_lrp_instance,
+                               pf_instance=my_pf_instance,
+                               batch_index=my_batch_index)
 
         print(f'Finished batch {my_batch_index}')
 
@@ -374,4 +430,5 @@ def run_experiments() -> None:
 
 
 if __name__ == "__main__":
+    EXPERIMENT_ID = CommandLine.parse_arguments()
     run_experiments()
