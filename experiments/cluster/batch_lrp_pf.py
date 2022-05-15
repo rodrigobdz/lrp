@@ -284,13 +284,14 @@ class Helpers:
                                       suffix='pf-perturbed')
 
         # Save AUC score to file
-        auc_score: float = pf_instance.calculate_auc_score()
+        auc_score_arr: numpy.ndarray = numpy.array(pf_instance.calculate_auc_score(),
+                                                   dtype=object)
         numpy.save(file=f'{NUMPY_OBJECTS_DIR}/batch-{batch_index}-area-under-the-curve.npy',
-                   arr=auc_score)
+                   arr=auc_score_arr)
 
         # Save LRP rule-layer map to file
         numpy.save(file=f'{NUMPY_OBJECTS_DIR}/batch-{batch_index}-lrp-rule-layer-map.npy',
-                   arr=lrp_instance.rule_layer_map)
+                   arr=numpy.array(lrp_instance.rule_layer_map, dtype=object))
 
 
 def run_lrp_experiment(image_batch: torch.Tensor,
