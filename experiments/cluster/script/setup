@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Set up any dependencies to start development.
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+echo 'Load bash settings (not automatically loaded on cluster)'
+source /home/rodrigo/.bashrc
+
+echo 'Activate conda environment created in script/bootstrap-ubuntu'
+conda activate masterarbeit_env
