@@ -29,48 +29,6 @@ from pf.perturbation_modes.constants import PerturbModes
 from pf.pixel_flipping import PixelFlipping
 from pf.pixel_flipping import plot as pf_plot
 
-# Experiment parameters
-NUMBER_OF_BATCHES: int = 1
-BATCH_SIZE: int = 2
-IMAGE_CLASSES: List[str] = ['axolotl']
-EXPERIMENT_ID: int
-EXPERIMENT_NAME: str = 'composite-gamma-decreasing'
-# Total number of experiments will be this number squared.
-NUMBER_OF_HYPERPARAMETER_VALUES: int = 8
-
-# Experiment constants
-PERTURBATION_STEPS: int = 11
-PERTURBATION_SIZE: int = 8
-
-# Workspace constants
-WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
-    '/unterlagen/bildung/uni/master/masterarbeit'
-DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
-# Directories to be created (if they don't already exist)
-EXPERIMENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
-    f'lrp-pf-auc/batch-size-{BATCH_SIZE}/{EXPERIMENT_NAME}'
-
-# Derivated workspace constants
-INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
-TORCH_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/pytorch-objects'
-NUMPY_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/numpy-objects'
-
-# PyTorch constants
-SEED: int = 0
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-# Model parameters
-VGG16_IMAGE_DIM: int = 224
-CHANNELS: int = 3
-HEIGHT: int = VGG16_IMAGE_DIM
-WIDTH: int = VGG16_IMAGE_DIM
-INPUT_SHAPE: Tuple[int, int, int, int] = (BATCH_SIZE, CHANNELS, HEIGHT, WIDTH)
-
-# Plotting parameters
-DPI: float = 150
-# Toggle for plt.show() for each figure
-SHOW_PLOT: bool = False
-
 
 def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter) -> List[
         Tuple[
@@ -108,9 +66,9 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     ]
 
     gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
-    print('Experiment ID:', EXPERIMENT_ID)
-    print('gamma', gamma)
-    print('epsilon', epsilon)
+    print(f'Experiment ID: {EXPERIMENT_ID}'
+          ', gamma: {gamma}'
+          ', epsilon: {epsilon}')
 
     rule_layer_map: List[
         Tuple[
@@ -433,5 +391,50 @@ def run_experiments() -> None:
 
 
 if __name__ == "__main__":
-    EXPERIMENT_ID = CommandLine.parse_arguments()
+    EXPERIMENT_ID: int = CommandLine.parse_arguments()
+
+    # TODO: PRINT ALL VARS/CONSTS TO FILE
+    # Experiment parameters
+    NUMBER_OF_BATCHES: int = 1
+    BATCH_SIZE: int = 4
+    IMAGE_CLASSES: List[str] = ['axolotl']
+    # Total number of experiments will be this number squared.
+    NUMBER_OF_HYPERPARAMETER_VALUES: int = 8
+
+    # Experiment constants
+    PERTURBATION_STEPS: int = 11
+    PERTURBATION_SIZE: int = 8
+
+    # Workspace constants
+    WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
+        '/unterlagen/bildung/uni/master/masterarbeit'
+    DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
+    # Directories to be created (if they don't already exist)
+    EXPERIMENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
+        f'lrp-pf-auc/batch-size-{BATCH_SIZE}/experiment-id-{EXPERIMENT_ID}'
+
+    # Derivated workspace constants
+    INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
+    TORCH_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/pytorch-objects'
+    NUMPY_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/numpy-objects'
+
+    # PyTorch constants
+    SEED: int = 0
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    # Model parameters
+    VGG16_IMAGE_DIM: int = 224
+    CHANNELS: int = 3
+    HEIGHT: int = VGG16_IMAGE_DIM
+    WIDTH: int = VGG16_IMAGE_DIM
+    INPUT_SHAPE: Tuple[int, int, int, int] = (BATCH_SIZE,
+                                              CHANNELS,
+                                              HEIGHT,
+                                              WIDTH)
+
+    # Plotting parameters
+    DPI: float = 150
+    # Toggle for plt.show() for each figure
+    SHOW_PLOT: bool = False
+
     run_experiments()
