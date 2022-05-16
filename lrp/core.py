@@ -182,6 +182,9 @@ class LRP:
                                              number_of_classes,
                                              dtype=torch.bool)
         # Set the predicted class to True
+        #
+        # The following statement should be equivalent to:
+        #   gradient[*self.explained_class_indices.T] = True
         gradient[self.explained_class_indices[:, 0],
                  self.explained_class_indices[:, 1]] = True
 

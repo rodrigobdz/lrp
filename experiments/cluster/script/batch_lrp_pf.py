@@ -70,7 +70,7 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
                          f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
 
     gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
-    print(f'Experiment ID: {EXPERIMENT_ID}.'
+    print(f'Experiment ID: {EXPERIMENT_ID}. '
           f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
           f', gamma: {gamma}'
           f', epsilon: {epsilon}')
@@ -403,7 +403,7 @@ if __name__ == "__main__":
     NUMBER_OF_BATCHES: int = 1
     BATCH_SIZE: int = 4
     IMAGE_CLASSES: List[str] = ['axolotl']
-    NUMBER_OF_HYPERPARAMETER_VALUES: int = 2
+    NUMBER_OF_HYPERPARAMETER_VALUES: int = 4
     # Total number of experiments will be this number squared.
     TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
 

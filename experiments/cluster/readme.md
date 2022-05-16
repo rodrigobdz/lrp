@@ -2,13 +2,20 @@
 
 Documentation of how to set up and run experiments on a cluster.
 
+All commands listed in this guide should be run on execution nodes on the cluster.
+
 ## Requirements
 
-- Run `./script/bootstrap-ubuntu` to install dependencies for the first time
+- `./cluster/script/bootstrap-ubuntu` - install dependencies for the first time
 
 ## Usage
 
-- Run `./script/setup` each time before running experiments
+1. `./cluster/script/setup` - Prepare environment each time before running experiments
+2. `bash ./cluster/script/run-lrp-pf.sh` - Run experiments on the cluster
+
+   `fish ./local/script/run-lrp-pf.fish` - Alternatively, run experiments locally
+
+3. `python3 cluster/script/visualize.py` - Visualize results
 
 ## Credits
 
