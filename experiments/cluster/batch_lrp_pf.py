@@ -52,12 +52,12 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     # Manually add zero because log(0) = -inf
     gammas: numpy.ndarray = numpy.logspace(start=0.00001,
                                            stop=0.25,
-                                           num=NUMBER_OF_HYPERPARAMETER_VALUES)
+                                           num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     gammas = numpy.concatenate((numpy.array([0.0]), gammas))
 
     epsilons: numpy.ndarray = numpy.logspace(start=0.00001,
                                              stop=0.5,
-                                             num=NUMBER_OF_HYPERPARAMETER_VALUES)
+                                             num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
 
     # Compute all permutations between gammas and epsilons
@@ -65,10 +65,15 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
         (gam, eps) for gam in gammas for eps in epsilons
     ]
 
+    if TOTAL_NUMBER_OF_EXPERIMENTS != len(hyperparam_permutations):
+        raise ValueError(f'Total number of experiments is {TOTAL_NUMBER_OF_EXPERIMENTS} but '
+                         f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
+
     gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
-    print(f'Experiment ID: {EXPERIMENT_ID}'
-          ', gamma: {gamma}'
-          ', epsilon: {epsilon}')
+    print(f'Experiment ID: {EXPERIMENT_ID}.'
+          f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
+          f', gamma: {gamma}'
+          f', epsilon: {epsilon}')
 
     rule_layer_map: List[
         Tuple[
@@ -398,8 +403,9 @@ if __name__ == "__main__":
     NUMBER_OF_BATCHES: int = 1
     BATCH_SIZE: int = 4
     IMAGE_CLASSES: List[str] = ['axolotl']
+    NUMBER_OF_HYPERPARAMETER_VALUES: int = 2
     # Total number of experiments will be this number squared.
-    NUMBER_OF_HYPERPARAMETER_VALUES: int = 8
+    TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
 
     # Experiment constants
     PERTURBATION_STEPS: int = 11
@@ -410,8 +416,9 @@ if __name__ == "__main__":
         '/unterlagen/bildung/uni/master/masterarbeit'
     DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
     # Directories to be created (if they don't already exist)
-    EXPERIMENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
-        f'lrp-pf-auc/batch-size-{BATCH_SIZE}/experiment-id-{EXPERIMENT_ID}'
+    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
+        f'lrp-pf-auc/batch-size-{BATCH_SIZE}'
+    EXPERIMENT_ROOT: str = f'{EXPERIMENT_PARENT_ROOT}/experiment-id-{EXPERIMENT_ID}'
 
     # Derivated workspace constants
     INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
