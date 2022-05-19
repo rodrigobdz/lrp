@@ -86,3 +86,9 @@ repos:
       - id: nbqa-pyupgrade
         args: [--py36-plus]
       - id: nbqa-isort
+
+  - repo: https://github.com/hugoh/pre-commit-fish.git
+    rev: v1.2
+    hooks:
+      - id: fish_syntax
+      - id: fish_indent
