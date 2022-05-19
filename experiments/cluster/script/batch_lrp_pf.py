@@ -427,7 +427,9 @@ if __name__ == "__main__":
 
     # PyTorch constants
     SEED: int = 0
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    DEVICE: torch.device = torch.device(
+        "cuda:0" if torch.cuda.is_available() else "cpu"
+    )
 
     # Model parameters
     VGG16_IMAGE_DIM: int = 224

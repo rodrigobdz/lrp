@@ -8,13 +8,13 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 # pylint: enable=duplicate-code
 
-import numpy
-import torch
-
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
+import numpy
+import torch
 from matplotlib import pyplot as plt
+
 from lrp import rules
 
 if __name__ == "__main__":
@@ -74,18 +74,10 @@ if __name__ == "__main__":
         z_values.append(numpy.load(file=auc_file,
                                    allow_pickle=True).item())
 
-    print('x_values:', x_values)
-    print('y_values:', y_values)
-    print('z_values:', z_values)
-
-    # z_values = numpy.random.rand(len(x_values), len(y_values))
-    # z_values = [238.32,  232.28, 227.94, 236.76]
-
     plt.tricontourf(x_values, y_values, z_values)
 
     plt.title('Contourf plot of AUC values across experiments')
     plt.xlabel('Gammas for LRP-Gamma')
     plt.ylabel('Epsilons for LRP-Epsilon')
     plt.colorbar()
-    # plt.axis('scaled')
     plt.show()
