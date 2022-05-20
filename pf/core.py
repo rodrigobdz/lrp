@@ -296,22 +296,28 @@ Selected perturbation mode: {perturb_mode}""")
             Intermediate calculations:
                 width = 224
                 num_patches_per_img_1d = 224//8 = 28
-
                 total_num_patches = 28 * 28 = 784
-                max_power_of_two_possible = int(log2(784)) = 9
+                max_num_squared_possible = int(sqrt(784)) = 28
 
-                power_of_two_exponents = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-                power_of_two_vals = [ 1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
-                number_of_flips_per_step_arr =  [1, 1, 2, 4, 8, 16, 32, 64, 128, 256]
+                base_numbers_to_square = [ 0,  1,  2,  3,  4,  5,  6,  7,  8,
+                                           9, 10, 11, 12, 13, 14, 15, 16,
+                                          17, 18, 19, 20, 21, 22, 23, 24,
+                                          25, 26, 27, 28]
+                squared_vals = [  0,   1,   4,   9,  16,  25,  36,  49,  64,  81,
+                                100, 121, 144, 169, 196, 225, 256, 289, 324, 361,
+                                400, 441, 484, 529, 576, 625, 676, 729, 784]
+                number_of_flips_per_step_arr = [ 0,  1,  3,  5,  7,  9, 11, 13,
+                                                15, 17, 19, 21, 23, 25, 27, 29,
+                                                31, 33, 35, 37, 39, 41, 43, 45,
+                                                47, 49, 51, 53, 55]
 
-                num_patches_to_flip_with_power_of_two = 512
-                rest_patches_count = 272
-
-                number_of_flips_per_step_arr = [1, 1, 2, 4, 8, 16, 32, 64, 128, 256, 272]
                 number_of_flips_per_step_arr.sum() = 784
 
             Result:
-                {0: 1, 1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32, 7: 64, 8: 128, 9: 256, 10: 272}
+                {0: 0, 1: 1, 2: 3, 3: 5, 4: 7, 5: 9, 6: 11, 7: 13, 8: 15, 9: 17,
+                10: 19, 11: 21, 12: 23, 13: 25, 14: 27, 15: 29, 16: 31, 17: 33,
+                18: 35, 19: 37, 20: 39, 21: 41, 22: 43, 23: 45, 24: 47, 25: 49,
+                26: 51, 27: 53, 28: 55}
         """
         _, width = utils.get_height_width(self.original_input_nchw)
 
