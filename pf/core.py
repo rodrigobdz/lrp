@@ -409,31 +409,6 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             # Merge multiple masks into one for a single perturbation step.
             mask_n1hw = torch.logical_or(mask_n1hw, next_mask_n1hw)
 
-        # Flip pixels with respective perturbation technique
-        if self.perturb_mode == PerturbModes.RANDOM:
-            flip_random(input_nchw=flipped_input_nchw,
-                        mask_n1hw=mask_n1hw,
-                        perturbation_size=self.perturbation_size,
-                        ran_num_gen=self.ran_num_gen,
-                        low=self._low,
-                        high=self._high,
-                        logger=self.logger)
-
-        elif self.perturb_mode == PerturbModes.INPAINTING:
-            flipped_input_nchw = norm.denorm_img_pxls(
-                norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
-
-            flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
-                                                 mask_n1hw=mask_n1hw,
-                                                 logger=self.logger).float()
-
-            flipped_input_nchw = norm.ImageNetNorm.normalize(
-                norm.norm_img_pxls(flipped_input_nchw))
-
-        else:
-            raise NotImplementedError(
-                f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
-
         # Loop for debugging purposes only.
         for batch_index in range(self.batch_size):
             # Mask with all pixels previously flipped.
@@ -461,6 +436,31 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         mask_nhw: torch.Tensor = mask_n1hw.squeeze()
         self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
             self.acc_flip_mask_nhw, mask_nhw)
+
+        # Flip pixels with respective perturbation technique
+        if self.perturb_mode == PerturbModes.RANDOM:
+            flip_random(input_nchw=flipped_input_nchw,
+                        mask_n1hw=mask_n1hw,
+                        perturbation_size=self.perturbation_size,
+                        ran_num_gen=self.ran_num_gen,
+                        low=self._low,
+                        high=self._high,
+                        logger=self.logger)
+
+        elif self.perturb_mode == PerturbModes.INPAINTING:
+            flipped_input_nchw = norm.denorm_img_pxls(
+                norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
+
+            flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
+                                                 mask_n1hw=mask_n1hw,
+                                                 logger=self.logger).float()
+
+            flipped_input_nchw = norm.ImageNetNorm.normalize(
+                norm.norm_img_pxls(flipped_input_nchw))
+
+        else:
+            raise NotImplementedError(
+                f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
         # Measure classification accuracy change
         self._measure_class_prediction_score(forward_pass,
