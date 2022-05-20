@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 #
-# Run experiments on personal machine (not cluster) sequentially
+# Run experiments on personal machine (not cluster) sequentially.
 
 # The following variable should correspond to the value set in batch_lrp_pf.py
 set TOTAL_NUMBER_OF_EXPERIMENTS 16
