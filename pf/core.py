@@ -420,13 +420,16 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                 old_acc_flip_mask_hw, mask_hw)
 
             # Store number of flipped pixels before this perturbation step.
-            flipped_pixel_count: int = old_acc_flip_mask_hw.count_nonzero().item()
+            flipped_pixel_count: int = int(
+                old_acc_flip_mask_hw.count_nonzero().item()
+            )
 
             # Calculate delta of flipped pixels:
             #   I.e., total number of flipped pixels in this perturbation step
             #   minus the count of already flipped pixels.
-            flipped_pixel_count = new_acc_flip_mask_hw.count_nonzero().item() - \
-                flipped_pixel_count
+            flipped_pixel_count = int(
+                new_acc_flip_mask_hw.count_nonzero().item() - flipped_pixel_count
+            )
 
             self.logger.info("Batch image %s: Flipped %s pixels.",
                              batch_index,
@@ -437,10 +440,14 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
             self.acc_flip_mask_nhw, mask_nhw)
 
+        # Paint all previously inpainted regions and the currrent one altogether.
+        # To paint each region only once, pass mask_n1hw as argument to the flip_* functions.
+        acc_mask_n1hw: torch.Tensor = self.acc_flip_mask_nhw.unsqueeze(1)
+
         # Flip pixels with respective perturbation technique
         if self.perturb_mode == PerturbModes.RANDOM:
             flip_random(input_nchw=flipped_input_nchw,
-                        mask_n1hw=mask_n1hw,
+                        mask_n1hw=acc_mask_n1hw,
                         perturbation_size=self.perturbation_size,
                         ran_num_gen=self.ran_num_gen,
                         low=self._low,
@@ -452,7 +459,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                 norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
 
             flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
-                                                 mask_n1hw=mask_n1hw,
+                                                 mask_n1hw=acc_mask_n1hw,
                                                  logger=self.logger).float()
 
             flipped_input_nchw = norm.ImageNetNorm.normalize(
