@@ -323,39 +323,21 @@ Selected perturbation mode: {perturb_mode}""")
         # Get total number of patches of size perturbation_size in image.
         total_num_patches: int = num_patches_per_img_1d * num_patches_per_img_1d
 
-        # Calculate maximum power of two possible which is less than the total number of patches.
-        max_power_of_two_possible: int = int(numpy.log2(total_num_patches))
-
-        # Calculate power of two values to increasingly flip patches of pixels.
+        # Calculate squared values to increasingly flip patches of pixels at each perturbation step.
+        #
+        # The maximum number which squared is equal to the total
+        # number of patches is num_patches_per_img_1d.
+        #
         # Add one because the range starts at 0.
-        power_of_two_exponents: numpy.ndarray = numpy.arange(
-            max_power_of_two_possible + 1)
-        power_of_two_vals: numpy.ndarray = 2**power_of_two_exponents
+        base_numbers_to_square: numpy.ndarray = numpy.arange(
+            num_patches_per_img_1d + 1)
+        squared_vals: numpy.ndarray = base_numbers_to_square**2
 
         # Calculate the differences between consecutive elements of an array and prepend
         # an element with value 1 at the beginning. The goal is to "slow start" and then
         # progressively flip more elements as step count increases.
-        number_of_flips_per_step_arr: numpy.ndarray = numpy.ediff1d(power_of_two_vals,
-                                                                    to_begin=1)
-
-        # Sum the total number of flips in all steps.
-        num_patches_to_flip_with_power_of_two: int = number_of_flips_per_step_arr.sum()
-
-        # Sanity check. The total number of patches flipped in all steps with power of two values
-        # should be less than or equal to the total number of patches in image.
-        if total_num_patches <= num_patches_to_flip_with_power_of_two:
-            raise ValueError(f"""Total number of patches {total_num_patches} is less than the sum
-of number of patches flipped in all steps {num_patches_to_flip_with_power_of_two}.""")
-
-        # Calculate number of patches pending to be flipped.
-        # These patches are not included in the power of two because the next exponent
-        # would exceed the total number of patches, that's why the last element is calculated
-        # this way, manually.
-        rest_patches_count: int = total_num_patches - \
-            num_patches_to_flip_with_power_of_two
-
-        number_of_flips_per_step_arr = numpy.append(number_of_flips_per_step_arr,
-                                                    rest_patches_count)
+        number_of_flips_per_step_arr: numpy.ndarray = numpy.ediff1d(
+            squared_vals)
 
         # Sanity check. The total number of patches flipped in all steps altogether should
         # be equal to the total number of patches in image.
