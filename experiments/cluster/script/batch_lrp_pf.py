@@ -19,15 +19,15 @@ import torchvision
 from matplotlib import pyplot as plt
 
 import lrp.plot
+import pf.plot
 from data_loader.core import imagenet_data_loader
 from lrp import rules
 from lrp.core import LRP
 from lrp.filter import LayerFilter
 from lrp.rules import LrpEpsilonRule, LrpGammaRule, LrpZBoxRule, LrpZeroRule
 from lrp.zennit.types import AvgPool, Linear
+from pf.core import PixelFlipping
 from pf.perturbation_modes.constants import PerturbModes
-from pf.pixel_flipping import PixelFlipping
-from pf.pixel_flipping import plot as pf_plot
 
 
 def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter) -> List[
@@ -200,7 +200,7 @@ class Helpers:
             acc_flip_mask_1hw: torch.Tensor = pf_instance.acc_flip_mask_nhw[image_index].unsqueeze(
                 dim=0)
 
-            pf_plot.plot_image_comparison(batch_size=1,
+            pf.plot.plot_image_comparison(batch_size=1,
                                           original_input_nchw=original_input_1chw,
                                           flipped_input_nchw=flipped_input_1chw,
                                           relevance_scores_nchw=relevance_scores_1chw,
