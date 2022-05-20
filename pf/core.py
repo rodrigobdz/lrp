@@ -44,7 +44,7 @@ class PixelFlipping:
     r"""Pixel-Flipping Algorithm."""
 
     def __init__(self,
-                 perturbation_steps: int = 11,
+                 perturbation_steps: int = 28,
                  perturbation_size: int = 8,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
@@ -163,11 +163,11 @@ Selected perturbation mode: {perturb_mode}""")
 
         self.number_of_flips_per_step_dict: Dict[int,
                                                  int] = self._define_number_of_flips_per_step_dict()
-        max_perturbation_steps: int = len(
+        self.max_perturbation_steps: int = len(
             self.number_of_flips_per_step_dict) - 1
 
         sanity_checks.verify_perturbation_args(perturbation_steps=self.perturbation_steps,
-                                               max_perturbation_steps=max_perturbation_steps)
+                                               max_perturbation_steps=self.max_perturbation_steps)
 
         # Initialize accumulative mask to False.
         # Each mask used to flip the input will be stored in this tensor with logical OR.
@@ -280,7 +280,7 @@ Selected perturbation mode: {perturb_mode}""")
         r"""Define number of flips per step.
 
         At the beginning few regions are flipped, then the number of regions flipped in each step
-        progressively increases using the power of two to calculate the exact number.
+        progressively increases using a formula which involves the squares of perturbation steps.
 
         :param input_nchw: Input to be explained.
         :param perturbation_size: Number of pixels to perturb per step.
@@ -600,4 +600,5 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             self.number_of_flips_per_step_dict.values())
         plot.plot_number_of_flips_per_step(
             number_of_flips_per_step_arr=number_of_flips_per_step_arr[
-                :self.current_perturbation_step])
+                :self.current_perturbation_step],
+            max_perturbation_steps=self.max_perturbation_steps)

@@ -19,10 +19,9 @@ from lrp import rules
 
 if __name__ == "__main__":
     # TODO: Load constants from pickle/npy file.
-
     BATCH_SIZE: int = 4
     # Experiment constants
-    PERTURBATION_STEPS: int = 11
+    PERTURBATION_STEPS: int = 28
     PERTURBATION_SIZE: int = 8
 
     # Workspace constants

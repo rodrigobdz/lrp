@@ -19,10 +19,12 @@ from matplotlib import pyplot as plt
 import lrp.plot
 
 
-def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int]) -> None:
+def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int],
+                                  max_perturbation_steps: int) -> None:
     r"""Plot number of flips per step.
 
     :param number_of_flips_per_step_dict: Number of pixels that were flipped per step.
+    :param max_perturbation_steps: Maximum number of perturbation steps.
     """
     current_perturbation_step: int = len(number_of_flips_per_step_arr) - 1
     xticks = numpy.arange(0, len(number_of_flips_per_step_arr))
@@ -32,7 +34,7 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int]) -> No
 
     offsets_by_perturbation_step: numpy.ndarray = numpy.linspace(start=0,
                                                                  stop=0.2,
-                                                                 num=12,
+                                                                 num=max_perturbation_steps+1,
                                                                  endpoint=True)
     # Add offset to avoid overlapping markers with function values.
     offset: float = offsets_by_perturbation_step[current_perturbation_step]

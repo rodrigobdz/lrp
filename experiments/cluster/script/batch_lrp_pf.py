@@ -408,7 +408,7 @@ if __name__ == "__main__":
     TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
 
     # Experiment constants
-    PERTURBATION_STEPS: int = 11
+    PERTURBATION_STEPS: int = 28
     PERTURBATION_SIZE: int = 8
 
     # Workspace constants
