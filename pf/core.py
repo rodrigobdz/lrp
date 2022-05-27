@@ -453,14 +453,10 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
             self.acc_flip_mask_nhw, mask_nhw)
 
-        # Paint all previously inpainted regions and the currrent one altogether.
-        # To paint each region only once, pass mask_n1hw as argument to the flip_* functions.
-        acc_mask_n1hw: torch.Tensor = self.acc_flip_mask_nhw.unsqueeze(1)
-
         # Flip pixels with respective perturbation technique
         if self.perturb_mode == PerturbModes.RANDOM:
             flip_random(input_nchw=flipped_input_nchw,
-                        mask_n1hw=acc_mask_n1hw,
+                        mask_n1hw=mask_n1hw,
                         perturbation_size=self.perturbation_size,
                         ran_num_gen=self.ran_num_gen,
                         low=self._low,
@@ -472,6 +468,9 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             flipped_input_nchw = norm.denorm_img_pxls(
                 norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
 
+            # Paint all previously inpainted regions and the currrent one altogether.
+            # To paint each region only once, pass mask_n1hw as argument to the flip_* functions.
+            acc_mask_n1hw: torch.Tensor = self.acc_flip_mask_nhw.unsqueeze(1)
             flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
                                                  mask_n1hw=acc_mask_n1hw,
                                                  logger=self.logger).float()
