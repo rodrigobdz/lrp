@@ -32,15 +32,19 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int],
     # Plot number of flips per step.
     plt.plot(xticks, number_of_flips_per_step_arr, marker='.', linestyle='')
 
+    # FIXME: Calculate offset for text annotations dynamically.
+    # This is a hack to show annotations on the plot, optimized for 28 perturbation
+    # steps (hard-coded).
     offsets_by_perturbation_step: numpy.ndarray = numpy.linspace(start=0,
-                                                                 stop=0.2,
+                                                                 stop=0.9,
                                                                  num=max_perturbation_steps+1,
                                                                  endpoint=True)
     # Add offset to avoid overlapping markers with function values.
     offset: float = offsets_by_perturbation_step[current_perturbation_step]
     # Annotate plot with number of steps as text next to each marker.
     for idx, val in enumerate(number_of_flips_per_step_arr):
-        plt.annotate(val, xy=(idx+offset, val))
+        plt.annotate(text=val,
+                     xy=(idx-(offset*0.5), val+(offset*3)))
 
     plt.xticks(xticks)
     plt.title(f'Total number of flips: {sum(number_of_flips_per_step_arr)}')
