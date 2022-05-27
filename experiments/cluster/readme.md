@@ -6,16 +6,38 @@ All commands listed in this guide should be run on execution nodes on the cluste
 
 ## Requirements
 
-- `./cluster/script/bootstrap-ubuntu` - install dependencies for the first time
+- Install dependencies for the first time
+
+  ```sh
+  ./cluster/script/bootstrap-ubuntu
+  ```
 
 ## Usage
 
-1. `./cluster/script/setup` - Prepare environment each time before running experiments
-2. `bash ./cluster/script/run-lrp-pf.sh` - Run experiments on the cluster
+1. Prepare environment each time before running experiments
 
-   `fish ./local/script/run-lrp-pf.fish` - Alternatively, run experiments locally
+   ```sh
+   ./cluster/script/setup
+   ```
 
-3. `python3 cluster/script/visualize.py` - Visualize results
+2. Run experiments on the **cluster**
+
+   ```sh
+   bash ./cluster/script/run-lrp-pf.sh
+   ```
+
+   Alternatively, run experiments **locally**
+
+   ```sh
+   # Run from root directory of this (lrp) repo
+   fish ./experiments/local/script/run-lrp-pf.fish
+   ```
+
+3. Visualize results
+
+   ```sh
+   python3 ./experiments/script/visualize.py
+   ```
 
 ## Credits
 

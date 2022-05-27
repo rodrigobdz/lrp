@@ -45,4 +45,4 @@ esac
 # Log environment
 echo "SGE_TASK_ID: $SGE_TASK_ID"
 
-python3 batch_lrp_pf.py --experiment-id "$SGE_TASK_ID"
+python3 ./experiments/script/batch_lrp_pf.py --experiment-id "$SGE_TASK_ID"
