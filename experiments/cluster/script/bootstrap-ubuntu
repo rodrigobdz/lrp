@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install project dependencies for Ubuntu.
+# Install project dependencies and requirements to run experiments on cluster (OS: Ubuntu).
 
 set -o errexit
 set -o pipefail

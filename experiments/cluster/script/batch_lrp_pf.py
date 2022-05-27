@@ -416,7 +416,7 @@ if __name__ == "__main__":
         '/unterlagen/bildung/uni/master/masterarbeit'
     DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
     # Directories to be created (if they don't already exist)
-    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
+    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-30/' \
         f'lrp-pf-auc/batch-size-{BATCH_SIZE}'
     EXPERIMENT_ROOT: str = f'{EXPERIMENT_PARENT_ROOT}/experiment-id-{EXPERIMENT_ID}'
 
