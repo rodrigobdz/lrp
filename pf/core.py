@@ -468,6 +468,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                         logger=self.logger)
 
         elif self.perturb_mode == PerturbModes.INPAINTING:
+            # Denormalize image values for inpaiting
             flipped_input_nchw = norm.denorm_img_pxls(
                 norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
 
@@ -475,6 +476,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                                                  mask_n1hw=acc_mask_n1hw,
                                                  logger=self.logger).float()
 
+            # Re-normalize flipped input after perturbation.
             flipped_input_nchw = norm.ImageNetNorm.normalize(
                 norm.norm_img_pxls(flipped_input_nchw))
 

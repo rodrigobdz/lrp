@@ -16,14 +16,12 @@ import numpy
 
 
 class RandomNumberGenerator(ABC):
-    r"""
-    Base random number generator class. Acts as interface for number generator classes.
-    """
+    r"""Base random number generator class. Acts as interface for number generator classes."""
 
     def __init__(self,
                  seed: int = 0):
-        """
-        Constructor
+        r"""
+        Initialize constructor.
 
         :param seed: Seed for the random number generator.
         """
@@ -31,15 +29,11 @@ class RandomNumberGenerator(ABC):
 
     @abstractmethod
     def draw(self) -> float:
-        r"""
-        Draws a random number from the distribution.
-        """
+        r"""Draws a random number from the distribution."""
 
 
 class UniformRNG(RandomNumberGenerator):
-    r"""
-    Uniform random number generator class.
-    """
+    r"""Uniform random number generator class."""
 
     def draw(self, low: float = 0.0, high: float = 1.0) -> float:
         r"""

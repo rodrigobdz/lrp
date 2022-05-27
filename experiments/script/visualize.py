@@ -28,7 +28,7 @@ if __name__ == "__main__":
     WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
         '/unterlagen/bildung/uni/master/masterarbeit'
     # Directories to be created (if they don't already exist)
-    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-16/' \
+    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-30/' \
         f'lrp-pf-auc/batch-size-{BATCH_SIZE}'
 
     experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
