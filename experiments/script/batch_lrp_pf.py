@@ -184,7 +184,8 @@ class Helpers:
         pf_instance.plot_class_prediction_scores(show_plot=SHOW_PLOT)
 
         class_scores_filename: str = f'{EXPERIMENT_ROOT}/batch-{batch_index}' \
-            '-pixel-flipping-class-prediction-scores.png'
+            '-pixel-flipping-class-prediction-scores' \
+            f'-experiment-id-{EXPERIMENT_ID}.png'
         # Facecolor sets the background color of the figure
         plt.savefig(class_scores_filename, dpi=DPI, facecolor='w')
         plt.close()
@@ -346,7 +347,7 @@ class CommandLine():  # pylint: disable=too-few-public-methods
         """
         parser = argparse.ArgumentParser(description='Specify the experiment parameters.',
                                          epilog='For more information, review function'
-                                         "called '_get_rule_layer_map_by_experiment_id'.")
+                                         "named '_get_rule_layer_map_by_experiment_id'.")
 
         parser.add_argument('-i', '--experiment-id',
                             type=int,
