@@ -8,5 +8,5 @@ set TOTAL_NUMBER_OF_EXPERIMENTS 16
 echo "Running $TOTAL_NUMBER_OF_EXPERIMENTS experiments"
 for i in (seq 0 (math "$TOTAL_NUMBER_OF_EXPERIMENTS" - 1))
     echo "Running experiment ID $i"
-    python3 ./experiments/script/batch_lrp_pf.py --experiment-id "$i"
+    ./venv/bin/python3 ./experiments/script/batch_lrp_pf.py --experiment-id "$i"
 end
