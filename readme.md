@@ -9,26 +9,11 @@ Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
 
 ## Installation
 
-1. Install `pre-commit` hooks to lint changed files automatically when committing:
+Install dependencies
 
-   ```sh
-   pre-commit install
-   ```
-
-1. Install python dependencies.
-
-   ```sh
-   # Create python virtual environment (venv) called lrp-env
-   python3 -m venv lrp-env
-
-   # Activate venv
-   source lrp-env/bin/activate
-
-   # Install dependencies in editable mode
-   python3 -m pip install --editable .
-   # Alternatively, to install development dependencies, use the following command instead:
-   # python3 -m pip install --editable .[dev]
-   ```
+```sh
+sudo ./script/bootstrap
+```
 
 ## Usage
 

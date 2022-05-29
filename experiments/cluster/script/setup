@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 #
-# Set up any dependencies to start development.
+# Set up environment to run experiments on cluster.
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-echo 'Load bash settings (not automatically loaded on cluster)'
+conda_env_name='masterarbeit_env'
+
+echo 'Set up cluster node for experiments'
+
+echo 'Loading bash settings (not automatically loaded on cluster)'
 source /home/rodrigo/.bashrc
 
-echo 'Activate conda environment created in script/bootstrap-ubuntu'
-conda activate masterarbeit_env
+echo "Activating conda environment '$conda_env_name' created in script/bootstrap-cluster"
+conda activate "$conda_env_name"

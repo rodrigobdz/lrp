@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+#
+# Install project dependencies and requirements to run experiments on cluster.
+# Commands can be run either in login node or in compute node.
+# OS supported: Ubuntu 20.04.3 LTS (Focal Fossa)
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+init_bashrc() {
+  local -r src_bashrc='/home/rodrigo/masterarbeit/bashrc'
+  local -r dest_bashrc='/home/rodrigo/.bashrc'
+
+  echo "Init bashrc to path $dest_bashrc on cluster"
+
+  # Check if bashrc was already copied to cluster
+  if [ ! -f "$src_bashrc" ]; then
+    echo "File $src_bashrc does not exist."
+    echo "Please run script/bootstrap-local first to transfer bashrc to cluster."
+    exit 1
+  fi
+
+  # Check if .bashrc already exists
+  if [ -f "$dest_bashrc" ]; then
+    echo "Back up existing .bashrc under $dest_bashrc"
+    mv "$dest_bashrc" "$dest_bashrc".bak
+  fi
+
+  echo "Install .bashrc from $src_bashrc"
+  ln -s "$src_bashrc" "$dest_bashrc"
+}
+
+install_miniconda() {
+  local -r cuda_version='11.3'
+  local -r python_version='3.8'
+
+  local -r arch='x86_64'
+  local -r conda_env_name='masterarbeit_env'
+
+  echo "Install Miniconda"
+
+  echo "Downloading Miniconda's installation script for arch $arch"
+  wget "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-${arch}.sh"
+
+  echo "Installing Miniconda for arch $arch"
+  bash "Miniconda3-latest-Linux-${arch}.sh"
+
+  # Command is shown when running a conda command in an outdated environment.
+  echo 'Updating conda'
+  conda update --name base --channel defaults conda
+}
+
+install_pytorch() {
+  echo 'Install PyTorch'
+
+  echo "Creating new conda environment called '$conda_env_name'"
+  conda create --name "$conda_env_name" python="$python_version" --yes
+
+  echo 'Activating created conda environment'
+  conda activate "$conda_env_name"
+
+  echo "Installing PyTorch with CUDA ($cuda_version) support"
+  # Source: https://pytorch.org/get-started/locally/
+  conda install pytorch torchvision torchaudio cudatoolkit="$cuda_version" --channel pytorch --yes
+}
+
+main() {
+  init_bashrc
+  install_miniconda
+  install_pytorch
+}
+
+main

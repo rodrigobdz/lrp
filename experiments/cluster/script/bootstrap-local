@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#
+# Install project dependencies on local machine.
+# OS: macOS 12.4
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+_rsync_to_cluster() {
+  local src="$1"
+  local dst="$2"
+  local file_description="$3"
+  local opts=(--archive --compress --partial '--info=progress2' --human-readable)
+
+  echo "Transferring $file_description from local machine to cluster"
+  echo "Executing: rsync ${src} ${dest}"
+  rsync "${opts[*]}" "${src}" "${dst}"
+}
+
+transfer_config() {
+  local -r src="$(pwd)/experiments/cluster/bashrc"
+  local -r dest="ml:/home/rodrigo/masterarbeit/bashrc"
+
+  _rsync_to_cluster "${src}" "${dest}" "bashrc"
+}
+
+transfer_data() {
+  local -r src="$(pwd)/data"
+  local -r dest="ml:/home/rodrigo/"
+
+  _rsync_to_cluster "${src}" "${dest}" "dataset"
+}
+
+transfer_code() {
+  local -r dist_path="$(pwd)/dist"
+
+  echo "Transfer code to cluster"
+
+  _rsync_to_cluster "${dist_path}" "ml:/home/rodrigo/" "dist"
+}
+
+main() {
+  transfer_config
+  transfer_data
+  transfer_code
+}
+
+main

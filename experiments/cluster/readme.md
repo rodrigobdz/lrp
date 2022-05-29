@@ -4,42 +4,64 @@ Documentation of how to set up and run experiments on a cluster.
 
 All commands listed in this guide should be run on execution nodes on the cluster.
 
-## Requirements
+## Installation
 
-- Install dependencies for the first time
+1. Build project
 
-  ```sh
-  ./cluster/script/bootstrap-ubuntu
-  ```
+   ```sh
+   ./script/build
+   ```
+
+1. Install dependencies on local machine
+
+   ```sh
+   ./experiments/cluster/script/bootstrap-local
+   ```
+
+1. Install dependencies on cluster
+
+   ```sh
+   ./experiments/cluster/script/bootstrap-cluster
+   ```
 
 ## Usage
 
-1. Prepare environment each time before running experiments
+<!-- markdownlint-disable ol-prefix -->
+
+4. `Cluster only` Prepare environment each time before running experiments
 
    ```sh
-   ./cluster/script/setup
+   # Prepare environment to run experiments on cluster
+   ./experiments/cluster/script/setup
+
+   # Install code for experiments
+   ./script/install
    ```
 
-2. Run experiments on the **cluster**
+5. Run experiments
 
-   ```sh
-   bash ./cluster/script/run-lrp-pf.sh
-   ```
+   1. either on the **cluster**:
 
-   Alternatively, run experiments **locally**
+      ```sh
+      bash ./experiments/cluster/script/run-lrp-pf.sh
+      ```
 
-   ```sh
-   # Run from root directory of this (lrp) repo
-   fish ./experiments/local/script/run-lrp-pf.fish
-   ```
+   1. or **locally**:
 
-3. Visualize results
+      ```sh
+      # Run from root directory of this (lrp) repo
+      fish ./experiments/local/script/run-lrp-pf.fish
+      ```
+
+6. Visualize results
 
    ```sh
    python3 ./experiments/script/visualize.py
    ```
 
+<!-- markdownlint-enable ol-prefix -->
+
 ## Credits
 
-- Scripts follow [Personal Shell Style Guide](https://github.com/rodrigobdz/styleguide-sh)
+- Scripts follow [rodrigobdz's Shell Style Guide](https://github.com/rodrigobdz/styleguide-sh)
 - The structure of this README is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme).

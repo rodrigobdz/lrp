@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Install project dependencies.
+# OS supported: Linux, macOS
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+venv_name='lrp-env'
+
+echo 'Install project dependencies'
+
+echo 'Installing pre-commit hooks to lint changed files automatically when committing'
+pre-commit install
+
+echo "Creating python virtual environment (venv) called $venv_name"
+python3 -m venv "$venv_name"
+
+echo "Activating virtual environment $venv_name"
+# Disable shellcheck warning about using source with a variable.
+# shellcheck disable=SC1091
+source "${venv_name}/bin/activate"
+
+echo 'Installing dependencies (including development-related) in editable mode'
+python3 -m pip install --editable .[dev]

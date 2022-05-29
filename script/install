@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install code for experiments.
+# Source: https://setuptools.pypa.io/en/latest/build_meta.html
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+readonly DIST_PATH='/home/rodrigo/dist'
+
+echo "Install code for experiments"
+
+echo "Installing wheel ${DIST_PATH}/*.whl"
+python3 -m pip install "${DIST_PATH}"/*.whl
