@@ -11,6 +11,8 @@ conda_env_name='masterarbeit_env'
 echo 'Set up cluster node for experiments'
 
 echo 'Loading bash settings (not automatically loaded on cluster)'
+# Disable shellcheck warning about using source with a variable.
+# shellcheck disable=SC1091
 source /home/rodrigo/.bashrc
 
 echo "Activating conda environment '$conda_env_name' created in script/bootstrap-cluster"
