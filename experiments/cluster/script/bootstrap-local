@@ -48,6 +48,7 @@ transfer_code() {
   echo "Transfer code to cluster"
 
   _rsync_to_cluster "${dist_path}" "ml:/home/rodrigo/" "dist"
+  _rsync_to_cluster "experiments" "ml:/home/rodrigo/" "experiments" '--exclude=notebooks'
 }
 
 main() {
