@@ -8,28 +8,38 @@ set -o pipefail
 set -o nounset
 
 _rsync_to_cluster() {
+  local opts=(--archive --compress --partial --progress --human-readable --verbose)
   local src="$1"
   local dst="$2"
   local file_description="$3"
-  local opts=(--archive --compress --partial '--info=progress2' --human-readable)
 
+  # Check if additional rsync parameters were passed to function
+  if [ -n "${4+empty}" ]; then
+    opts+=("$4")
+  fi
+
+  echo
   echo "Transferring $file_description from local machine to cluster"
-  echo "Executing: rsync ${src} ${dest}"
-  rsync "${opts[*]}" "${src}" "${dst}"
+  echo "Executing: rsync ${src} ${dst}"
+  rsync "${opts[@]}" "${src}" "${dst}"
+
+  echo
+  echo "Done transferring $file_description from local machine to cluster"
+  echo
 }
 
 transfer_config() {
   local -r src="$(pwd)/experiments/cluster/bashrc"
-  local -r dest="ml:/home/rodrigo/masterarbeit/bashrc"
+  local -r dst="ml:/home/rodrigo/bashrc"
 
-  _rsync_to_cluster "${src}" "${dest}" "bashrc"
+  _rsync_to_cluster "${src}" "${dst}" "bashrc"
 }
 
 transfer_data() {
   local -r src="$(pwd)/data"
-  local -r dest="ml:/home/rodrigo/"
+  local -r dst="ml:/home/rodrigo/"
 
-  _rsync_to_cluster "${src}" "${dest}" "dataset"
+  _rsync_to_cluster "${src}" "${dst}" "dataset"
 }
 
 transfer_code() {
