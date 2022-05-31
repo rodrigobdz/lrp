@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install code for experiments.
+# Install code for experiments on cluster.
 # Source: https://setuptools.pypa.io/en/latest/build_meta.html
 
 set -o errexit
@@ -10,6 +10,9 @@ set -o nounset
 readonly DIST_PATH='/home/rodrigo/dist'
 
 echo "Install code for experiments"
+
+echo 'List conda environments to verify that conda is active'
+conda env list
 
 echo "Installing wheel ${DIST_PATH}/*.whl"
 python3 -m pip install "${DIST_PATH}"/*.whl

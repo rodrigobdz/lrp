@@ -9,7 +9,7 @@ set -o pipefail
 set -o nounset
 
 init_bashrc() {
-  local -r src_bashrc='/home/rodrigo/masterarbeit/bashrc'
+  local -r src_bashrc='/home/rodrigo/bashrc'
   local -r dest_bashrc='/home/rodrigo/.bashrc'
 
   echo "Init bashrc to path $dest_bashrc on cluster"
@@ -66,6 +66,7 @@ install_pytorch() {
 }
 
 main() {
+  echo "Bootstrap cluster node"
   init_bashrc
   install_miniconda
   install_pytorch

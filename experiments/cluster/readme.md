@@ -31,11 +31,14 @@ All commands listed in this guide should be run on execution nodes on the cluste
 4. `Cluster only` Prepare environment each time before running experiments
 
    ```sh
-   # Prepare environment to run experiments on cluster
-   ./experiments/cluster/script/setup
+   # Access computing node from login node
+   qlogin
 
-   # Install code for experiments
-   ./script/install
+   # (Everytime) Prepare environment to run experiments on cluster
+   source /home/rodrigo/experiments/cluster/script/setup
+
+   # (One-time) Install code for experiments
+   /home/rodrigo/experiments/cluster/script/install
    ```
 
 5. Run experiments
@@ -43,7 +46,14 @@ All commands listed in this guide should be run on execution nodes on the cluste
    1. either on the **cluster**:
 
       ```sh
-      bash ./experiments/cluster/script/run-lrp-pf.sh
+      # Log in to cluster
+      ssh ml
+
+      # Change directory to log to save results in this directory
+      cd /home/rodrigo/log
+
+      # Run experiments
+      bash /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
       ```
 
    1. or **locally**:

@@ -52,6 +52,7 @@ transfer_code() {
 }
 
 main() {
+  echo "Bootstrap local machine"
   transfer_config
   transfer_data
   transfer_code

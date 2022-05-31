@@ -6,7 +6,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-conda_env_name='masterarbeit_env'
+readonly conda_env_name='masterarbeit_env'
 
 echo 'Set up cluster node for experiments'
 

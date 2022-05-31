@@ -14,7 +14,7 @@
 #$ -l mem_free=16G    # request 16GB of free memory
 #$ -q all.q           # submit jobs to queue named all.q (general queue)
 #$ -cwd               # execute in current working directory
-#$ -t 0-15            # start multiple instances with identified SGE_TASK_ID from 0 to n
+#$ -t 1-16            # start multiple instances with identified SGE_TASK_ID from 1 to n
 #
 # Submit jobs to cluster using qsub
 #
@@ -26,7 +26,7 @@
 #       's' Mail is sent when the job is suspended.
 #     -M <email address> # send mail to this address on the events specified
 #
-# qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de run-lrp-pf.sh
+# qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
 
 # Bash options
 set -o errexit  # exit on error
@@ -35,14 +35,22 @@ set -o nounset  # exit on unset variable
 
 case "$SGE_TASK_ID" in
 # Verify cluster job IDs
-0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15) ;;
+1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16) ;;
 # Error handling for unsupported experiment IDs
 *)
   echo "Unsupported SGE_TASK_ID $SGE_TASK_ID. Exiting..." && exit 1
   ;;
 esac
 
-# Log environment
-echo "SGE_TASK_ID: $SGE_TASK_ID"
+# Subtract one because SGE_TASK_ID can only start at 1 and not 0.
+EXPERIMENT_ID="$((SGE_TASK_ID - 1))"
+readonly EXPERIMENT_ID
 
-python3 ./experiments/script/batch_lrp_pf.py --experiment-id "$SGE_TASK_ID"
+# Log environment
+echo "SGE_TASK_ID: $SGE_TASK_ID. Argument for Python script EXPERIMENT_ID: $EXPERIMENT_ID"
+
+# Disable shellcheck warning about using source with a variable.
+# shellcheck disable=SC1091
+source /home/rodrigo/experiments/cluster/script/setup
+
+python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID"
