@@ -8,6 +8,10 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+readonly CONDA_ENV_NAME='masterarbeit_env'
+readonly CUDA_VERSION='11.3'
+readonly PYTHON_VERSION='3.8'
+
 init_bashrc() {
   local -r src_bashrc='/home/rodrigo/bashrc'
   local -r dest_bashrc='/home/rodrigo/.bashrc'
@@ -32,11 +36,7 @@ init_bashrc() {
 }
 
 install_miniconda() {
-  local -r cuda_version='11.3'
-  local -r python_version='3.8'
-
   local -r arch='x86_64'
-  local -r conda_env_name='masterarbeit_env'
 
   echo "Install Miniconda"
 
@@ -54,15 +54,15 @@ install_miniconda() {
 install_pytorch() {
   echo 'Install PyTorch'
 
-  echo "Creating new conda environment called '$conda_env_name'"
-  conda create --name "$conda_env_name" python="$python_version" --yes
+  echo "Creating new conda environment called '$CONDA_ENV_NAME'"
+  conda create --name "$CONDA_ENV_NAME" python="$PYTHON_VERSION" --yes
 
   echo 'Activating created conda environment'
-  conda activate "$conda_env_name"
+  conda activate "$CONDA_ENV_NAME"
 
-  echo "Installing PyTorch with CUDA ($cuda_version) support"
+  echo "Installing PyTorch with CUDA ($CUDA_VERSION) support"
   # Source: https://pytorch.org/get-started/locally/
-  conda install pytorch torchvision torchaudio cudatoolkit="$cuda_version" --channel pytorch --yes
+  conda install pytorch torchvision torchaudio cudatoolkit="$CUDA_VERSION" --channel pytorch --yes
 }
 
 main() {

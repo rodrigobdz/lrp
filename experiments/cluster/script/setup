@@ -6,7 +6,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-readonly conda_env_name='masterarbeit_env'
+readonly CONDA_ENV_NAME='masterarbeit_env'
 
 echo 'Set up cluster node for experiments'
 
@@ -15,5 +15,5 @@ echo 'Loading bash settings (not automatically loaded on cluster)'
 # shellcheck disable=SC1091
 source /home/rodrigo/.bashrc
 
-echo "Activating conda environment '$conda_env_name' created in script/bootstrap-cluster"
-conda activate "$conda_env_name"
+echo "Activating conda environment '$CONDA_ENV_NAME' created in script/bootstrap-cluster"
+conda activate "$CONDA_ENV_NAME"
