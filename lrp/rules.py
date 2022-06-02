@@ -20,12 +20,13 @@ from .zennit import core as zennit_core
 
 
 class LrpRule(torch.nn.Module):
-    r"""Base class for LRP rules"""
+    r"""Base class for LRP rules."""
 
     def __init__(
         self, layer: torch.nn.Module, param_modifiers: List[Tuple[str, Callable]]
     ) -> None:
-        r"""
+        r"""Initialize an LRP rule.
+
         :param layer: Layer to be modified
         :param param_modifiers: Tuples of (layer_name, modifier)
                 A new layer will be created for each layer_name with modifier applied
@@ -46,7 +47,8 @@ class LrpRule(torch.nn.Module):
     def forward_mod_gradient(
         self, z: torch.Tensor, output: torch.Tensor
     ) -> torch.Tensor:
-        r"""Modifies the gradient of the layer while keeping the output unchanged.
+        r"""Modify the gradient of the layer while keeping the output unchanged.
+
         The resulting gradient returns the relevance scores of LRP when invoking automatic differentiation.
 
         :param z: Input to the layer
@@ -62,13 +64,13 @@ class LrpRule(torch.nn.Module):
 
 
 class _LrpGenericRule(LrpRule):
-    r"""Generic LRP rule
+    r"""Define generic LRP rule.
 
     Source: 10.2 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
     """
 
     def __init__(self, layer: torch.nn.Module, epsilon: float, gamma: float) -> None:
-        r"""Define parameter modifiers for the layer
+        r"""Define parameter modifiers for the layer.
 
         :param layer: Layer to be modified
         :param epsilon: Epsilon value for LRP rule with same name
@@ -81,7 +83,7 @@ class _LrpGenericRule(LrpRule):
         super().__init__(layer, param_modifiers)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
-        r"""Forward passes on layer and copy layer
+        r"""Forward passes on layer and copy layer.
 
         :param X: Input to the layer
         :returns: Output of the layer with modified gradient
@@ -93,7 +95,8 @@ class _LrpGenericRule(LrpRule):
 
 
 class LrpZeroRule(_LrpGenericRule):
-    r"""LRP-0 rule
+    r"""LRP-0 rule.
+
     Source: 10.1 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
     """
 
@@ -105,7 +108,8 @@ class LrpZeroRule(_LrpGenericRule):
 
 
 class LrpEpsilonRule(_LrpGenericRule):
-    r"""LRP-ε rule
+    r"""LRP-ε rule.
+
     Source: 10.1 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
     """
 
@@ -118,7 +122,8 @@ class LrpEpsilonRule(_LrpGenericRule):
 
 
 class LrpGammaRule(_LrpGenericRule):
-    r"""LRP-γ rule
+    r"""LRP-γ rule.
+
     Source: 10.1 in https://link.springer.com/chapter/10.1007%2F978-3-030-28954-6_10
     """
 
@@ -131,7 +136,8 @@ class LrpGammaRule(_LrpGenericRule):
 
 
 class LrpZBoxRule(LrpRule):
-    r"""LRP-Z-Box rule
+    r"""LRP-Z-Box rule.
+
     Source: Algorithm 7 in Appendix B section A. in https://arxiv.org/abs/2003.07631v1
     """
 
