@@ -17,3 +17,9 @@ source /home/rodrigo/.bashrc
 
 echo "Activating conda environment '$CONDA_ENV_NAME' created in script/bootstrap-cluster"
 conda activate "$CONDA_ENV_NAME"
+
+# Without these lines, cluster node fails with '!ref: unbound variable' on TAB completion.
+# Source: https://unix.stackexchange.com/questions/539375/autocompletion-fails-on-tab-with-bash-ref-unbound-variable
+set +o nounset
+set +o errexit
+set +o pipefail
