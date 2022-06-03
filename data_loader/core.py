@@ -10,7 +10,6 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 
-import multiprocessing
 import random
 from typing import List, Optional, Union
 
@@ -19,6 +18,12 @@ import torch
 import torchvision
 
 import lrp.norm
+
+# Turn on multi-process data loading by setting the number of workers
+# to a non-zero positive integer value.
+#
+# Cluster only supports 2 workers. A warning is shown if the number of workers is larger.
+DATA_LOADER_NUM_WORKERS: int = 2
 
 
 def _seed_worker(_: int) -> None:
@@ -112,7 +117,7 @@ def _data_loader(dataset: torch.utils.data.Dataset,
     return torch.utils.data.DataLoader(dataset,
                                        batch_size=batch_size,
                                        shuffle=False,
-                                       num_workers=multiprocessing.cpu_count(),
+                                       num_workers=DATA_LOADER_NUM_WORKERS,
                                        worker_init_fn=_seed_worker,
                                        generator=generator)
 
