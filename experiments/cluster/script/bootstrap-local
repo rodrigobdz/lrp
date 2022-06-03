@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Install project dependencies on local machine.
+# Bootstrap cluster from local machine.
+#
+# Transfer required files from local machine to cluster.
 # OS: macOS 12.4
 
 set -o errexit

@@ -1,75 +1,73 @@
 # Cluster Experiments
 
-Documentation of how to set up and run experiments on a cluster.
+Documentation of how to set up and run experiments on the **cluster**.
 
-All commands listed in this guide should be run on execution nodes on the cluster.
+## Requirements
+
+All commands listed in this guide should be run on execution nodes on the **cluster**.
 
 ## Installation
 
 1. Build project
 
    ```sh
+   # Locally
    ./script/build
    ```
 
-1. Install dependencies on local machine
+1. Transfer project to execution nodes
 
    ```sh
-   ./experiments/cluster/script/bootstrap-local
+   # Locally
+   ./experiments/cluster/script/bootstrap-cluster
    ```
+
+1. Log in to cluster
 
 1. Install dependencies on cluster
 
    ```sh
+   # On Cluster
+   cd /home/rodrigo/
    ./experiments/cluster/script/bootstrap-cluster
    ```
 
 ## Usage
 
-<!-- markdownlint-disable ol-prefix -->
+1. Log in to cluster
 
-4. `Cluster only` Prepare environment each time before running experiments
+1. Prepare environment to run experiments on the cluster
 
    ```sh
-   # Access computing node from login node
-   qlogin
-
-   # (Everytime) Prepare environment to run experiments on cluster
+   # On Cluster
    source /home/rodrigo/experiments/cluster/script/setup
+   ```
 
-   # (One-time) Install code for experiments
+1. Install code for experiments
+
+   ```sh
+   # On Cluster
+   # qlogin not needed if jobs are not going to be submitted interactively
    /home/rodrigo/experiments/cluster/script/install
    ```
 
-5. Run experiments
-
-   1. either on the **cluster**:
-
-      ```sh
-      # Log in to cluster
-      ssh ml
-
-      # Change directory to log to save results in this directory
-      cd /home/rodrigo/log
-
-      # Run experiments
-      bash /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
-      ```
-
-   1. or **locally**:
-
-      ```sh
-      # Run from root directory of this (lrp) repo
-      fish ./experiments/local/script/run-lrp-pf.fish
-      ```
-
-6. Visualize results
+1. Run experiments
 
    ```sh
-   python3 ./experiments/script/visualize.py
+   # Change directory to log to save results in this directory
+   cd /home/rodrigo/log
+
+   # Submit experiment jobs
+   qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
    ```
 
-<!-- markdownlint-enable ol-prefix -->
+1. Visualize results
+
+   ```sh
+   # On Cluster
+   cd /home/rodrigo
+   python3 ./experiments/script/visualize.py
+   ```
 
 ## Credits
 

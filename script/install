@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Install code.
+# Source: https://setuptools.pypa.io/en/latest/build_meta.html
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+echo "Installing wheel dist/*.whl"
+python3 -m pip install dist/*.whl
