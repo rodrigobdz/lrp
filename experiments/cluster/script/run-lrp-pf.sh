@@ -38,7 +38,7 @@ case "$SGE_TASK_ID" in
 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16) ;;
 # Error handling for unsupported experiment IDs
 *)
-  echo "Unsupported SGE_TASK_ID $SGE_TASK_ID. Exiting..." && exit 1
+  echo "ERROR: Unsupported SGE_TASK_ID $SGE_TASK_ID. Exiting..." && exit 1
   ;;
 esac
 

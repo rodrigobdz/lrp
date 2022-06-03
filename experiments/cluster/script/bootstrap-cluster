@@ -8,7 +8,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-readonly CONDA_ENV_NAME='masterarbeit_env'
+# Variable should not be read-only because setup script already defines it and would cause conflict.
+CONDA_ENV_NAME='masterarbeit_env'
 readonly CUDA_VERSION='11.3'
 readonly PYTHON_VERSION='3.8'
 
@@ -20,7 +21,7 @@ init_bashrc() {
 
   # Check if bashrc was already copied to cluster
   if [ ! -f "$src_bashrc" ]; then
-    echo "File $src_bashrc does not exist."
+    echo "ERROR: File $src_bashrc does not exist."
     echo "Please run script/bootstrap-local first to transfer bashrc to cluster."
     exit 1
   fi
@@ -37,6 +38,12 @@ init_bashrc() {
 
 install_miniconda() {
   local -r arch='x86_64'
+  local -r miniconda_path="${HOME}/miniconda3"
+
+  if [ -d "$miniconda_path" ]; then
+    echo "Miniconda directory under $miniconda_path detected. Skipping installation."
+    return
+  fi
 
   echo "Install Miniconda"
 
@@ -45,13 +52,27 @@ install_miniconda() {
 
   echo "Installing Miniconda for arch $arch"
   bash "Miniconda3-latest-Linux-${arch}.sh"
+}
 
-  # Command is shown when running a conda command in an outdated environment.
+source_setup() {
+  echo "Source setup script to load conda environment, if installed"
+  # Disable shellcheck warning about using source with a variable.
+  # shellcheck disable=SC1091
+  source /home/rodrigo/experiments/cluster/script/setup
+}
+
+update_conda() {
   echo 'Updating conda'
+  # Command is shown when running a conda command in an outdated environment.
   conda update --name base --channel defaults conda
 }
 
 install_pytorch() {
+  if conda env list | grep -q "$CONDA_ENV_NAME"; then
+    echo "Conda environment $CONDA_ENV_NAME detected. Skipping installation."
+    return
+  fi
+
   echo 'Install PyTorch'
 
   echo "Creating new conda environment called '$CONDA_ENV_NAME'"
@@ -69,6 +90,8 @@ main() {
   echo "Bootstrap cluster node"
   init_bashrc
   install_miniconda
+  source_setup
+  update_conda
   install_pytorch
 }
 

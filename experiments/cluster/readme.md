@@ -19,10 +19,15 @@ All commands listed in this guide should be run on execution nodes on the **clus
 
    ```sh
    # Locally
-   ./experiments/cluster/script/bootstrap-cluster
+   ./experiments/cluster/script/bootstrap-local
    ```
 
 1. Log in to cluster
+
+   ```sh
+   # Assuming you have set up ~/.ssh/config with an entry for the cluster with HostName 'ml'
+   ssh ml
+   ```
 
 1. Install dependencies on cluster
 
