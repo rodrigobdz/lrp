@@ -8,11 +8,11 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 # pylint: enable=duplicate-code
 
+import argparse
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
-import argparse
 import numpy
 import torch
 from matplotlib import pyplot as plt
