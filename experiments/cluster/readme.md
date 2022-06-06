@@ -56,6 +56,8 @@ All commands listed in this guide should be run on execution nodes on the **clus
    /home/rodrigo/experiments/cluster/script/install
    ```
 
+1. Update the paths in `/home/rodrigo/experiments/server/server.config`
+
 1. Run experiments
 
    ```sh

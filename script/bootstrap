@@ -7,7 +7,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-venv_name='lrp-env'
+venv_name='venv'
 
 echo 'Install project dependencies'
 

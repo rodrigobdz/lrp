@@ -343,8 +343,8 @@ class CommandLine():  # pylint: disable=too-few-public-methods
     def __init__(self) -> None:
         r"""Initialize argument parser."""
         self.parser = argparse.ArgumentParser(description='Specify the experiment parameters.',
-                                              epilog='For more information, review function'
-                                              "named '_get_rule_layer_map_by_experiment_id'.")
+                                              epilog='For more information, review the function'
+                                              "called '_get_rule_layer_map_by_experiment_id'.")
 
         self.parser.add_argument('-i', '--experiment-id',
                                  type=int,

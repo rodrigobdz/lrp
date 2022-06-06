@@ -8,6 +8,12 @@ All commands listed in this guide should be run **locally** (not cluster) from t
 
 ## Installation
 
+1. Activate virtual environment created in [script/bootstrap](https://github.com/rodrigobdz/lrp/blob/3a99a5461031a18462332247f236cffd81b126b6/script/bootstrap#L10)
+
+   ```sh
+   source ./venv/bin/activate
+   ```
+
 1. Build project
 
    ```sh
