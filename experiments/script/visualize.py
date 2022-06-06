@@ -8,9 +8,11 @@ __email__ = 'r.bermudezschettino@campus.tu-berlin.de'
 __status__ = 'Development'
 # pylint: enable=duplicate-code
 
+from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
+import argparse
 import numpy
 import torch
 from matplotlib import pyplot as plt
@@ -18,18 +20,35 @@ from matplotlib import pyplot as plt
 from lrp import rules
 
 if __name__ == "__main__":
-    # TODO: Load constants from pickle/npy file.
-    BATCH_SIZE: int = 4
-    # Experiment constants
-    PERTURBATION_STEPS: int = 28
-    PERTURBATION_SIZE: int = 8
 
-    # Workspace constants
-    WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
-        '/unterlagen/bildung/uni/master/masterarbeit'
-    # Directories to be created (if they don't already exist)
-    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-30/' \
-        f'lrp-pf-auc/batch-size-{BATCH_SIZE}'
+    # Read configuration file passed as argument.
+    config = ConfigParser(interpolation=ExtendedInterpolation())
+    parser = argparse.ArgumentParser(description='Specify the path to the configuration file.',
+                                     epilog='For more information, review the batch_lrp_pf.py script')
+    parser.add_argument('-c', '--config-file',
+                        type=Path,
+                        help='Absolute path to configuration file'
+                        ' with parameters for experiments',
+                        required=True)
+    parsed_args: argparse.Namespace = parser.parse_args()
+    config_file_path: Path = parsed_args.config_file
+
+    # pylint: disable=pointless-statement
+    config.read(Path(__file__).parent / 'experiments.config')
+    # pylint: enable=pointless-statement
+
+    config_section_name: str = 'PARAMETERS'
+
+    BATCH_SIZE: int = config.getint(config_section_name,
+                                    'BATCH_SIZE')
+    PERTURBATION_STEPS: int = config.getint(config_section_name,
+                                            'PERTURBATION_STEPS')
+    PERTURBATION_SIZE: int = config.getint(config_section_name,
+                                           'PERTURBATION_SIZE')
+
+    # Path to dir where the results should be stored.
+    # Directories will be created, if they don't already exist.
+    EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
 
     experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
     auc_list: List[str] = list(

@@ -10,6 +10,7 @@ __status__ = 'Development'
 
 
 import argparse
+from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -339,23 +340,29 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
 class CommandLine():  # pylint: disable=too-few-public-methods
     r"""Encapsulate CLI-related functions."""
 
-    @staticmethod
-    def parse_arguments() -> int:
+    def __init__(self) -> None:
+        r"""Initialize argument parser."""
+        self.parser = argparse.ArgumentParser(description='Specify the experiment parameters.',
+                                              epilog='For more information, review function'
+                                              "named '_get_rule_layer_map_by_experiment_id'.")
+
+        self.parser.add_argument('-i', '--experiment-id',
+                                 type=int,
+                                 help='ID of experiment (LRP rule-layer map) to use',
+                                 required=True)
+
+        self.parser.add_argument('-c', '--config-file',
+                                 type=Path,
+                                 help='Absolute path to configuration file'
+                                 ' with parameters for experiments',
+                                 required=True)
+
+    def parse_arguments(self) -> argparse.Namespace:
         r"""Parse CLI arguments.
 
-        :return: Parsed experiment ID
+        :return: Parsed arguments
         """
-        parser = argparse.ArgumentParser(description='Specify the experiment parameters.',
-                                         epilog='For more information, review function'
-                                         "named '_get_rule_layer_map_by_experiment_id'.")
-
-        parser.add_argument('-i', '--experiment-id',
-                            type=int,
-                            help='ID of experiment (LRP rule-layer map) to use',
-                            required=True)
-
-        args = parser.parse_args()
-        return args.experiment_id
+        return self.parser.parse_args()
 
 
 def run_experiments() -> None:
@@ -397,29 +404,40 @@ def run_experiments() -> None:
 
 
 if __name__ == "__main__":
-    EXPERIMENT_ID: int = CommandLine.parse_arguments()
+    args_parser: CommandLine = CommandLine()
+    parsed_args: argparse.Namespace = args_parser.parse_arguments()
+
+    EXPERIMENT_ID: int = parsed_args.experiment_id
+    config_file_path: Path = parsed_args.config_file
 
     # TODO: PRINT ALL VARS/CONSTS TO FILE
     # Experiment parameters
     NUMBER_OF_BATCHES: int = 1
-    BATCH_SIZE: int = 4
     IMAGE_CLASSES: List[str] = ['axolotl']
     # FIXME: Replace hard-coded value with new parameter
     NUMBER_OF_HYPERPARAMETER_VALUES: int = 4
     # Total number of experiments will be this number squared.
     TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
 
-    # Experiment constants
-    PERTURBATION_STEPS: int = 28
-    PERTURBATION_SIZE: int = 8
+    config = ConfigParser(interpolation=ExtendedInterpolation())
+
+    # pylint: disable=pointless-statement
+    config.read(config_file_path)
+    # pylint: enable=pointless-statement
+
+    config_section_name: str = 'PARAMETERS'
+
+    BATCH_SIZE: int = config.getint(config_section_name,
+                                    'BATCH_SIZE')
+    PERTURBATION_STEPS: int = config.getint(config_section_name,
+                                            'PERTURBATION_STEPS')
+    PERTURBATION_SIZE: int = config.getint(config_section_name,
+                                           'PERTURBATION_SIZE')
 
     # Workspace constants
-    WORKSPACE_ROOT: str = '/Users/rodrigobermudezschettino/Documents/personal' \
-        '/unterlagen/bildung/uni/master/masterarbeit'
-    DATASET_ROOT: str = f'{WORKSPACE_ROOT}/code/lrp/data'
+    DATASET_ROOT: str = config['PATHS']['DATASET_ROOT']
     # Directories to be created (if they don't already exist)
-    EXPERIMENT_PARENT_ROOT: str = f'{WORKSPACE_ROOT}/experiment-results/2022-05-30/' \
-        f'lrp-pf-auc/batch-size-{BATCH_SIZE}'
+    EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
     EXPERIMENT_ROOT: str = f'{EXPERIMENT_PARENT_ROOT}/experiment-id-{EXPERIMENT_ID}'
 
     # Derivated workspace constants

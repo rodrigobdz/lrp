@@ -53,4 +53,4 @@ echo "SGE_TASK_ID: $SGE_TASK_ID. Argument for Python script EXPERIMENT_ID: $EXPE
 # shellcheck disable=SC1091
 source /home/rodrigo/experiments/cluster/script/setup
 
-python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID"
+python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID" --config-file /home/rodrigo/experiments/cluster/cluster.config

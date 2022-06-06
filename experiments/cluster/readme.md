@@ -71,7 +71,7 @@ All commands listed in this guide should be run on execution nodes on the **clus
    ```sh
    # On Cluster
    cd /home/rodrigo
-   python3 ./experiments/script/visualize.py
+   python3 ./experiments/script/visualize.py --config-file ./experiments/cluster/cluster.config
    ```
 
 ## Credits
