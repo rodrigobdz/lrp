@@ -408,7 +408,14 @@ if __name__ == "__main__":
     parsed_args: argparse.Namespace = args_parser.parse_arguments()
 
     EXPERIMENT_ID: int = parsed_args.experiment_id
+
+    config = ConfigParser(interpolation=ExtendedInterpolation())
     config_file_path: Path = parsed_args.config_file
+
+    # Ensure that the configuration file exists.
+    if not config_file_path.absolute().exists():
+        raise ValueError(
+            f'Configuration file {config_file_path.absolute()} does not exist.')
 
     # TODO: PRINT ALL VARS/CONSTS TO FILE
     # Experiment parameters
@@ -418,8 +425,6 @@ if __name__ == "__main__":
     NUMBER_OF_HYPERPARAMETER_VALUES: int = 4
     # Total number of experiments will be this number squared.
     TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
-
-    config = ConfigParser(interpolation=ExtendedInterpolation())
 
     # pylint: disable=pointless-statement
     config.read(config_file_path)

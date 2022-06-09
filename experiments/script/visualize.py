@@ -33,8 +33,13 @@ if __name__ == "__main__":
     parsed_args: argparse.Namespace = parser.parse_args()
     config_file_path: Path = parsed_args.config_file
 
+    # Ensure that the configuration file exists.
+    if not config_file_path.absolute().exists():
+        raise ValueError(
+            f'Configuration file {config_file_path.absolute()} does not exist.')
+
     # pylint: disable=pointless-statement
-    config.read(Path(__file__).parent / 'experiments.config')
+    config.read(config_file_path)
     # pylint: enable=pointless-statement
 
     config_section_name: str = 'PARAMETERS'
