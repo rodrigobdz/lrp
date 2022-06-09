@@ -202,3 +202,11 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
         mask_n1hw: torch.Tensor = mask_nhw.unsqueeze(1)
 
         yield mask_n1hw
+
+    # Append additional mask to flip all pixels to a constant value at the end to ensure
+    # classification score is 0 after all pixels are flipped.
+    yield torch.ones(batch_size,
+                     1,
+                     height,
+                     width,
+                     dtype=torch.bool)

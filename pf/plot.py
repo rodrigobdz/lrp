@@ -44,7 +44,7 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int],
     # Annotate plot with number of steps as text next to each marker.
     for idx, val in enumerate(number_of_flips_per_step_arr):
         plt.annotate(text=val,
-                     xy=(idx-(offset*0.5), val+(offset*3)))
+                     xy=(idx-(offset*0.5), val+(offset*15)))
 
     plt.xticks(xticks)
     plt.title(f'Total number of flips: {sum(number_of_flips_per_step_arr)}')
@@ -53,7 +53,7 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int],
     plt.margins(0.1, tight=True)
     # Add padding for better alignment of (sup)title
     # Source: https://stackoverflow.com/a/45161551
-    plt.tight_layout(rect=[0, 0, 1, 1])
+    plt.tight_layout(rect=[0, 0, 1.3, 1])
 
     plt.show()
 

@@ -44,7 +44,7 @@ class PixelFlipping:
     r"""Pixel-Flipping Algorithm."""
 
     def __init__(self,
-                 perturbation_steps: int = 28,
+                 perturbation_steps: int = 29,
                  perturbation_size: int = 8,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
@@ -212,11 +212,10 @@ Selected perturbation mode: {perturb_mode}""")
         therefore, SendType and ReturnType are set to None above.
         Source: https://docs.python.org/3/library/typing.html
         """
-        if self.perturb_mode == PerturbModes.RANDOM:
-            # TODO: Add support for custom low and high bounds (random number generation).
-            # Infer (min. and max.) bounds of input for random number generation
-            self._low: Optional[float] = float(input_nchw.min())
-            self._high: Optional[float] = float(input_nchw.max())
+        # TODO: Add support for custom low and high bounds (random number generation).
+        # Infer (min. and max.) bounds of input for random number generation
+        self._low: Optional[float] = float(input_nchw.min())
+        self._high: Optional[float] = float(input_nchw.max())
 
         # Deep copy input to avoid in-place modifications.
         # Detach input from computational graph to avoid computing gradient for the
@@ -282,6 +281,8 @@ Selected perturbation mode: {perturb_mode}""")
         At the beginning few regions are flipped, then the number of regions flipped in each step
         progressively increases using a formula which involves the squares of perturbation steps.
 
+        The last step flips all elements to a fixed color (gray).
+
         :param input_nchw: Input to be explained.
         :param perturbation_size: Number of pixels to perturb per step.
 
@@ -311,7 +312,10 @@ Selected perturbation mode: {perturb_mode}""")
                                                 31, 33, 35, 37, 39, 41, 43, 45,
                                                 47, 49, 51, 53, 55]
 
-                number_of_flips_per_step_arr.sum() = 784
+                # Flip all patches in the last step to a fixed color.
+                number_of_flips_per_step_arr[-1] = 784
+
+                number_of_flips_per_step_arr[:-1].sum() = 784
 
             Result:
                 {0: 0,
@@ -342,7 +346,8 @@ Selected perturbation mode: {perturb_mode}""")
                  25: 49,
                  26: 51,
                  27: 53,
-                 28: 55}
+                 28: 55,
+                 29: 784}
         """
         _, width = utils.get_height_width(self.original_input_nchw)
 
@@ -383,6 +388,10 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                                                     values=0,
                                                     axis=0)
 
+        # Append an artificial step where all patches are flipped to color gray
+        number_of_flips_per_step_arr = numpy.append(arr=number_of_flips_per_step_arr,
+                                                    values=total_num_patches)
+
         # Convert array of number of patches to flip per step to dictionary with keys:
         # perturbation step, value: number of flips.
         number_of_flips_per_step_dict: Dict[int, int] = dict(
@@ -409,18 +418,21 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         number_of_flips_in_current_step: int = self.number_of_flips_per_step_dict[
             perturbation_step]
 
-        # Mask to store regions to flip in current perturbation step.
-        mask_n1hw: torch.Tensor
-        for multi_flip_index in range(number_of_flips_in_current_step):
-            # Mask with region selected for flipping.
-            next_mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
+        if perturbation_step != self.max_perturbation_steps:
+            # Mask to store regions to flip in current perturbation step.
+            mask_n1hw: torch.Tensor
+            for multi_flip_index in range(number_of_flips_in_current_step):
+                # Mask with region selected for flipping.
+                next_mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
 
-            # Set value of base mask for first iteration.
-            if multi_flip_index == 0:
-                mask_n1hw = next_mask_n1hw
+                # Set value of base mask for first iteration.
+                if multi_flip_index == 0:
+                    mask_n1hw = next_mask_n1hw
 
-            # Merge multiple masks into one for a single perturbation step.
-            mask_n1hw = torch.logical_or(mask_n1hw, next_mask_n1hw)
+                # Merge multiple masks into one for a single perturbation step.
+                mask_n1hw = torch.logical_or(mask_n1hw, next_mask_n1hw)
+        else:
+            mask_n1hw: torch.Tensor = next(self._flip_mask_generator)
 
         # Loop for debugging purposes only.
         for batch_index in range(self.batch_size):
@@ -453,35 +465,46 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
             self.acc_flip_mask_nhw, mask_nhw)
 
-        # Flip pixels with respective perturbation technique
-        if self.perturb_mode == PerturbModes.RANDOM:
-            flip_random(input_nchw=flipped_input_nchw,
-                        mask_n1hw=mask_n1hw,
-                        perturbation_size=self.perturbation_size,
-                        ran_num_gen=self.ran_num_gen,
-                        low=self._low,
-                        high=self._high,
-                        logger=self.logger)
+        if perturbation_step != self.max_perturbation_steps:
+            # Flip pixels with respective perturbation technique
+            if self.perturb_mode == PerturbModes.RANDOM:
+                flip_random(input_nchw=flipped_input_nchw,
+                            mask_n1hw=mask_n1hw,
+                            perturbation_size=self.perturbation_size,
+                            ran_num_gen=self.ran_num_gen,
+                            low=self._low,
+                            high=self._high,
+                            logger=self.logger)
 
-        elif self.perturb_mode == PerturbModes.INPAINTING:
-            # Denormalize image values for inpaiting
-            flipped_input_nchw = norm.denorm_img_pxls(
-                norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
+            elif self.perturb_mode == PerturbModes.INPAINTING:
+                # Denormalize image values for inpaiting
+                flipped_input_nchw = norm.denorm_img_pxls(
+                    norm.ImageNetNorm.inverse_normalize(flipped_input_nchw))
 
-            # Paint all previously inpainted regions and the currrent one altogether.
-            # To paint each region only once, pass mask_n1hw as argument to the flip_* functions.
-            acc_mask_n1hw: torch.Tensor = self.acc_flip_mask_nhw.unsqueeze(1)
-            flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
-                                                 mask_n1hw=acc_mask_n1hw,
-                                                 logger=self.logger).float()
+                # Paint all previously inpainted regions and the currrent one altogether.
+                # To paint each region only once, pass mask_n1hw as argument to the flip_* functions.
+                acc_mask_n1hw: torch.Tensor = self.acc_flip_mask_nhw.unsqueeze(
+                    1)
+                flipped_input_nchw = flip_inpainting(input_nchw=flipped_input_nchw.int(),
+                                                     mask_n1hw=acc_mask_n1hw,
+                                                     logger=self.logger).float()
 
-            # Re-normalize flipped input after perturbation.
-            flipped_input_nchw = norm.ImageNetNorm.normalize(
-                norm.norm_img_pxls(flipped_input_nchw))
+                # Re-normalize flipped input after perturbation.
+                flipped_input_nchw = norm.ImageNetNorm.normalize(
+                    norm.norm_img_pxls(flipped_input_nchw))
 
+            else:
+                raise NotImplementedError(
+                    f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
+
+        # Last perturbation step (flip all pixels to constant value)
         else:
-            raise NotImplementedError(
-                f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
+            mask_nchw = mask_n1hw.expand(flipped_input_nchw.shape)
+            midpoint: float = (self._low + self._high)/2
+            flipped_input_nchw[mask_nchw] = midpoint
+            # flipped_input_nchw = torch.zeros_like(flipped_input_nchw,
+            #                                       dtype=torch.uint8)
+            # flipped_input_nchw[:, :, 0] = 255
 
         # Measure classification accuracy change
         self._measure_class_prediction_score(forward_pass,
