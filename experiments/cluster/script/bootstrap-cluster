@@ -22,7 +22,7 @@ init_bashrc() {
   # Check if bashrc was already copied to cluster
   if [ ! -f "$src_bashrc" ]; then
     echo "ERROR: File $src_bashrc does not exist."
-    echo "Please run script/bootstrap-local first to transfer bashrc to cluster."
+    echo "Please run script/transfer-build-to-cluster first to transfer bashrc to cluster."
     exit 1
   fi
 

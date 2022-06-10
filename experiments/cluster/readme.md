@@ -19,7 +19,7 @@ All commands listed in this guide should be run on execution nodes on the **clus
 
    ```sh
    # Locally
-   ./experiments/cluster/script/bootstrap-local
+   ./experiments/cluster/script/transfer-build-to-cluster
    ```
 
 1. Log in to cluster
