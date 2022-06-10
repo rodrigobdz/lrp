@@ -30,6 +30,10 @@ from lrp.zennit.types import AvgPool, Linear
 from pf.core import PixelFlipping
 from pf.perturbation_modes.constants import PerturbModes
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter) -> List[
         Tuple[
@@ -45,9 +49,11 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     """
     # Low and high parameters for zB-rule
     low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.zeros(*INPUT_SHAPE))
+        torch.zeros(*INPUT_SHAPE, device=DEVICE)
+    )
     high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.ones(*INPUT_SHAPE))
+        torch.ones(*INPUT_SHAPE, device=DEVICE)
+    )
 
     # Hyperparameter values for each experiment
     # Manually add zero because log(0) = -inf
@@ -270,11 +276,11 @@ def run_lrp_experiment(image_batch: torch.Tensor,
 
     :return: LRP instance, batch of images, relevance scores
     """
-    input_nchw: torch.Tensor = image_batch.to(DEVICE)
+    input_nchw: torch.Tensor = image_batch.to(device=DEVICE)
+    label_idx_n.to(device=DEVICE)
 
     model: torch.nn.Module = torchvision.models.vgg16(pretrained=True)
-    model.eval()
-    model.to(DEVICE)
+    model.eval().to(device=DEVICE)
 
     # Init layer filter
     vgg16_target_types: Tuple[type, type] = (Linear, AvgPool)
@@ -291,7 +297,8 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     lrp_instance: LRP = LRP(model)
     lrp_instance.convert_layers(rule_layer_map)
     relevance_scores_nchw: torch.Tensor = lrp_instance.relevance(input_nchw=input_nchw,
-                                                                 label_idx_n=label_idx_n)
+                                                                 label_idx_n=label_idx_n).to(
+                                                                     device=DEVICE)
 
     Helpers.save_plot_lrp_results(relevance_scores_nchw=relevance_scores_nchw,
                                   batch_index=batch_index)
@@ -314,13 +321,17 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
     pf_input_nchw: torch.Tensor = lrp_instance.input_nchw.clone().detach()
     pf_relevance_scores_nchw: torch.Tensor = lrp_instance.relevance_scores_nchw.clone().detach()
 
+    # Transfer tensors to selected device
+    pf_input_nchw.to(device=DEVICE)
+    pf_relevance_scores_nchw.to(device=DEVICE)
+
     # Function should return the (single-class) classification score for
     # the given input to measure difference between flips.
     # Access the score of predicted classes in every image in batch.
     forward_pass: Callable[
         [torch.Tensor],
         torch.Tensor
-    ] = lambda input_nchw: lrp_instance.model(input_nchw)[
+    ] = lambda input_nchw: lrp_instance.model(input_nchw).to(device=DEVICE)[
         lrp_instance.explained_class_indices[:, 0],
         lrp_instance.explained_class_indices[:, 1]
     ]

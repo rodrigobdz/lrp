@@ -21,6 +21,10 @@ from torchvision import transforms
 from pf import sanity_checks, utils
 from pf.objectives.constants import PixelFlippingObjectives
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 def _argsort(patches_nmmpp: torch.Tensor,
              perturbation_size: int,
@@ -54,12 +58,15 @@ def _argsort(patches_nmmpp: torch.Tensor,
     patches_nm2p2: torch.Tensor = patches_nmmpp.reshape(batch_size,
                                                         -1,
                                                         perturbation_size * perturbation_size)
+    patches_nm2p2.to(device=DEVICE)
 
     # Sum each patch
     sum_patches_nm2: torch.Tensor = patches_nm2p2.sum(dim=2)
+    sum_patches_nm2.to(device=DEVICE)
 
     # Sort patches by their sum
     order_nm2: torch.Tensor = sum_patches_nm2.argsort(descending=descending)
+    order_nm2.to(device=DEVICE)
 
     return order_nm2
 
@@ -84,7 +91,7 @@ def _patchify(input_n1hw: torch.Tensor,
                                   size=kernel_size,
                                   step=stride).unfold(dimension=3,
                                                       size=kernel_size,
-                                                      step=stride)
+                                                      step=stride).to(device=DEVICE)
 
 
 def _create_flip_mask(order_nm_flat: torch.Tensor,
@@ -121,7 +128,8 @@ def _create_flip_mask(order_nm_flat: torch.Tensor,
     mask_1hw: torch.Tensor = torch.zeros(1,
                                          width,
                                          height,
-                                         dtype=torch.bool)
+                                         dtype=torch.bool,
+                                         device=DEVICE)
 
     # Create mask with patch at coordinates (i, j) marked as True.
     #
@@ -134,7 +142,7 @@ def _create_flip_mask(order_nm_flat: torch.Tensor,
                                        j=j*perturbation_size,
                                        h=perturbation_size,
                                        w=perturbation_size,
-                                       v=True)
+                                       v=True).to(device=DEVICE)
 
 
 def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
@@ -159,6 +167,7 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
 
     # Reduce number of channels to one.
     relevance_scores_n1hw: torch.Tensor = transforms.Grayscale()(relevance_scores_nchw)
+    relevance_scores_n1hw.to(device=DEVICE)
 
     # 1. Divide tensor into patches
     # Notation:
@@ -169,17 +178,19 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
     #
     # Shape of patches_nmmpp: (batch_size, m, m, p, p) = (batch_size, 28, 28, 8, 8)
     patches_nmmpp: torch.Tensor = _patchify(input_n1hw=relevance_scores_n1hw,
-                                            perturbation_size=perturbation_size)
+                                            perturbation_size=perturbation_size).to(device=DEVICE)
 
     # 2. Sort patches by their sum
     order_nm_flat: torch.Tensor = _argsort(patches_nmmpp,
                                            perturbation_size,
-                                           objective=PixelFlippingObjectives.MORF)
+                                           objective=PixelFlippingObjectives.MORF).to(device=DEVICE)
 
     # Loop over patches to remove.
     for patch_index in range(max_num_patches):
         # Create empty boolean tensor of size 0.
-        mask_nhw: torch.Tensor = torch.zeros(0, dtype=torch.bool)
+        mask_nhw: torch.Tensor = torch.zeros(0,
+                                             dtype=torch.bool,
+                                             device=DEVICE)
 
         # Loop over images in batch.
         for batch_index in range(batch_size):
@@ -195,11 +206,11 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
             # Concatenate the mask for the current image to the list of masks.
             # Initially mask_nhw is empty and masks for each image are added incrementally.
             # Shape of mask_nhw is (N, H, W).
-            mask_nhw = torch.cat((mask_nhw, flip_mask_1hw))
+            mask_nhw = torch.cat((mask_nhw, flip_mask_1hw)).to(device=DEVICE)
 
         # unsqueze(1) creates artificial channel dimension to make mask in N1HW format from NHW.
         # Shape of mask_n1hw is (N, 1, H, W).
-        mask_n1hw: torch.Tensor = mask_nhw.unsqueeze(1)
+        mask_n1hw: torch.Tensor = mask_nhw.unsqueeze(1).to(device=DEVICE)
 
         yield mask_n1hw
 
@@ -209,4 +220,5 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
                      1,
                      height,
                      width,
-                     dtype=torch.bool)
+                     dtype=torch.bool,
+                     device=DEVICE)

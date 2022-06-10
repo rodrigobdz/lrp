@@ -25,6 +25,10 @@ import lrp.norm
 # Cluster only supports 2 workers. A warning is shown if the number of workers is larger.
 DATA_LOADER_NUM_WORKERS: int = 2
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 def _seed_worker(_: int) -> None:
     r"""Seed the worker with a random seed.
@@ -63,7 +67,7 @@ def _create_mask_for_single_dataset_class(dataset: torch.utils.data.Dataset,
             'The class index or name must be an integer or a string.')
 
     # Filter which includes only the targets of a certain class in the dataset.
-    return torch.Tensor(dataset.targets) == class_idx
+    return (torch.Tensor(dataset.targets) == class_idx).to(device=DEVICE)
 
 
 def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,
@@ -84,7 +88,7 @@ def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,
         # Create filter for an additional class and add to existing mask.
         mask = mask | _create_mask_for_single_dataset_class(dataset, clss)
 
-    return mask
+    return mask.to(device=DEVICE)
 
 
 def _imagenet_dataset(root: str) -> torch.utils.data.Dataset:

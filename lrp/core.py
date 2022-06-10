@@ -20,6 +20,10 @@ import pf.utils
 
 from . import builtin, plot, rules
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 class LRP:
     r"""Compute relevance propagation using Layer-wise Relevance Propagation algorithm."""
@@ -30,7 +34,7 @@ class LRP:
         :param model: Model to be explained
         """
         self.model = copy.deepcopy(model)
-        self.model.eval()
+        self.model.eval().to(device=DEVICE)
         self.rule_layer_map: List[Tuple[List[str], rules.LrpRule,
                                   Dict[str, Union[torch.Tensor, float]]]] = []
         self.input_nchw: Optional[torch.Tensor] = None
@@ -113,7 +117,7 @@ class LRP:
         pf.sanity_checks.ensure_nchw_format(input_nchw)
         pf.sanity_checks.verify_square_input(input_nchw)
 
-        self.input_nchw = input_nchw
+        self.input_nchw = input_nchw.to(device=DEVICE)
 
         # Prepare to compute input gradient
         # Reset gradient
@@ -134,8 +138,8 @@ class LRP:
 
         if isinstance(first_layer, rules.LrpZBoxRule):
             # Access high and low copy layers in first layer.
-            low = first_layer.low
-            high = first_layer.high
+            low = first_layer.low.to(device=DEVICE)
+            high = first_layer.high.to(device=DEVICE)
 
             # Reset stored gradients.
             low.grad = None
@@ -148,23 +152,24 @@ class LRP:
         # Only the predicted class is propagated backwards.
         #
         # 1. Compute forward pass
-        forward_pass: torch.Tensor = self.model(input_nchw)
+        forward_pass: torch.Tensor = self.model(input_nchw).to(device=DEVICE)
 
         # 2. Get index of classes to be explained
         idx: torch.Tensor
         if label_idx_n is not None:
             # Compute classes passed as argument explicitely
-            idx = label_idx_n
+            idx = label_idx_n.to(device=DEVICE)
 
             # Save index of classes to be explained as instance variable
             self.label_idx_n = label_idx_n
         else:
             # Get index maximum activation in the output layer (index of the predicted class)
-            idx = forward_pass.max(dim=1).indices
+            idx = forward_pass.max(dim=1).indices.to(device=DEVICE)
 
         # 3. Create new tensor where elements are tuples (i, idx[i]) with i: counter.
         # Tensor i looks like this: [0, 1, ..., len(idx)]
-        i: torch.Tensor = torch.arange(len(idx))
+        i: torch.Tensor = torch.arange(end=len(idx),
+                                       device=DEVICE)
 
         # Stacked tensor looks like this: [(i, idx[i]), (i+1, idx[i+1]), ...],
         # where i is the counter and idx[i] is the index of
@@ -180,7 +185,8 @@ class LRP:
         # Init zeros tensor for one-hot encoding
         gradient: torch.Tensor = torch.zeros(batch_size,
                                              number_of_classes,
-                                             dtype=torch.bool)
+                                             dtype=torch.bool,
+                                             device=DEVICE)
         # Set the predicted class to True
         #
         # The following statement should be equivalent to:

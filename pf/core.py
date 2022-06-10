@@ -39,6 +39,10 @@ from .perturbation_modes.random.flip import flip_random
 from .perturbation_modes.random.random_number_generators import (
     RandomNumberGenerator, UniformRNG)
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 class PixelFlipping:
     r"""Pixel-Flipping Algorithm."""
@@ -158,8 +162,9 @@ Selected perturbation mode: {perturb_mode}""")
 
         self.batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
         # Store original input for comparison at the end.
-        self.original_input_nchw: torch.Tensor = input_nchw.detach().clone()
+        self.original_input_nchw: torch.Tensor = input_nchw.detach().clone().to(device=DEVICE)
         self.relevance_scores_nchw: torch.Tensor = relevance_scores_nchw.detach().clone()
+        self.relevance_scores_nchw.to(device=DEVICE)
 
         self.number_of_flips_per_step_dict: Dict[int,
                                                  int] = self._define_number_of_flips_per_step_dict()
@@ -177,9 +182,9 @@ Selected perturbation mode: {perturb_mode}""")
         #   .sum(dim=1) is used to reduce the number of channels to 1.
         #   I.e., to convert from (batch_size, channels, height, width) to
         #   (batch_size, height, width).
-        self.acc_flip_mask_nhw: torch.Tensor = torch.zeros(
-            *input_nchw.shape,
-            dtype=torch.bool).sum(dim=1)
+        self.acc_flip_mask_nhw: torch.Tensor = torch.zeros(*input_nchw.shape,
+                                                           dtype=torch.bool,
+                                                           device=DEVICE).sum(dim=1)
 
         pixel_flipping_generator: Generator[
             Tuple[torch.Tensor, float], None, None] = self._generator(input_nchw,
@@ -225,8 +230,10 @@ Selected perturbation mode: {perturb_mode}""")
 
         # Tensor with class prediction scores has shape (batch_size, perturbation_steps+1).
         # First perturbation step is the original class prediction score without perturbation.
-        self.class_prediction_scores_n: torch.Tensor = torch.zeros(
-            (self.batch_size, self.perturbation_steps+1), dtype=torch.float)
+        self.class_prediction_scores_n: torch.Tensor = torch.zeros((self.batch_size,
+                                                                    self.perturbation_steps+1),
+                                                                   dtype=torch.float,
+                                                                   device=DEVICE)
 
         # Get initial classification score.
         self._measure_class_prediction_score(
@@ -502,9 +509,6 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
             mask_nchw = mask_n1hw.expand(flipped_input_nchw.shape)
             midpoint: float = (self._low + self._high)/2
             flipped_input_nchw[mask_nchw] = midpoint
-            # flipped_input_nchw = torch.zeros_like(flipped_input_nchw,
-            #                                       dtype=torch.uint8)
-            # flipped_input_nchw[:, :, 0] = 255
 
         # Measure classification accuracy change
         self._measure_class_prediction_score(forward_pass,
@@ -538,12 +542,13 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         :returns: Class prediction scores for current perturbation step and
                     its mean along the batch dimension.
         """
-        indices: torch.Tensor = torch.arange(self.current_perturbation_step)
+        indices: torch.Tensor = torch.arange(end=self.current_perturbation_step,
+                                             device=DEVICE)
         class_prediction_scores_sliced: torch.Tensor = self.class_prediction_scores_n.index_select(
             dim=1,
-            index=indices)
+            index=indices).to(device=DEVICE)
         mean_class_prediction_scores_n: torch.Tensor = torch.mean(class_prediction_scores_sliced,
-                                                                  dim=0)
+                                                                  dim=0).to(device=DEVICE)
 
         return class_prediction_scores_sliced, mean_class_prediction_scores_n
 

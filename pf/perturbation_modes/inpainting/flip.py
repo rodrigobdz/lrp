@@ -20,6 +20,10 @@ import torch
 from pf import sanity_checks, utils
 from pf.convert_img import opencv_to_tensor, tensor_to_opencv_inpainting
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 def flip_inpainting(input_nchw: torch.Tensor,
                     mask_n1hw: torch.Tensor,
@@ -48,13 +52,15 @@ def flip_inpainting(input_nchw: torch.Tensor,
 
     sanity_checks.verify_batch_size(input_nchw, mask_n1hw)
 
-    inpainted_img_rgb_nchw: torch.Tensor = torch.zeros(0, dtype=torch.float)
+    inpainted_img_rgb_nchw: torch.Tensor = torch.zeros(0,
+                                                       dtype=torch.float,
+                                                       device=DEVICE)
     batch_size: int = utils.get_batch_size(input_nchw=input_nchw)
 
     # Loop over all images and masks in batch
     for batch_index in range(batch_size):
-        mask_1hw: torch.Tensor = mask_n1hw[batch_index]
-        input_chw: torch.Tensor = input_nchw[batch_index]
+        mask_1hw: torch.Tensor = mask_n1hw[batch_index].to(device=DEVICE)
+        input_chw: torch.Tensor = input_nchw[batch_index].to(device=DEVICE)
 
         logger.debug("Mask %s will flip a total of %s elements in image.",
                      batch_index,
@@ -73,12 +79,12 @@ def flip_inpainting(input_nchw: torch.Tensor,
 
         # Convert back inpainted image to tensor
         inpainted_img_rgb_chw: torch.Tensor = opencv_to_tensor(
-            img_bgr_hwc=inpainted_img_bgr_hwc)
+            img_bgr_hwc=inpainted_img_bgr_hwc).to(device=DEVICE)
 
         # Simulate batch by adding a new dimension using unsqueeze(0)
         # Concatenate inpainted image with the rest of the batch of inpainted images.
         # Shape of inpainted_img_rgb_nchw: (batch_size, 3, height, width)
         inpainted_img_rgb_nchw = torch.cat(
-            (inpainted_img_rgb_nchw, inpainted_img_rgb_chw.unsqueeze(0)))
+            (inpainted_img_rgb_nchw, inpainted_img_rgb_chw.unsqueeze(0))).to(device=DEVICE)
 
     return inpainted_img_rgb_nchw

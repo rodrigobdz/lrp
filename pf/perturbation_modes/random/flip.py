@@ -19,6 +19,10 @@ from pf import utils
 
 from .random_number_generators import RandomNumberGenerator
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
 
 def flip_random(input_nchw: torch.Tensor,
                 mask_n1hw: torch.Tensor,
@@ -57,13 +61,14 @@ def flip_random(input_nchw: torch.Tensor,
 
     # Loop over all images and masks in batch
     for batch_index in range(batch_size):
-        mask_1hw: torch.Tensor = mask_n1hw[batch_index]
-        input_chw: torch.Tensor = input_nchw[batch_index]
+        mask_1hw: torch.Tensor = mask_n1hw[batch_index].to(device=DEVICE)
+        input_chw: torch.Tensor = input_nchw[batch_index].to(device=DEVICE)
 
         # Convert mask from (1, H, W) to (C, H, W) where C is the number of channels in the image.
         # Expanding a tensor does not allocate new memory.
         # Expanding a tensor basically duplicates tensor C times.
-        expanded_mask_chw: torch.Tensor = mask_1hw.expand(input_chw.shape)
+        expanded_mask_chw: torch.Tensor = mask_1hw.expand(
+            input_chw.shape).to(device=DEVICE)
 
         logger.debug("Expanded mask has shape %s.", expanded_mask_chw.shape)
 
@@ -91,4 +96,4 @@ def flip_random(input_nchw: torch.Tensor,
         with torch.no_grad():
             input_chw[expanded_mask_chw] = flip_value
 
-    return input_nchw
+    return input_nchw.to(device=DEVICE)
