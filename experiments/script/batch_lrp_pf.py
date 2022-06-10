@@ -437,6 +437,10 @@ if __name__ == "__main__":
     # Total number of experiments will be this number squared.
     TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
 
+    if EXPERIMENT_ID < 0 or EXPERIMENT_ID >= TOTAL_NUMBER_OF_EXPERIMENTS:
+        raise ValueError(
+            f'Experiment ID {EXPERIMENT_ID} is out of range [0-{TOTAL_NUMBER_OF_EXPERIMENTS}].')
+
     # pylint: disable=pointless-statement
     config.read(config_file_path)
     # pylint: enable=pointless-statement

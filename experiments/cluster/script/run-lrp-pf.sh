@@ -33,15 +33,6 @@ set -o errexit  # exit on error
 set -o pipefail # exit on pipe failure
 set -o nounset  # exit on unset variable
 
-case "$SGE_TASK_ID" in
-# Verify cluster job IDs
-1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16) ;;
-# Error handling for unsupported experiment IDs
-*)
-  echo "ERROR: Unsupported SGE_TASK_ID $SGE_TASK_ID. Exiting..." && exit 1
-  ;;
-esac
-
 # Subtract one because SGE_TASK_ID can only start at 1 and not 0.
 EXPERIMENT_ID="$((SGE_TASK_ID - 1))"
 readonly EXPERIMENT_ID
