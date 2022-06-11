@@ -10,7 +10,7 @@ __status__ = 'Development'
 
 
 import argparse
-import json
+import ast
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple, Union
@@ -450,10 +450,15 @@ if __name__ == "__main__":
     NUMBER_OF_BATCHES: int = config.getint(config_section_name,
                                            'NUMBER_OF_BATCHES')
 
-    # Load str as list from configuration file
-    # Source: https://stackoverflow.com/a/9735884
-    IMAGE_CLASSES: List[str] = json.loads(config[config_section_name]
-                                          ['IMAGE_CLASSES'])
+    # Value from config file is loaded as string.
+    # Convert string representation of list to list
+    # Source: https://stackoverflow.com/a/1894296
+    #
+    # I am aware of the potential arbitrary code execution vulnerability this implies due to eval().
+    # Nevertheless, the code is intended for research purposes. Proceeding after acknowledging
+    # and assessing the risks.
+    IMAGE_CLASSES: List[str] = ast.literal_eval(config[config_section_name]
+                                                ['IMAGE_CLASSES'])
 
     NUMBER_OF_HYPERPARAMETER_VALUES: int = config.getint(config_section_name,
                                                          'NUMBER_OF_HYPERPARAMETER_VALUES')
