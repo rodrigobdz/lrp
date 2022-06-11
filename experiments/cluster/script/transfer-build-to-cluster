@@ -32,9 +32,13 @@ _rsync_to_cluster() {
 
 remote_cleanup() {
   echo "Clean up directories on cluster"
+  local -r dist_path='/home/rodrigo/dist'
 
-  echo "Deleting old builds under /home/rodrigo/dist/*"
-  ssh ml 'rm /home/rodrigo/dist/*'
+  echo "Deleting old builds under $dist_path"
+  # Quoting from shellcheck's documentation:
+  # Use "${var:?}" to ensure this never expands to /* .
+  # Source: https://www.shellcheck.net/wiki/SC2115
+  ssh -o SendEnv=dist_path ml "ls ${dist_path:?}/*.{whl,tar.gz} && rm ${dist_path:?}/*.{whl,tar.gz}"
 }
 
 transfer_config() {
