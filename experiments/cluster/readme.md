@@ -57,12 +57,25 @@ All commands listed in this guide should be run on execution nodes on the **clus
 
 1. Run experiments
 
+   Non-interactive jobs:
+
    ```sh
    # Change directory to log to save results in this directory
    cd /home/rodrigo/log
 
    # Submit experiment jobs
    qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
+   ```
+
+   Interactive jobs:
+
+   ```sh
+   source /home/rodrigo/experiments/cluster/script/setup
+
+   # To run 16 experiments:
+   for i in {0..15}; do
+      python3 ./experiments/script/batch_lrp_pf.py --experiment-id 0 --config-file ./experiments/cluster/cluster.config
+   done
    ```
 
 1. Visualize results
