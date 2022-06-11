@@ -41,22 +41,19 @@ All commands listed in this guide should be run on execution nodes on the **clus
 
 1. Log in to cluster
 
-1. Prepare environment to run experiments on the cluster
-
-   ```sh
-   # On Cluster
-   source /home/rodrigo/experiments/cluster/script/setup
-   ```
+1. Update the paths in `/home/rodrigo/experiments/server/server.config`
 
 1. Install code for experiments
 
    ```sh
    # On Cluster
+
+   # Source setup script to load conda environment, if installed
+   source /home/rodrigo/experiments/cluster/script/setup
+
    # qlogin not needed if jobs are not going to be submitted interactively
    /home/rodrigo/experiments/cluster/script/install
    ```
-
-1. Update the paths in `/home/rodrigo/experiments/server/server.config`
 
 1. Run experiments
 
