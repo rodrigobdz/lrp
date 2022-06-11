@@ -566,8 +566,9 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
         (_, mean_class_prediction_scores_n) = self._get_class_prediction_scores_for_step()
 
+        # Use Tensor.cpu() to copy the tensor to host memory before converting to numpy().
         auc: float = area_under_the_curve(
-            mean_class_prediction_scores_n.detach().numpy())
+            mean_class_prediction_scores_n.cpu().detach().numpy())
 
         return auc
 
