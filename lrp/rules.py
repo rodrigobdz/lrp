@@ -19,6 +19,11 @@ import torch
 from .zennit import core as zennit_core
 
 
+DEVICE: torch.device = torch.device(
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+
+
 class LrpRule(torch.nn.Module):
     r"""Base class for LRP rules."""
 
@@ -144,7 +149,7 @@ class LrpZBoxRule(LrpRule):
     def __init__(
         self, layer: torch.nn.Module, low: torch.Tensor, high: torch.Tensor
     ) -> None:
-        r"""Define parameter modifiers for the layer
+        r"""Define parameter modifiers for the layer.
 
         Excerpt from the paper:
         "The functions f1+ and f1− are forward passes on copies of the first layer whose parameters
@@ -161,15 +166,15 @@ class LrpZBoxRule(LrpRule):
 
         super().__init__(layer, param_modifiers)
 
-        self.low: torch.Tensor = low
-        self.high: torch.Tensor = high
+        self.low: torch.Tensor = low.to(device=DEVICE)
+        self.high: torch.Tensor = high.to(device=DEVICE)
 
         # Enable gradient computation
         self.low.requires_grad = True
         self.high.requires_grad = True
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
-        r"""Forward passes on layer and low and high layers
+        r"""Forward passes on layer and low and high layers.
 
         :param X: Input to the layer
         """

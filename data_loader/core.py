@@ -67,7 +67,7 @@ def _create_mask_for_single_dataset_class(dataset: torch.utils.data.Dataset,
             'The class index or name must be an integer or a string.')
 
     # Filter which includes only the targets of a certain class in the dataset.
-    return (torch.Tensor(dataset.targets) == class_idx).to(device=DEVICE)
+    return torch.Tensor(dataset.targets, device=DEVICE) == class_idx
 
 
 def _create_mask_for_dataset_classes(dataset: torch.utils.data.Dataset,

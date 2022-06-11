@@ -127,11 +127,11 @@ class LRP:
         # ZBoxrule-specific parameters
         low: Union[torch.Tensor, int]
         high: Union[torch.Tensor, int]
-        c2: Union[torch.Tensor, int]
-        c3: Union[torch.Tensor, int]
+        c2_low_grad: Union[torch.Tensor, int]
+        c3_high_grad: Union[torch.Tensor, int]
 
         # Set default values
-        low = high = c2 = c3 = 0
+        low = high = c2_low_grad = c3_high_grad = 0
 
         # Vars to retrieve gradients from first layer
         first_layer: torch.nn.Module = self.model.features[0]
@@ -199,13 +199,16 @@ class LRP:
 
         if isinstance(first_layer, rules.LrpZBoxRule):
             # Compute gradients
-            c2, c3 = low.grad, high.grad
+            c2_low_grad = low.grad.to(device=DEVICE)
+            c3_high_grad = high.grad.to(device=DEVICE)
 
         # Compute input gradient
-        c1 = input_nchw.grad
+        c1_input_grad = input_nchw.grad.to(device=DEVICE)
 
         # Compute relevance
-        self.relevance_scores_nchw = input_nchw * c1 + low * c2 + high * c3
+        self.relevance_scores_nchw = (input_nchw * c1_input_grad +
+                                      low * c2_low_grad +
+                                      high * c3_high_grad)
         return self.relevance_scores_nchw.detach().to(device=DEVICE)
 
     @staticmethod
