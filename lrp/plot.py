@@ -20,6 +20,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.figure import Figure
 
+import lrp.norm
 import pf.utils
 from pf.convert_img import arr_chw_to_hwc
 
@@ -69,7 +70,7 @@ def plot_imagenet(img_nchw_rgb: torch.Tensor, ax: Figure = plt, show_plot: bool 
     :param ax: Axis to plot on
     :param show_plot: Show plot or not
     """
-    return lrp.plot.plot_tensor_img_nchw_rgb(
+    return plot_tensor_img_nchw_rgb(
         img_nchw_rgb=lrp.norm.ImageNetNorm.inverse_normalize(img_nchw_rgb),
         ax=ax,
         show_plot=show_plot
