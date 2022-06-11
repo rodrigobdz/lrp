@@ -30,6 +30,13 @@ _rsync_to_cluster() {
   echo
 }
 
+remote_cleanup() {
+  echo "Clean up directories on cluster"
+
+  echo "Deleting old builds under /home/rodrigo/dist/*"
+  ssh ml 'rm /home/rodrigo/dist/*'
+}
+
 transfer_config() {
   local -r src="$(pwd)/experiments/cluster/bashrc"
   local -r dst="ml:/home/rodrigo/bashrc"
@@ -55,6 +62,7 @@ transfer_code() {
 
 main() {
   echo "Bootstrap local machine"
+  remote_cleanup
   transfer_config
   transfer_data
   transfer_code
