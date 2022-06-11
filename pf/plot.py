@@ -122,7 +122,8 @@ def plot_image_comparison(batch_size: int,
                                       linewidth=1)
 
         # Plot heatmaps.
-        lrp.plot.heatmap(relevance_scores=relevance_scores_hw.detach().numpy(),
+        # Use Tensor.cpu() to copy the tensor to host memory before converting to numpy().
+        lrp.plot.heatmap(relevance_scores=relevance_scores_hw.cpu().detach().numpy(),
                          fig=axes[1][0],
                          show_axis=True,
                          **plot_kwargs)

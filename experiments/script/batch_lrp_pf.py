@@ -169,7 +169,8 @@ class Helpers:
 
         # Loop over relevance scores for each image in batch
         for image_index, r_hw in enumerate(r_nhw):
-            lrp.plot.heatmap(relevance_scores=r_hw.detach().numpy(),
+            # Use Tensor.cpu() to copy the tensor to host memory before converting to numpy().
+            lrp.plot.heatmap(relevance_scores=r_hw.cpu().detach().numpy(),
                              width=1,
                              height=1,
                              show_plot=SHOW_PLOT,

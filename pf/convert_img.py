@@ -80,7 +80,9 @@ def tensor_to_opencv(img_rgb_chw: torch.Tensor, grayscale=False) -> numpy.ndarra
     ensure_chw_format(input_chw=img_rgb_chw)
 
     # Convert to numpy array and from CHW to HWC format
-    img_rgb_hwc: numpy.ndarray = arr_chw_to_hwc(img_rgb_chw.detach().numpy())
+    # Use Tensor.cpu() to copy the tensor to host memory before converting to numpy().
+    img_rgb_hwc: numpy.ndarray = arr_chw_to_hwc(
+        img_rgb_chw.cpu().detach().numpy())
 
     if grayscale:
         # Skip color format conversion

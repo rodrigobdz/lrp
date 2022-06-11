@@ -92,8 +92,9 @@ def plot_tensor_img_nchw_rgb(img_nchw_rgb: torch.Tensor,
 
     for img_chw_rgb in img_nchw_rgb:
         # Convert from NCHW to HWC format and from tensor to numpy array.
+        # Use Tensor.cpu() to copy the tensor to host memory before converting to numpy().
         img_hwc_rgb: numpy.ndarray = arr_chw_to_hwc(
-            img_chw_rgb.detach().numpy())
+            img_chw_rgb.cpu().detach().numpy())
 
         # Plot image
         ax.imshow(img_hwc_rgb)

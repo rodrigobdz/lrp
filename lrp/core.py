@@ -228,4 +228,5 @@ class LRP:
 
         # Loop over relevance scores for each image in batch
         for r_hw in r_nhw:
-            plot.heatmap(r_hw.detach().numpy(), width, height)
+            # Use Tensor.cpu() to copy the tensor to host memory before converting to numpy().
+            plot.heatmap(r_hw.cpu().detach().numpy(), width, height)
