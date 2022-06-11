@@ -607,7 +607,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
             x_values: range = range(len(mean_class_prediction_scores_n))
             plt.fill_between(x=x_values,
-                             y1=mean_class_prediction_scores_n,
+                             y1=mean_class_prediction_scores_n.cpu(),
                              facecolor='wheat',
                              label=f'AUC={auc}',
                              alpha=0.2)
