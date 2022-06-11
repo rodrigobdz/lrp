@@ -14,7 +14,7 @@
 #$ -l mem_free=16G    # request 16GB of free memory
 #$ -q all.q           # submit jobs to queue named all.q (general queue)
 #$ -cwd               # execute in current working directory
-#$ -t 1-16            # start multiple instances with identified SGE_TASK_ID from 1 to n
+#$ -t 1-100            # start multiple instances with identified SGE_TASK_ID from 1 to n
 #
 # Submit jobs to cluster using qsub
 #

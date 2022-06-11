@@ -433,7 +433,7 @@ if __name__ == "__main__":
     NUMBER_OF_BATCHES: int = 1
     IMAGE_CLASSES: List[str] = ['axolotl']
     # FIXME: Replace hard-coded value with new parameter
-    NUMBER_OF_HYPERPARAMETER_VALUES: int = 4
+    NUMBER_OF_HYPERPARAMETER_VALUES: int = 10
     # Total number of experiments will be this number squared.
     TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
 
