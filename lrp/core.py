@@ -206,7 +206,7 @@ class LRP:
 
         # Compute relevance
         self.relevance_scores_nchw = input_nchw * c1 + low * c2 + high * c3
-        return self.relevance_scores_nchw.detach()
+        return self.relevance_scores_nchw.detach().to(device=DEVICE)
 
     @staticmethod
     def heatmap(relevance_scores_nchw: torch.Tensor,

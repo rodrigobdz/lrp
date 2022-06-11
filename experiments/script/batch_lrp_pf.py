@@ -394,6 +394,9 @@ def run_experiments() -> None:
                                              NUMPY_OBJECTS_DIR)
 
     for my_batch_index, (my_image_batch, my_ground_truth_labels) in enumerate(my_dataloader):
+        my_image_batch.to(device=DEVICE)
+        my_ground_truth_labels.to(device=DEVICE)
+
         # Run LRP experiment
         my_lrp_instance = run_lrp_experiment(image_batch=my_image_batch,
                                              batch_index=my_batch_index,
