@@ -389,11 +389,6 @@ def run_experiments() -> None:
                                                                       classes=IMAGE_CLASSES,
                                                                       seed=SEED)
 
-    Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,
-                                             INDIVIDUAL_RESULTS_DIR,
-                                             TORCH_OBJECTS_DIR,
-                                             NUMPY_OBJECTS_DIR)
-
     for my_batch_index, (my_image_batch, my_ground_truth_labels) in enumerate(my_dataloader):
         my_image_batch.to(device=DEVICE)
         my_ground_truth_labels.to(device=DEVICE)
@@ -432,7 +427,6 @@ if __name__ == "__main__":
         raise ValueError(
             f'Configuration file {config_file_path.absolute()} does not exist.')
 
-    # TODO: PRINT ALL VARS/CONSTS TO FILE
     # pylint: disable=pointless-statement
     config.read(config_file_path)
     # pylint: enable=pointless-statement
@@ -498,5 +492,34 @@ if __name__ == "__main__":
     DPI: float = 150
     # Toggle for plt.show() for each figure
     SHOW_PLOT: bool = False
+
+    Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,
+                                             INDIVIDUAL_RESULTS_DIR,
+                                             TORCH_OBJECTS_DIR,
+                                             NUMPY_OBJECTS_DIR)
+
+    # Get filename of this file (without absolute path and without extension)
+    filename_no_ext: str = Path(__file__).stem
+    absolute_path_no_ext: str = f'{EXPERIMENT_PARENT_ROOT}/' \
+        f'{filename_no_ext}-locals-filtered-by-type'
+
+    # Create a dictionary from locals() with entries filtered by type to avoid common pitfalls
+    # of trying to save modules or classes which are not accepted by numpy.save.
+    local_vars_dict: Dict[str, Any]
+    local_vars_dict = {dict_key: dict_val for dict_key, dict_val in locals().items()
+                       if isinstance(dict_val,
+                                     (str, int, list, tuple, dict))}
+
+    # Save local variables to file for archival purposes.
+
+    # Save local variables as dictionary
+    numpy.save(file=absolute_path_no_ext + '.npy',
+               arr=local_vars_dict)
+
+    # Save local variables as text (human-readable)
+    with open(file=absolute_path_no_ext + '.txt',
+              mode='w',
+              encoding='utf8') as file:
+        file.write(str(local_vars_dict))
 
     run_experiments()
