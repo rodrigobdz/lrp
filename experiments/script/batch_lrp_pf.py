@@ -10,9 +10,10 @@ __status__ = 'Development'
 
 
 import argparse
+import json
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import numpy
 import torch
@@ -432,18 +433,6 @@ if __name__ == "__main__":
             f'Configuration file {config_file_path.absolute()} does not exist.')
 
     # TODO: PRINT ALL VARS/CONSTS TO FILE
-    # Experiment parameters
-    NUMBER_OF_BATCHES: int = 1
-    IMAGE_CLASSES: List[str] = ['axolotl']
-    # FIXME: Replace hard-coded value with new parameter
-    NUMBER_OF_HYPERPARAMETER_VALUES: int = 10
-    # Total number of experiments will be this number squared.
-    TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
-
-    if EXPERIMENT_ID < 0 or EXPERIMENT_ID >= TOTAL_NUMBER_OF_EXPERIMENTS:
-        raise ValueError(
-            f'Experiment ID {EXPERIMENT_ID} is out of range [0-{TOTAL_NUMBER_OF_EXPERIMENTS}].')
-
     # pylint: disable=pointless-statement
     config.read(config_file_path)
     # pylint: enable=pointless-statement
@@ -462,6 +451,27 @@ if __name__ == "__main__":
     # Directories to be created (if they don't already exist)
     EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
     EXPERIMENT_ROOT: str = f'{EXPERIMENT_PARENT_ROOT}/experiment-id-{EXPERIMENT_ID}'
+
+    # Experiment parameters
+    NUMBER_OF_BATCHES: int = config.getint(config_section_name,
+                                           'NUMBER_OF_BATCHES')
+
+    # Load str as list from configuration file
+    # Source: https://stackoverflow.com/a/9735884
+    IMAGE_CLASSES: List[str] = json.loads(config[config_section_name]
+                                          ['IMAGE_CLASSES'])
+
+    NUMBER_OF_HYPERPARAMETER_VALUES: int = config.getint(config_section_name,
+                                                         'NUMBER_OF_HYPERPARAMETER_VALUES')
+
+    # Total number of experiments will be this number squared.
+    # TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
+    TOTAL_NUMBER_OF_EXPERIMENTS: int = config.getint(config_section_name,
+                                                     'TOTAL_NUMBER_OF_EXPERIMENTS')
+
+    if EXPERIMENT_ID < 0 or EXPERIMENT_ID >= TOTAL_NUMBER_OF_EXPERIMENTS:
+        raise ValueError(
+            f'Experiment ID {EXPERIMENT_ID} is out of range [0-{TOTAL_NUMBER_OF_EXPERIMENTS}].')
 
     # Derivated workspace constants
     INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
