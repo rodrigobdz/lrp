@@ -20,7 +20,6 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.figure import Figure
 
-import lrp.plot
 import pf.utils
 from pf.convert_img import arr_chw_to_hwc
 
