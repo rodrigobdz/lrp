@@ -157,7 +157,7 @@ class LRP:
         # 2. Get index of classes to be explained
         idx: torch.Tensor
         if label_idx_n is not None:
-            # Compute classes passed as argument explicitely
+            # Compute classes passed as argument explicitly
             idx = label_idx_n.to(device=DEVICE)
 
             # Save index of classes to be explained as instance variable
