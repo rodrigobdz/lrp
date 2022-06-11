@@ -592,14 +592,14 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
          mean_class_prediction_scores_n) = self._get_class_prediction_scores_for_step()
 
         for _, class_prediction_scores in enumerate(class_prediction_scores_sliced):
-            plt.plot(class_prediction_scores,
+            plt.plot(class_prediction_scores.cpu(),
                      color='lightgrey')
 
         # AUC can only be computed for at least two points.
         if self.current_perturbation_step > 1:
             auc: float = self.calculate_auc_score()
 
-            plt.plot(mean_class_prediction_scores_n,
+            plt.plot(mean_class_prediction_scores_n.cpu(),
                      label='Mean',
                      linewidth=5,
                      alpha=0.9,
