@@ -390,8 +390,8 @@ def run_experiments() -> None:
                                                                       seed=SEED)
 
     for my_batch_index, (my_image_batch, my_ground_truth_labels) in enumerate(my_dataloader):
-        my_image_batch.to(device=DEVICE)
-        my_ground_truth_labels.to(device=DEVICE)
+        my_image_batch.to(device=DEVICE, non_blocking=True)
+        my_ground_truth_labels.to(device=DEVICE, non_blocking=True)
 
         # Run LRP experiment
         my_lrp_instance = run_lrp_experiment(image_batch=my_image_batch,
