@@ -86,6 +86,25 @@ All commands listed in this guide should be run on execution nodes on the **clus
    python3 ./experiments/script/visualize.py --config-file ./experiments/cluster/cluster.config
    ```
 
+## One-Liners for Copy-Pasting
+
+Update build on cluster:
+
+```sh
+# local
+./script/build && ./experiments/cluster/script/transfer-build-to-cluster && ssh ml 'source /home/rodrigo/experiments/cluster/script/setup && /home/rodrigo/experiments/cluster/script/install' && ssh ml
+
+# cluster
+
+# non-interactive
+cd /home/rodrigo/log && qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
+
+# interactive
+qlogin -l cuda=1
+source /home/rodrigo/experiments/cluster/script/setup && python3 ./experiments/script/batch_lrp_pf.py --experiment-id 0 --config-file ./experiments/cluster/cluster.config
+
+```
+
 ## Credits
 
 - Scripts follow [rodrigobdz's Shell Style Guide](https://github.com/rodrigobdz/styleguide-sh)
