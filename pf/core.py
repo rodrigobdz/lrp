@@ -647,10 +647,10 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         :param show_plot: If True, show the plot.
         """
         plot.plot_image_comparison(batch_size=self.batch_size,
-                                   original_input_nchw=self.original_input_nchw,
-                                   flipped_input_nchw=self.flipped_input_nchw,
-                                   relevance_scores_nchw=self.relevance_scores_nchw,
-                                   acc_flip_mask_nhw=self.acc_flip_mask_nhw,
+                                   original_input_nchw=self.original_input_nchw.cpu(),
+                                   flipped_input_nchw=self.flipped_input_nchw.cpu(),
+                                   relevance_scores_nchw=self.relevance_scores_nchw.cpu(),
+                                   acc_flip_mask_nhw=self.acc_flip_mask_nhw.cpu(),
                                    perturbation_size=self.perturbation_size,
                                    show_plot=show_plot)
 

@@ -82,13 +82,13 @@ def plot_image_comparison(batch_size: int,
         # tensor[n] returns an image tensor of shape (C, W, H)
         # unsqueeze adds a new dimension to the tensor to make it of shape (1, C, W, H)
         original_input_1chw: torch.Tensor = original_input_nchw[batch_index].unsqueeze(
-            0)
+            0).cpu()
         flipped_input_1chw: torch.Tensor = flipped_input_nchw[batch_index].unsqueeze(
-            0)
+            0).cpu()
         # sum along the channel dimension to convert from (C, W, H) to (W, H)
         relevance_scores_hw: torch.Tensor = relevance_scores_nchw[batch_index].sum(
-            dim=0)
-        acc_flip_mask_hw: torch.Tensor = acc_flip_mask_nhw[batch_index]
+            dim=0).cpu()
+        acc_flip_mask_hw: torch.Tensor = acc_flip_mask_nhw[batch_index].cpu()
 
         # Create grid of original and perturbed images.
         _, axes = plt.subplots(nrows=2, ncols=2, figsize=[10, 10])

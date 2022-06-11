@@ -211,10 +211,10 @@ class Helpers:
                 dim=0)
 
             pf.plot.plot_image_comparison(batch_size=1,
-                                          original_input_nchw=original_input_1chw,
-                                          flipped_input_nchw=flipped_input_1chw,
-                                          relevance_scores_nchw=relevance_scores_1chw,
-                                          acc_flip_mask_nhw=acc_flip_mask_1hw,
+                                          original_input_nchw=original_input_1chw.cpu(),
+                                          flipped_input_nchw=flipped_input_1chw.cpu(),
+                                          relevance_scores_nchw=relevance_scores_1chw.cpu(),
+                                          acc_flip_mask_nhw=acc_flip_mask_1hw.cpu(),
                                           perturbation_size=pf_instance.perturbation_size,
                                           show_plot=SHOW_PLOT)
 
