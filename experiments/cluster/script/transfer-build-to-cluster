@@ -38,7 +38,9 @@ remote_cleanup() {
   # Quoting from shellcheck's documentation:
   # Use "${var:?}" to ensure this never expands to /* .
   # Source: https://www.shellcheck.net/wiki/SC2115
-  ssh -o SendEnv=dist_path ml "ls ${dist_path:?}/*.{whl,tar.gz} && rm ${dist_path:?}/*.{whl,tar.gz}"
+  #
+  # Use rm -f to ignore if no file exist.
+  ssh -o SendEnv=dist_path ml "ls ${dist_path:?}/ && rm -f ${dist_path:?}/*"
 }
 
 transfer_config() {
