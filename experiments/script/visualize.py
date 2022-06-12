@@ -24,7 +24,8 @@ if __name__ == "__main__":
     # Read configuration file passed as argument.
     config = ConfigParser(interpolation=ExtendedInterpolation())
     parser = argparse.ArgumentParser(description='Specify the path to the configuration file.',
-                                     epilog='For more information, review the batch_lrp_pf.py script')
+                                     epilog='For more information,'
+                                     ' review the batch_lrp_pf.py script')
     parser.add_argument('-c', '--config-file',
                         type=Path,
                         help='Absolute path to configuration file'
@@ -103,4 +104,6 @@ if __name__ == "__main__":
     plt.xlabel('Gammas for LRP-Gamma')
     plt.ylabel('Epsilons for LRP-Epsilon')
     plt.colorbar()
-    plt.show()
+
+    filename: str = f'{EXPERIMENT_PARENT_ROOT}/optima-exploration-using-contourf.png'
+    plt.savefig(fname=filename, facecolor='w')
