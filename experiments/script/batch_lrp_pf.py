@@ -11,6 +11,7 @@ __status__ = 'Development'
 
 import argparse
 import ast
+import shutil
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple, Union
@@ -503,6 +504,12 @@ if __name__ == "__main__":
                                              INDIVIDUAL_RESULTS_DIR,
                                              TORCH_OBJECTS_DIR,
                                              NUMPY_OBJECTS_DIR)
+
+    # Copying config file to experiment directory for reproducibility of results.
+    print('Copying config file to experiment directory:'
+          f'{EXPERIMENT_PARENT_ROOT}.')
+    # Source: https://stackoverflow.com/a/33626207
+    shutil.copy(config_file_path, EXPERIMENT_PARENT_ROOT)
 
     # Get filename of this file (without absolute path and without extension)
     filename_no_ext: str = Path(__file__).stem
