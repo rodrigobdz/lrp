@@ -60,12 +60,12 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     # Hyperparameter values for each experiment
     # Manually add zero because log(0) = -inf
     gammas: numpy.ndarray = numpy.logspace(start=0.00001,
-                                           stop=0.25,
+                                           stop=10,
                                            num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     gammas = numpy.concatenate((numpy.array([0.0]), gammas))
 
     epsilons: numpy.ndarray = numpy.logspace(start=0.00001,
-                                             stop=0.5,
+                                             stop=10,
                                              num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
 
