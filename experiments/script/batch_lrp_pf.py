@@ -148,7 +148,7 @@ class Helpers:
             filename: str = f'{root_dir}/batch-{batch_index}-image-{image_index}-' \
                 f'{suffix}-input-1chw.png'
             # Facecolor sets the background color of the figure
-            plt.savefig(filename, dpi=DPI, facecolor='w')
+            plt.savefig(fname=filename, dpi=DPI, facecolor='w')
             plt.close()
 
     @staticmethod
@@ -179,7 +179,7 @@ class Helpers:
             filename: str = f'{root_dir}/batch-{batch_index}-image-{image_index}-' \
                 'layerwise-relevance-propagation-heatmap.png'
             # Facecolor sets the background color of the figure
-            plt.savefig(filename, dpi=DPI, facecolor='w')
+            plt.savefig(fname=filename, dpi=DPI, facecolor='w')
             plt.close()
 
     @staticmethod
@@ -196,7 +196,7 @@ class Helpers:
             '-pixel-flipping-class-prediction-scores' \
             f'-experiment-id-{EXPERIMENT_ID}.png'
         # Facecolor sets the background color of the figure
-        plt.savefig(class_scores_filename, dpi=DPI, facecolor='w')
+        plt.savefig(fname=class_scores_filename, dpi=DPI, facecolor='w')
         plt.close()
 
         for image_index in range(BATCH_SIZE):
@@ -221,7 +221,7 @@ class Helpers:
             pf_comparison_filename: str = f'{INDIVIDUAL_RESULTS_DIR}/batch-{batch_index}-' \
                 f'image-{image_index}-pixel-flipping-image-comparison.png'
             # Facecolor sets the background color of the figure, in this case to color white
-            plt.savefig(pf_comparison_filename, dpi=DPI, facecolor='w')
+            plt.savefig(fname=pf_comparison_filename, dpi=DPI, facecolor='w')
             plt.close()
 
     @staticmethod
