@@ -125,7 +125,7 @@ class Helpers:
         :param torch_object: Torch object to save
         :param filename: Filename to save the object to
         """
-        torch.save(torch_object,
+        torch.save(torch_object.cpu(),
                    f'{TORCH_OBJECTS_DIR}/{filename}')
 
     @staticmethod
