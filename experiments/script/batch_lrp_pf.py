@@ -59,13 +59,13 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
 
     # Hyperparameter values for each experiment
     # Manually add zero because log(0) = -inf
-    gammas: numpy.ndarray = numpy.logspace(start=0.00001,
-                                           stop=10,
+    gammas: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
+                                           stop=SAMPLING_RANGE_END,
                                            num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     gammas = numpy.concatenate((numpy.array([0.0]), gammas))
 
-    epsilons: numpy.ndarray = numpy.logspace(start=0.00001,
-                                             stop=10,
+    epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
+                                             stop=SAMPLING_RANGE_END,
                                              num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
 
@@ -441,6 +441,11 @@ if __name__ == "__main__":
                                             'PERTURBATION_STEPS')
     PERTURBATION_SIZE: int = config.getint(config_section_name,
                                            'PERTURBATION_SIZE')
+
+    SAMPLING_RANGE_START: float = config.getfloat(config_section_name,
+                                                  'SAMPLING_RANGE_START')
+    SAMPLING_RANGE_END: float = config.getfloat(config_section_name,
+                                                'SAMPLING_RANGE_END')
 
     # Workspace constants
     DATASET_ROOT: str = config['PATHS']['DATASET_ROOT']
