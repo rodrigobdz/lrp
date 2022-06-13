@@ -10,8 +10,8 @@ Usage: ./run_experiments.sh <config_file>"
     exit 1
 end
 
-# The following variable should correspond to the value set in batch_lrp_pf.py
-set TOTAL_NUMBER_OF_EXPERIMENTS 100
+# Value is read from config file.
+set TOTAL_NUMBER_OF_EXPERIMENTS (grep 'TOTAL_NUMBER_OF_EXPERIMENTS =' ./experiments/local/local.config | awk '{print $3}')
 
 echo "Running $TOTAL_NUMBER_OF_EXPERIMENTS experiments"
 
