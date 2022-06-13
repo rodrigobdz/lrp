@@ -84,13 +84,13 @@ if __name__ == "__main__":
         # Current order of rule in rule_layer_map:
         # lrp.rules.LrpZBoxRule
         # lrp.rules.LrpGammaRule
-        # lrp.rules.LrpEpsilonRule
-        # lrp.rules.LrpZeroRule
-        gamma: float = rule_layer_map[1][2].get('gamma')
-        epsilon: float = rule_layer_map[2][2].get('epsilon')
+        # lrp.rules.LrpGammaRule
+        # lrp.rules.LrpGammaRule
+        gamma_one: float = rule_layer_map[1][2].get('gamma')
+        gamma_two: float = rule_layer_map[2][2].get('gamma')
 
-        x_values.append(gamma)
-        y_values.append(epsilon)
+        x_values.append(gamma_one)
+        y_values.append(gamma_two)
 
     z_values: List[float] = []
 
@@ -101,8 +101,8 @@ if __name__ == "__main__":
     plt.tricontourf(x_values, y_values, z_values)
 
     plt.title('Contourf plot of AUC values across experiments')
-    plt.xlabel('Gammas for LRP-Gamma')
-    plt.ylabel('Epsilons for LRP-Epsilon')
+    plt.xlabel('Gammas for LRP-Gamma in layers 1-17')
+    plt.ylabel('Gammas for LRP-Gamma in layers 18-24')
     plt.colorbar()
 
     filename: str = f'{EXPERIMENT_PARENT_ROOT}/optima-exploration-using-contourf.png'

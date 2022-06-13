@@ -64,25 +64,43 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
                                            num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     gammas = numpy.concatenate((numpy.array([0.0]), gammas))
 
-    epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
-                                             stop=SAMPLING_RANGE_END,
-                                             num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
-    epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
+    # Composite LRP permutations
+    #
+    # epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
+    #                                          stop=SAMPLING_RANGE_END,
+    #                                          num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
+    # epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
+
+    # # Compute all permutations between gammas and epsilons
+    # hyperparam_permutations: List[Tuple[float, float]] = [
+    #     (gam, eps) for gam in gammas for eps in epsilons
+    # ]
+
+    # if TOTAL_NUMBER_OF_EXPERIMENTS != len(hyperparam_permutations):
+    #     raise ValueError(f'Total number of experiments is {TOTAL_NUMBER_OF_EXPERIMENTS} but '
+    #                      f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
+
+    # gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
+    # print(f'Experiment ID: {EXPERIMENT_ID}. '
+    #       f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
+    #       f', gamma: {gamma}'
+    #       f', epsilon: {epsilon}')
+
+    # Decreasing gamma permutations
 
     # Compute all permutations between gammas and epsilons
     hyperparam_permutations: List[Tuple[float, float]] = [
-        (gam, eps) for gam in gammas for eps in epsilons
+        (gamma_one, gamma_two) for gamma_one in gammas for gamma_two in gammas
     ]
-
     if TOTAL_NUMBER_OF_EXPERIMENTS != len(hyperparam_permutations):
         raise ValueError(f'Total number of experiments is {TOTAL_NUMBER_OF_EXPERIMENTS} but '
                          f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
 
-    gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
+    gamma_one, gamma_two = hyperparam_permutations[EXPERIMENT_ID]
     print(f'Experiment ID: {EXPERIMENT_ID}. '
           f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
-          f', gamma: {gamma}'
-          f', epsilon: {epsilon}')
+          f', gamma_one (Layers: 11-17): {gamma_one}'
+          f', gamma_two (Layers: 18-24): {gamma_two}')
 
     rule_layer_map: List[
         Tuple[
@@ -94,11 +112,12 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     rule_layer_map = [
         (filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
          {'low': low, 'high': high}),
-        (filter_by_layer_index_type(lambda n: 1 <= n <= 16), LrpGammaRule,
-         {'gamma': gamma}),
-        (filter_by_layer_index_type(lambda n: 17 <= n <= 30), LrpEpsilonRule,
-         {'epsilon': epsilon}),
-        (filter_by_layer_index_type(lambda n: 31 <= n), LrpZeroRule, {}),
+        (filter_by_layer_index_type(lambda n: 1 <= n <= 17), LrpGammaRule,
+         {'gamma': gamma_one}),
+        (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
+         {'gamma': gamma_two}),
+        (filter_by_layer_index_type(lambda n: 25 <= n <= 31), LrpGammaRule,
+         {'gamma': 0})
     ]
 
     return rule_layer_map
