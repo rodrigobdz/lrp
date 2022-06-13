@@ -452,18 +452,21 @@ if __name__ == "__main__":
     config.read(config_file_path)
     # pylint: enable=pointless-statement
 
-    config_section_name: str = 'PARAMETERS'
+    experiments_section_name: str = 'EXPERIMENTS'
+    lrp_section_name: str = 'LRP'
+    pf_section_name: str = 'PIXEL_FLIPPING'
+    data_section_name: str = 'DATA'
 
-    BATCH_SIZE: int = config.getint(config_section_name,
+    BATCH_SIZE: int = config.getint(data_section_name,
                                     'BATCH_SIZE')
-    PERTURBATION_STEPS: int = config.getint(config_section_name,
+    PERTURBATION_STEPS: int = config.getint(pf_section_name,
                                             'PERTURBATION_STEPS')
-    PERTURBATION_SIZE: int = config.getint(config_section_name,
+    PERTURBATION_SIZE: int = config.getint(pf_section_name,
                                            'PERTURBATION_SIZE')
 
-    SAMPLING_RANGE_START: float = config.getfloat(config_section_name,
+    SAMPLING_RANGE_START: float = config.getfloat(lrp_section_name,
                                                   'SAMPLING_RANGE_START')
-    SAMPLING_RANGE_END: float = config.getfloat(config_section_name,
+    SAMPLING_RANGE_END: float = config.getfloat(lrp_section_name,
                                                 'SAMPLING_RANGE_END')
 
     # Workspace constants
@@ -473,7 +476,7 @@ if __name__ == "__main__":
     EXPERIMENT_ROOT: str = f'{EXPERIMENT_PARENT_ROOT}/experiment-id-{EXPERIMENT_ID}'
 
     # Experiment parameters
-    NUMBER_OF_BATCHES: int = config.getint(config_section_name,
+    NUMBER_OF_BATCHES: int = config.getint(data_section_name,
                                            'NUMBER_OF_BATCHES')
 
     # Value from config file is loaded as string.
@@ -483,15 +486,15 @@ if __name__ == "__main__":
     # I am aware of the potential arbitrary code execution vulnerability this implies due to eval().
     # Nevertheless, the code is intended for research purposes. Proceeding after acknowledging
     # and assessing the risks.
-    IMAGE_CLASSES: List[str] = ast.literal_eval(config[config_section_name]
+    IMAGE_CLASSES: List[str] = ast.literal_eval(config[data_section_name]
                                                 ['IMAGE_CLASSES'])
 
-    NUMBER_OF_HYPERPARAMETER_VALUES: int = config.getint(config_section_name,
+    NUMBER_OF_HYPERPARAMETER_VALUES: int = config.getint(lrp_section_name,
                                                          'NUMBER_OF_HYPERPARAMETER_VALUES')
 
     # Total number of experiments will be this number squared.
     # TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
-    TOTAL_NUMBER_OF_EXPERIMENTS: int = config.getint(config_section_name,
+    TOTAL_NUMBER_OF_EXPERIMENTS: int = config.getint(lrp_section_name,
                                                      'TOTAL_NUMBER_OF_EXPERIMENTS')
 
     if EXPERIMENT_ID < 0 or EXPERIMENT_ID >= TOTAL_NUMBER_OF_EXPERIMENTS:
