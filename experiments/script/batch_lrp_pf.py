@@ -51,10 +51,10 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     """
     # Low and high parameters for zB-rule
     low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.zeros(*INPUT_SHAPE, device=DEVICE)
+        torch.zeros(*INPUT_SHAPE)
     )
     high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
-        torch.ones(*INPUT_SHAPE, device=DEVICE)
+        torch.ones(*INPUT_SHAPE)
     )
 
     # Hyperparameter values for each experiment
