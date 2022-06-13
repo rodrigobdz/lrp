@@ -14,7 +14,8 @@
 #$ -l mem_free=16G    # request 16GB of free memory
 #$ -q all.q           # submit jobs to queue named all.q (general queue)
 #$ -cwd               # execute in current working directory
-#$ -t 1-100            # start multiple instances with identified SGE_TASK_ID from 1 to n
+#$ -t 1-100           # start multiple instances with identified SGE_TASK_ID from 1 to n
+#                     # upper bound of -t should be equal to TOTAL_NUMBER_OF_EXPERIMENTS in *.config
 #
 # Submit jobs to cluster using qsub
 #
@@ -44,4 +45,5 @@ echo "SGE_TASK_ID: $SGE_TASK_ID. Argument for Python script EXPERIMENT_ID: $EXPE
 # shellcheck disable=SC1091
 source /home/rodrigo/experiments/cluster/script/setup
 
+# Run experiments
 python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID" --config-file /home/rodrigo/experiments/cluster/cluster.config
