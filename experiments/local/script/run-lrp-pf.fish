@@ -11,7 +11,7 @@ Usage: ./run_experiments.sh <config_file>"
 end
 
 # The following variable should correspond to the value set in batch_lrp_pf.py
-set TOTAL_NUMBER_OF_EXPERIMENTS 16
+set TOTAL_NUMBER_OF_EXPERIMENTS 100
 
 echo "Running $TOTAL_NUMBER_OF_EXPERIMENTS experiments"
 
