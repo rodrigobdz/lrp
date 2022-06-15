@@ -18,8 +18,7 @@ from lrp.zennit.core import collect_leaves
 
 
 class LayerFilter:
-    r"""Filter the layers by layer index and type.
-    """
+    r"""Filter the layers by layer index and type."""
 
     def __init__(self, model: torch.nn.Module) -> None:
         r"""Build a filter for the given model.
