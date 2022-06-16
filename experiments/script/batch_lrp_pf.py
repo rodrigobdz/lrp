@@ -101,7 +101,8 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     print(f'Experiment ID: {EXPERIMENT_ID}. '
           f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
           f', gamma_one (Layers: 11-17): {gamma_one}'
-          f', gamma_two (Layers: 18-24): {gamma_two}')
+          f', gamma_two (Layers: 18-24): {gamma_two}'
+          '\n')
 
     rule_layer_map: List[
         Tuple[
@@ -248,7 +249,8 @@ class Helpers:
     @staticmethod
     def save_settings():
         r"""Save settings to file for reproducibility."""
-        print("Save experiment parameters to file for reproducibility and proper archival.")
+        print(
+            "\nSave experiment parameters to file for reproducibility and proper archival.")
 
         # Get filename of this file with extension
         filename_with_ext: str = Path(__file__).name
@@ -280,12 +282,12 @@ class Helpers:
             file.write(str(local_vars_dict))
 
         # Copying config file to experiment directory for reproducibility of results.
-        print(f'Copying config file {config_file_path.name} to experiment directory:\n'
+        print(f'\nCopying config file {config_file_path.name} to experiment directory:\n'
               f'{EXPERIMENT_ROOT}.')
         # Source: https://stackoverflow.com/a/33626207
         shutil.copy(config_file_path, EXPERIMENT_ROOT)
 
-        print(f'Copying {filename_with_ext} to experiment directory:\n'
+        print(f'\nCopying {filename_with_ext} to experiment directory:\n'
               f'{EXPERIMENT_ROOT}.')
         shutil.copy(__file__, Path(EXPERIMENT_ROOT) / filename_with_ext)
 
@@ -297,12 +299,12 @@ class Helpers:
             raise ValueError(
                 f'Could not find visualize.py script in {visualize_py_script}.')
 
-        print(f'Copying {visualize_py_script.name} to experiment directory:\n'
+        print(f'\nCopying {visualize_py_script.name} to experiment directory:\n'
               f'{EXPERIMENT_ROOT}.')
         shutil.copy(visualize_py_script, Path(
             EXPERIMENT_ROOT) / visualize_py_script.name)
 
-        print('Done saving experiment parameters to file.')
+        print('\nDone saving experiment parameters to file.\n')
 
     @staticmethod
     def save_artifacts(lrp_instance: LRP,
@@ -473,7 +475,7 @@ def run_experiments() -> None:
     print(f'Setting manual seed in PyTorch to {SEED}')
     torch.manual_seed(SEED)
 
-    print(f'Batch size = {BATCH_SIZE}')
+    print(f'\nBatch size = {BATCH_SIZE}')
 
     my_dataloader: torch.utils.data.DataLoader = imagenet_data_loader(root=DATASET_ROOT,
                                                                       batch_size=BATCH_SIZE,
@@ -484,12 +486,12 @@ def run_experiments() -> None:
         my_image_batch.to(device=DEVICE, non_blocking=True)
         my_ground_truth_labels.to(device=DEVICE, non_blocking=True)
 
-        print('Running LRP experiment')
+        print('\nRunning LRP experiment\n')
         my_lrp_instance = run_lrp_experiment(image_batch=my_image_batch,
                                              batch_index=my_batch_index,
                                              label_idx_n=my_ground_truth_labels)
 
-        print('Running Pixel-Flipping/Region Perturbation experiment')
+        print('\nRunning Pixel-Flipping/Region Perturbation experiment\n')
         my_pf_instance = run_pixel_flipping_experiment(lrp_instance=my_lrp_instance,
                                                        batch_index=my_batch_index)
 
@@ -500,7 +502,7 @@ def run_experiments() -> None:
         print(f'Finished batch {my_batch_index}')
 
         if my_batch_index + 1 == NUMBER_OF_BATCHES:
-            print(f'Done. {my_batch_index + 1} batches processed.')
+            print(f'\nDone. {my_batch_index + 1} batches processed.\n')
             break
 
 
