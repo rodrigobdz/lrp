@@ -124,7 +124,14 @@ def heatmap(relevance_scores: numpy.ndarray,
     CMAP[:, 0:3] *= 0.85
     CMAP = ListedColormap(CMAP)
 
+    # TODO: Document this heuristic to control the color intensity in the heatmap.
     abs_bound = 10 * ((numpy.abs(relevance_scores) ** 3.0).mean() ** (1.0 / 3))
+
+    # zennit's calculation
+    # # get the absolute maximum, to center the heat map around 0
+    # # sum over the color channels
+    # heatmap = relevance.sum(1)
+    # amax = heatmap.abs().numpy().max((1, 2))
 
     if fig is plt:
         fig.figure(figsize=(width, height), dpi=dpi)
