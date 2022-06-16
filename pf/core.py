@@ -552,6 +552,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
         return class_prediction_scores_sliced, mean_class_prediction_scores_n
 
+    @timer
     def calculate_auc_score(self) -> float:
         r"""Calculate AUC score.
 

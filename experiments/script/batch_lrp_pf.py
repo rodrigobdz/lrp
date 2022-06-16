@@ -30,6 +30,7 @@ from lrp.filter import LayerFilter
 from lrp.rules import LrpEpsilonRule, LrpGammaRule, LrpZBoxRule, LrpZeroRule
 from lrp.zennit.types import AvgPool, Linear
 from pf.core import PixelFlipping
+from pf.decorators import timer
 from pf.perturbation_modes.constants import PerturbModes
 
 DEVICE: torch.device = torch.device(
@@ -346,6 +347,7 @@ class Helpers:
                    arr=numpy.array(lrp_instance.rule_layer_map, dtype=object))
 
 
+@timer
 def run_lrp_experiment(image_batch: torch.Tensor,
                        batch_index: int,
                        label_idx_n: torch.Tensor) -> LRP:
@@ -387,6 +389,7 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     return lrp_instance
 
 
+@timer
 def run_pixel_flipping_experiment(lrp_instance: LRP,
                                   batch_index: int) -> PixelFlipping:
     r"""Run the pixel flipping experiment.
@@ -457,6 +460,7 @@ class CommandLine():  # pylint: disable=too-few-public-methods
         return self.parser.parse_args()
 
 
+@timer
 def run_experiments() -> None:
     r"""Run Layer-wise Relevance Propagation and Pixel-Flipping experiments."""
     Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,

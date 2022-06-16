@@ -13,7 +13,10 @@ from typing import Tuple
 
 import torch
 
+from .decorators import timer
 
+
+@timer
 def loop(generator) -> None:
     r"""Loop over a generator without retrieving any values.
 

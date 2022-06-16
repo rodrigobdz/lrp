@@ -17,6 +17,7 @@ import torch
 
 import pf.sanity_checks
 import pf.utils
+from pf.decorators import timer
 
 from . import builtin, plot, rules
 
@@ -92,6 +93,7 @@ class LRP:
 
         return None
 
+    @timer
     def relevance(self,
                   input_nchw: torch.Tensor,
                   label_idx_n: Optional[torch.Tensor] = None) -> torch.Tensor:
