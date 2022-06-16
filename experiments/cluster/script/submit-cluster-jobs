@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Submit jobs to Univa Grid Engine.
+#
+# Manual: http://gridengine.eu/mangridengine/manuals.html
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+readonly LOG_PATH='/home/rodrigo/log'
+readonly ARCHIVE_PATH="$LOG_PATH/archive"
+
+echo "Change directory to log ($LOG_PATH) to save results in this directory"
+cd "$LOG_PATH"
+
+echo "Creating directory to archive past log files under $ARCHIVE_PATH, if it does not exist"
+mkdir -p "$ARCHIVE_PATH"
+
+echo "Submit experiment jobs. Enabling verbose mode using bash opt xtrace."
+set -o xtrace
+qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
+set +o xtrace
