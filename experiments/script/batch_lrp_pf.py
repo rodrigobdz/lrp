@@ -245,6 +245,65 @@ class Helpers:
             plt.close()
 
     @staticmethod
+    def save_settings():
+        r"""Save settings to file for reproducibility."""
+        print("Save experiment parameters to file for reproducibility and proper archival.")
+
+        # Get filename of this file with extension
+        filename_with_ext: str = Path(__file__).name
+
+        # Get filename of this file (without absolute path and without extension)
+        filename_no_ext: str = Path(__file__).stem
+
+        # Path to save local variables used for this experiment
+        absolute_path_no_ext: str = f'{NUMPY_OBJECTS_DIR}/' \
+            f'{filename_no_ext}-locals-filtered-by-type'
+
+        # Create a dictionary from locals() with entries filtered by type to avoid common pitfalls
+        # of trying to save modules or classes which are not accepted by numpy.save.
+        local_vars_dict: Dict[str, Any]
+        local_vars_dict = {dict_key: dict_val for dict_key, dict_val in locals().items()
+                           if isinstance(dict_val,
+                                         (str, int, list, tuple, dict))}
+
+        print('Save local variables to file for archival purposes.')
+
+        print('Save local variables as dictionary')
+        numpy.save(file=absolute_path_no_ext + '.npy',
+                   arr=local_vars_dict)
+
+        print('Save local variables as text (human-readable)')
+        with open(file=absolute_path_no_ext + '.txt',
+                  mode='w',
+                  encoding='utf8') as file:
+            file.write(str(local_vars_dict))
+
+        # Copying config file to experiment directory for reproducibility of results.
+        print(f'Copying config file {config_file_path} to experiment directory:'
+              f'{EXPERIMENT_ROOT}.')
+        # Source: https://stackoverflow.com/a/33626207
+        shutil.copy(config_file_path, EXPERIMENT_ROOT)
+
+        print(f'Copying {filename_with_ext} to experiment directory:'
+              f'{EXPERIMENT_ROOT}.')
+        shutil.copy(__file__, Path(EXPERIMENT_ROOT) / filename_with_ext)
+
+        # Script is used to generate plots from experiment results.
+        visualize_py_script: Path = Path(
+            __file__).parent / Path('visualize.py')
+
+        if not Path.exists(visualize_py_script):
+            raise ValueError(
+                f'Could not find visualize.py script in {visualize_py_script}.')
+
+        print(f'Copying {visualize_py_script} to experiment directory:'
+              f'{EXPERIMENT_ROOT}.')
+        shutil.copy(visualize_py_script, Path(
+            EXPERIMENT_ROOT) / visualize_py_script.name)
+
+        print('Done saving experiment parameters to file.')
+
+    @staticmethod
     def save_artifacts(lrp_instance: LRP,
                        pf_instance: PixelFlipping,
                        batch_index: int) -> None:
@@ -400,7 +459,14 @@ class CommandLine():  # pylint: disable=too-few-public-methods
 
 def run_experiments() -> None:
     r"""Run Layer-wise Relevance Propagation and Pixel-Flipping experiments."""
-    # Enable reproducibility
+    Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,
+                                             INDIVIDUAL_RESULTS_DIR,
+                                             TORCH_OBJECTS_DIR,
+                                             NUMPY_OBJECTS_DIR)
+
+    Helpers.save_settings()
+
+    print(f'Setting manual seed in PyTorch to {SEED}')
     torch.manual_seed(SEED)
 
     print(f'Batch size = {BATCH_SIZE}')
@@ -414,12 +480,12 @@ def run_experiments() -> None:
         my_image_batch.to(device=DEVICE, non_blocking=True)
         my_ground_truth_labels.to(device=DEVICE, non_blocking=True)
 
-        # Run LRP experiment
+        print('Running LRP experiment')
         my_lrp_instance = run_lrp_experiment(image_batch=my_image_batch,
                                              batch_index=my_batch_index,
                                              label_idx_n=my_ground_truth_labels)
 
-        # Run Pixel-Flipping/Region Perturbation experiment
+        print('Running Pixel-Flipping/Region Perturbation experiment')
         my_pf_instance = run_pixel_flipping_experiment(lrp_instance=my_lrp_instance,
                                                        batch_index=my_batch_index)
 
@@ -526,40 +592,5 @@ if __name__ == "__main__":
     DPI: float = 150
     # Toggle for plt.show() for each figure
     SHOW_PLOT: bool = False
-
-    Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,
-                                             INDIVIDUAL_RESULTS_DIR,
-                                             TORCH_OBJECTS_DIR,
-                                             NUMPY_OBJECTS_DIR)
-
-    # Copying config file to experiment directory for reproducibility of results.
-    print('Copying config file to experiment directory:'
-          f'{EXPERIMENT_PARENT_ROOT}.')
-    # Source: https://stackoverflow.com/a/33626207
-    shutil.copy(config_file_path, EXPERIMENT_PARENT_ROOT)
-
-    # Get filename of this file (without absolute path and without extension)
-    filename_no_ext: str = Path(__file__).stem
-    absolute_path_no_ext: str = f'{EXPERIMENT_PARENT_ROOT}/' \
-        f'{filename_no_ext}-locals-filtered-by-type'
-
-    # Create a dictionary from locals() with entries filtered by type to avoid common pitfalls
-    # of trying to save modules or classes which are not accepted by numpy.save.
-    local_vars_dict: Dict[str, Any]
-    local_vars_dict = {dict_key: dict_val for dict_key, dict_val in locals().items()
-                       if isinstance(dict_val,
-                                     (str, int, list, tuple, dict))}
-
-    # Save local variables to file for archival purposes.
-
-    # Save local variables as dictionary
-    numpy.save(file=absolute_path_no_ext + '.npy',
-               arr=local_vars_dict)
-
-    # Save local variables as text (human-readable)
-    with open(file=absolute_path_no_ext + '.txt',
-              mode='w',
-              encoding='utf8') as file:
-        file.write(str(local_vars_dict))
 
     run_experiments()
