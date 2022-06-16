@@ -535,6 +535,13 @@ if __name__ == "__main__":
     SAMPLING_RANGE_END: float = config.getfloat(lrp_section_name,
                                                 'SAMPLING_RANGE_END')
 
+    # Experiment parameters
+    MODEL: str = config[experiments_section_name]['MODEL']
+
+    if MODEL != 'vgg16':
+        raise ValueError(
+            f'Model {MODEL} is not supported. Only vgg16 is supported.')
+
     # Workspace constants
     DATASET_ROOT: str = config['PATHS']['DATASET_ROOT']
     # Directories to be created (if they don't already exist)
