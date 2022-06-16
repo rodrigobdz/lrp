@@ -46,4 +46,4 @@ echo "SGE_TASK_ID: $SGE_TASK_ID. Argument for Python script EXPERIMENT_ID: $EXPE
 source /home/rodrigo/experiments/cluster/script/setup
 
 # Run experiments
-python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID" --config-file /home/rodrigo/experiments/cluster/cluster.config
+time python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID" --config-file /home/rodrigo/experiments/cluster/cluster.config
