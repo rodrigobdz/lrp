@@ -280,12 +280,12 @@ class Helpers:
             file.write(str(local_vars_dict))
 
         # Copying config file to experiment directory for reproducibility of results.
-        print(f'Copying config file {config_file_path} to experiment directory:'
+        print(f'Copying config file {config_file_path.name} to experiment directory:\n'
               f'{EXPERIMENT_ROOT}.')
         # Source: https://stackoverflow.com/a/33626207
         shutil.copy(config_file_path, EXPERIMENT_ROOT)
 
-        print(f'Copying {filename_with_ext} to experiment directory:'
+        print(f'Copying {filename_with_ext} to experiment directory:\n'
               f'{EXPERIMENT_ROOT}.')
         shutil.copy(__file__, Path(EXPERIMENT_ROOT) / filename_with_ext)
 
@@ -297,7 +297,7 @@ class Helpers:
             raise ValueError(
                 f'Could not find visualize.py script in {visualize_py_script}.')
 
-        print(f'Copying {visualize_py_script} to experiment directory:'
+        print(f'Copying {visualize_py_script.name} to experiment directory:\n'
               f'{EXPERIMENT_ROOT}.')
         shutil.copy(visualize_py_script, Path(
             EXPERIMENT_ROOT) / visualize_py_script.name)
