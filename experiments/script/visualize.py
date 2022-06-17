@@ -43,18 +43,24 @@ if __name__ == "__main__":
     config.read(config_file_path)
     # pylint: enable=pointless-statement
 
-    config_section_name: str = 'PARAMETERS'
+    param_section_name: str = 'PARAMETERS'
+    plots_section_name: str = 'PLOTS'
 
-    BATCH_SIZE: int = config.getint(config_section_name,
+    BATCH_SIZE: int = config.getint(param_section_name,
                                     'BATCH_SIZE')
-    PERTURBATION_STEPS: int = config.getint(config_section_name,
+    PERTURBATION_STEPS: int = config.getint(param_section_name,
                                             'PERTURBATION_STEPS')
-    PERTURBATION_SIZE: int = config.getint(config_section_name,
+    PERTURBATION_SIZE: int = config.getint(param_section_name,
                                            'PERTURBATION_SIZE')
 
     # Path to dir where the results should be stored.
     # Directories will be created, if they don't already exist.
     EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
+
+    TITLE: str = config[plots_section_name]['TITLE']
+    X_LABEL: str = config[plots_section_name]['X_LABEL']
+    Y_LABEL: str = config[plots_section_name]['Y_LABEL']
+    PLOT_PATH: str = config[plots_section_name]['PLOT_PATH']
 
     experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
     auc_list: List[str] = list(
@@ -100,10 +106,9 @@ if __name__ == "__main__":
 
     plt.tricontourf(x_values, y_values, z_values)
 
-    plt.title('Contourf plot of AUC values across experiments')
-    plt.xlabel('Gammas for LRP-Gamma in layers 1-17')
-    plt.ylabel('Gammas for LRP-Gamma in layers 18-24')
+    plt.title(TITLE)
+    plt.xlabel(X_LABEL)
+    plt.ylabel(Y_LABEL)
     plt.colorbar()
 
-    filename: str = f'{EXPERIMENT_PARENT_ROOT}/optima-exploration-using-contourf.png'
-    plt.savefig(fname=filename, facecolor='w')
+    plt.savefig(fname=PLOT_PATH, facecolor='w')
