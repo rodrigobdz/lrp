@@ -30,17 +30,11 @@ All commands listed in this guide should be run **locally** (not cluster) from t
 
 1. Update the paths in `./experiments/local/local.config`
 
-1. Run experiments
+1. Run experiments and generate plots from results
 
    ```sh
    # Run multiple batches of experiments
    fish ./experiments/local/script/run-lrp-pf.fish ./experiments/local/local.config
-   ```
-
-1. Visualize results
-
-   ```sh
-   python3 ./experiments/script/visualize.py --config-file ./experiments/local/local.config
    ```
 
 ## Credits

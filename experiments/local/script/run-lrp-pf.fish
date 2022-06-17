@@ -26,3 +26,7 @@ for i in (seq 0 (math "$TOTAL_NUMBER_OF_EXPERIMENTS" - 1))
         exit 1
     end
 end
+
+echo
+echo "Generate plots from experiment results"
+time ./venv/bin/python3 ./experiments/script/visualize.py --config-file ./experiments/local/local.config

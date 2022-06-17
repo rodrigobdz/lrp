@@ -47,3 +47,10 @@ source /home/rodrigo/experiments/cluster/script/setup
 
 # Run experiments
 time python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID" --config-file /home/rodrigo/experiments/cluster/cluster.config
+
+# After last experiment, generate plots from aggregated results.
+if [ "$SGE_TASK_ID" -eq 100 ]; then
+  echo
+  echo "Generate plots from experiment results"
+  time python3 /home/rodrigo/experiments/script/visualize.py --config-file /home/rodrigo/experiments/cluster/cluster.config
+fi
