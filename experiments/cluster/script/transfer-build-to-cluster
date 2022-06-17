@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 #
-# Bootstrap cluster from local machine.
-#
 # Transfer required files from local machine to cluster.
 # OS: macOS 12.4
 
@@ -67,7 +65,7 @@ transfer_code() {
 }
 
 main() {
-  echo "Bootstrap local machine"
+  echo "Transfer build to cluster"
   remote_cleanup
   transfer_config
   transfer_data

@@ -512,7 +512,7 @@ if __name__ == "__main__":
 
     EXPERIMENT_ID: int = parsed_args.experiment_id
 
-    config = ConfigParser(interpolation=ExtendedInterpolation())
+    config: ConfigParser = ConfigParser(interpolation=ExtendedInterpolation())
     config_file_path: Path = parsed_args.config_file
 
     # Ensure that the configuration file exists.
