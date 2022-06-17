@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+#
+# Transfer experiment results from cluster to local machine
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+generate_plots_from_results() {
+  echo "Generate plots from experiment results on cluster"
+  ssh ml "cd /home/rodrigo
+python3 ./experiments/script/visualize.py --config-file ./experiments/cluster/cluster.config
+"
+}
+
+remote_setup() {
+  echo
+  echo "Prepare results for optimal transfer"
+
+  # Python script to parse config file on cluster and return EXPERIMENT_PARENT_ROOT value as string.
+  read_config_var_script=$(
+    cat <<EOF
+#!/usr/bin/env python3
+#
+# Read value of EXPERIMENT_PARENT_ROOT from config file.
+
+import sys
+from configparser import ConfigParser, ExtendedInterpolation
+
+path: str = './experiments/cluster/cluster.config'
+
+config = ConfigParser(interpolation=ExtendedInterpolation())
+config.read(path);
+EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
+
+# Return string from python script without error code.
+# https://stackoverflow.com/a/11901135
+sys.stderr.write(EXPERIMENT_PARENT_ROOT)
+EOF
+  )
+  # Disable warning that variable is unused. False-positive because it is used in the SSH cmd below.
+  local -r read_config_var_script
+
+  # Demo of how variables are assigned:
+  #
+  # # Given:
+  # EXPERIMENT_PARENT_ROOT=/home/rodrigo/experiment-results/2022-06-20/cluster/vgg16-decr-gamma-batch-size-4-total-experiments-16
+  #
+  # # Derivated variables
+  # EXPERIMENT_BASENAME=/home/rodrigo/experiment-results/2022-06-20/cluster
+  # EXPERIMENT_DIRNAME=vgg16-decr-gamma-batch-size-4-total-experiments-16
+
+  # Redirect stderr to stdout to get the variable.
+  # https://stackoverflow.com/a/11901135
+  EXPERIMENT_PARENT_ROOT=$(./venv/bin/python3 -c "$read_config_var_script" 2>&1 >/dev/null)
+  readonly EXPERIMENT_PARENT_ROOT
+
+  echo "Define derivated variables from EXPERIMENT_PARENT_ROOT"
+
+  # Calculate directory name from absolute path.
+  # basename removes leading directory portions from path.
+  EXPERIMENT_BASENAME=$(basename "$EXPERIMENT_PARENT_ROOT")
+  readonly EXPERIMENT_BASENAME
+
+  # dirname calculates the parent directory of a given file or directory path.
+  EXPERIMENT_DIRNAME=$(dirname "$EXPERIMENT_PARENT_ROOT")
+  readonly EXPERIMENT_DIRNAME
+
+  ssh ml -o SendEnv=EXPERIMENT_PARENT_ROOT -o SendEnv=EXPERIMENT_BASENAME -o SendEnv=EXPERIMENT_DIRNAME '
+  echo "Change directory to the parent directory of the directory containing the results."
+  cd "$EXPERIMENT_DIRNAME"
+
+  echo "Create tar file ${EXPERIMENT_BASENAME}.tar.gz with results."
+  # [c]reate a g[z]ipped archive from a directory using relative paths
+  tar czf "${EXPERIMENT_BASENAME}.tar.gz" --directory "$EXPERIMENT_BASENAME" .
+
+  echo "Tar file located under ${EXPERIMENT_DIRNAME}/${EXPERIMENT_BASENAME}.tar.gz"
+'
+}
+
+transfer_results() {
+  local src_path
+  local target_path
+
+  src_path=
+  target_path="$HOME/Downloads"
+
+  echo "Transfer experiment logs from cluster to local machine"
+
+  set +o xtrace
+  rsync --archive --compress --verbose --human-readable --progress --exclude=archive ml:"$src_path" "$target_path"
+  set -o xtrace
+
+  src_path="${EXPERIMENT_DIRNAME}/${EXPERIMENT_BASENAME}.tar.gz"
+  target_path="$HOME/Downloads"
+
+  echo "Transfer experiment results from cluster to local machine"
+
+  set +o xtrace
+  rsync --archive --compress --verbose --human-readable --progress ml:"$src_path" "$target_path"
+  set -o xtrace
+}
+
+main() {
+  echo "Download experiment results from cluster to local machine"
+  echo
+  generate_plots_from_results
+  remote_setup
+  transfer_results
+  echo
+  echo "Done"
+}
+
+main

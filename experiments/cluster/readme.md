@@ -78,12 +78,11 @@ All commands listed in this guide should be run on execution nodes on the **clus
    done
    ```
 
-1. Visualize results
+1. Generate plots from results and download from cluster
 
    ```sh
-   # On Cluster
-   cd /home/rodrigo
-   python3 ./experiments/script/visualize.py --config-file ./experiments/cluster/cluster.config
+   # Locally
+   ./experiments/cluster/script/download-results-from-cluster
    ```
 
 ## One-Liners for Copy-Pasting
@@ -91,7 +90,7 @@ All commands listed in this guide should be run on execution nodes on the **clus
 Update build on cluster:
 
 ```sh
-# local
+# Locally
 ./script/build && ./experiments/cluster/script/transfer-build-to-cluster && ssh ml 'source /home/rodrigo/experiments/cluster/script/setup && /home/rodrigo/experiments/cluster/script/install' && ssh ml
 
 # cluster
