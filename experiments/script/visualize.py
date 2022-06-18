@@ -54,9 +54,9 @@ def contourf_plot():
     r"""Generate contourf plot from experiment results."""
     # Load the values to plot.
     print(f'Importing x, y and z values for plot from files:\n'
-          f'x: {PLOT_X_VALUES_PATH}\n'
-          f'y: {PLOT_Y_VALUES_PATH}\n'
-          f'z: {PLOT_Z_VALUES_PATH}\n')
+          f'x: {PLOT_X_VALUES_PATH}\n\n'
+          f'y: {PLOT_Y_VALUES_PATH}\n\n'
+          f'z: {PLOT_Z_VALUES_PATH}\n\n')
     x_values: numpy.ndarray = numpy.load(file=PLOT_X_VALUES_PATH,
                                          allow_pickle=True)
     y_values: numpy.ndarray = numpy.load(file=PLOT_Y_VALUES_PATH,
@@ -105,4 +105,5 @@ if __name__ == "__main__":
     contourf_plot()
 
     print(f'''Plot saved to {PLOT_PATH}.
+
 Done plotting.''')
