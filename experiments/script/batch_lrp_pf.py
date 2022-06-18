@@ -11,7 +11,9 @@ __status__ = 'Development'
 
 import argparse
 import ast
+import logging
 import shutil
+import sys
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple, Union
@@ -98,11 +100,16 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
                          f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
 
     gamma_one, gamma_two = hyperparam_permutations[EXPERIMENT_ID]
-    print(f'Experiment ID: {EXPERIMENT_ID}. '
-          f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
-          f', gamma_one (Layers: 11-17): {gamma_one}'
-          f', gamma_two (Layers: 18-24): {gamma_two}'
-          '\n')
+    LOGGER.info("Experiment ID: %s",
+                str(EXPERIMENT_ID))
+    LOGGER.info("Progress: %s/%s",
+                str(EXPERIMENT_ID + 1),
+                str(TOTAL_NUMBER_OF_EXPERIMENTS))
+    LOGGER.info('Hyperparameters for model %s:', str(MODEL))
+    LOGGER.info("\tgamma_one (Layers: 11-17): %s",
+                str(gamma_one))
+    LOGGER.info("\tgamma_two (Layers: 18-24): %s",
+                str(gamma_two))
 
     rule_layer_map: List[
         Tuple[
@@ -249,8 +256,8 @@ class Helpers:
     @staticmethod
     def save_settings():
         r"""Save settings to file for reproducibility."""
-        print(
-            "\nSave experiment parameters to file for reproducibility and proper archival.")
+        LOGGER.debug(
+            "Save experiment parameters to file for reproducibility and proper archival.")
 
         # Get filename of this file with extension
         filename_with_ext: str = Path(__file__).name
@@ -269,26 +276,28 @@ class Helpers:
                            if isinstance(dict_val,
                                          (str, int, list, tuple, dict))}
 
-        print('Save local variables to file for archival purposes.')
+        LOGGER.debug('Save local variables to file for archival purposes.')
 
-        print('Save local variables as dictionary')
+        LOGGER.debug('Save local variables as dictionary')
         numpy.save(file=absolute_path_no_ext + '.npy',
                    arr=local_vars_dict)
 
-        print('Save local variables as text (human-readable)')
+        LOGGER.debug('Save local variables as text (human-readable)')
         with open(file=absolute_path_no_ext + '.txt',
                   mode='w',
                   encoding='utf8') as file:
             file.write(str(local_vars_dict))
 
         # Copying config file to experiment directory for reproducibility of results.
-        print(f'\nCopying config file {config_file_path.name} to experiment directory:\n'
-              f'{EXPERIMENT_ROOT}.')
+        LOGGER.debug('Copying config file %s to experiment directory:\n%s',
+                     str(config_file_path.name),
+                     str(EXPERIMENT_ROOT))
         # Source: https://stackoverflow.com/a/33626207
         shutil.copy(config_file_path, EXPERIMENT_ROOT)
 
-        print(f'\nCopying {filename_with_ext} to experiment directory:\n'
-              f'{EXPERIMENT_ROOT}.')
+        LOGGER.debug('Copying %s to experiment directory:\n%s',
+                     str(filename_with_ext),
+                     str(EXPERIMENT_ROOT))
         shutil.copy(__file__, Path(EXPERIMENT_ROOT) / filename_with_ext)
 
         # Script is used to generate plots from experiment results.
@@ -297,14 +306,15 @@ class Helpers:
 
         if not Path.exists(visualize_py_script):
             raise ValueError(
-                f'Could not find visualize.py script in {visualize_py_script}.')
+                f'Could not find visualize.py script under {visualize_py_script}.')
 
-        print(f'\nCopying {visualize_py_script.name} to experiment directory:\n'
-              f'{EXPERIMENT_ROOT}.')
+        LOGGER.debug('Copying %s to experiment directory:\n%s',
+                     str(visualize_py_script.name),
+                     str(EXPERIMENT_ROOT))
         shutil.copy(visualize_py_script, Path(
             EXPERIMENT_ROOT) / visualize_py_script.name)
 
-        print('\nDone saving experiment parameters to file.\n')
+        LOGGER.info('Done saving experiment parameters to file.')
 
     @staticmethod
     def save_artifacts(lrp_instance: LRP,
@@ -473,10 +483,10 @@ def run_experiments() -> None:
 
     Helpers.save_settings()
 
-    print(f'Setting manual seed in PyTorch to {SEED}')
+    LOGGER.debug('Setting manual seed in PyTorch to %s', str(SEED))
     torch.manual_seed(SEED)
 
-    print(f'\nBatch size = {BATCH_SIZE}')
+    LOGGER.info('Batch size = %s', str(BATCH_SIZE))
 
     my_dataloader: torch.utils.data.DataLoader = imagenet_data_loader(root=DATASET_ROOT,
                                                                       batch_size=BATCH_SIZE,
@@ -487,12 +497,12 @@ def run_experiments() -> None:
         my_image_batch.to(device=DEVICE, non_blocking=True)
         my_ground_truth_labels.to(device=DEVICE, non_blocking=True)
 
-        print('\nRunning LRP experiment\n')
+        LOGGER.info('Running LRP experiment')
         my_lrp_instance = run_lrp_experiment(image_batch=my_image_batch,
                                              batch_index=my_batch_index,
                                              label_idx_n=my_ground_truth_labels)
 
-        print('\nRunning Pixel-Flipping/Region Perturbation experiment\n')
+        LOGGER.info('Running Pixel-Flipping/Region Perturbation experiment')
         my_pf_instance = run_pixel_flipping_experiment(lrp_instance=my_lrp_instance,
                                                        batch_index=my_batch_index)
 
@@ -500,10 +510,11 @@ def run_experiments() -> None:
                                pf_instance=my_pf_instance,
                                batch_index=my_batch_index)
 
-        print(f'Finished batch {my_batch_index}')
+        LOGGER.info('Finished batch %s', str(my_batch_index))
 
         if my_batch_index + 1 == NUMBER_OF_BATCHES:
-            print(f'\nDone. {my_batch_index + 1} batches processed.\n')
+            LOGGER.info('Done. %s batches processed.',
+                        str(my_batch_index + 1))
             break
 
 
@@ -555,7 +566,7 @@ def aggregate_results_for_plot():
         z_values.append(numpy.load(file=auc_file,
                                    allow_pickle=True).item())
 
-    print('Saving aggregated results (x, y and z values) to file')
+    LOGGER.debug('Saving aggregated results (x, y and z values) to file')
     numpy.save(file=PLOT_X_VALUES_PATH,
                arr=x_values)
     numpy.save(file=PLOT_Y_VALUES_PATH,
@@ -581,6 +592,21 @@ if __name__ == "__main__":
     # pylint: disable=pointless-statement
     config.read(config_file_path)
     # pylint: enable=pointless-statement
+
+    verbose: bool = config.getboolean('DEFAULT', 'VERBOSE', fallback=True)
+
+    # Init logger instance
+    logging.basicConfig(
+        stream=sys.stderr,
+        format='%(levelname)-8s  %(message)s'
+    )
+
+    # Assign logger instance a name
+    LOGGER: logging.Logger = logging.getLogger(__name__)
+
+    LOGGER.setLevel(logging.INFO)
+    if verbose:
+        LOGGER.setLevel(logging.DEBUG)
 
     experiments_section_name: str = 'EXPERIMENTS'
     lrp_section_name: str = 'LRP'
@@ -679,3 +705,6 @@ if __name__ == "__main__":
     if EXPERIMENT_ID == TOTAL_NUMBER_OF_EXPERIMENTS - 1:
         # Aggregate results for plot and save to file.
         aggregate_results_for_plot()
+
+    LOGGER.info("Done running experiment %s",
+                str(EXPERIMENT_ID))

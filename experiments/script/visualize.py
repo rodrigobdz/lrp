@@ -103,3 +103,6 @@ if __name__ == "__main__":
     PLOT_Z_VALUES_PATH: str = config[paths_section_name]['PLOT_Z_VALUES_PATH']
 
     contourf_plot()
+
+    print(f'''Plot saved to {PLOT_PATH}.
+Done plotting.''')
