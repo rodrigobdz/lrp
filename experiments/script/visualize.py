@@ -50,28 +50,8 @@ def parse_arguments() -> ConfigParser:
     return _config
 
 
-if __name__ == "__main__":
-    config: ConfigParser = parse_arguments()
-
-    # Path to dir where the results should be stored.
-    # Directories will be created, if they don't already exist.
-    EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
-
-    plots_section_name: str = 'PLOTS'
-
-    # Title and axis labels for the plots.
-    TITLE: str = config[plots_section_name]['TITLE']
-    X_LABEL: str = config[plots_section_name]['X_LABEL']
-    Y_LABEL: str = config[plots_section_name]['Y_LABEL']
-
-    # Path to save plot to.
-    PLOT_PATH: str = config[plots_section_name]['PLOT_PATH']
-
-    # Paths from where to load the values to plot.
-    PLOT_X_VALUES_PATH: str = config[plots_section_name]['PLOT_X_VALUES_PATH']
-    PLOT_Y_VALUES_PATH: str = config[plots_section_name]['PLOT_Y_VALUES_PATH']
-    PLOT_Z_VALUES_PATH: str = config[plots_section_name]['PLOT_Z_VALUES_PATH']
-
+def contourf_plot():
+    r"""Generate contourf plot from experiment results."""
     # Load the values to plot.
     print(f'Importing x, y and z values for plot from files:\n'
           f'x: {PLOT_X_VALUES_PATH}\n'
@@ -84,6 +64,7 @@ if __name__ == "__main__":
     z_values: numpy.ndarray = numpy.load(file=PLOT_Z_VALUES_PATH,
                                          allow_pickle=True)
 
+    # Plot the values.
     plt.tricontourf(x_values, y_values, z_values)
 
     # Set title and axis labels.
@@ -96,3 +77,29 @@ if __name__ == "__main__":
 
     # Save plot to file.
     plt.savefig(fname=PLOT_PATH, facecolor='w')
+
+
+if __name__ == "__main__":
+    config: ConfigParser = parse_arguments()
+
+    # Path to dir where the results should be stored.
+    # Directories will be created, if they don't already exist.
+    EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
+
+    plots_section_name: str = 'PLOTS'
+    paths_section_name: str = 'PATHS'
+
+    # Title and axis labels for the plots.
+    TITLE: str = config[plots_section_name]['TITLE']
+    X_LABEL: str = config[plots_section_name]['X_LABEL']
+    Y_LABEL: str = config[plots_section_name]['Y_LABEL']
+
+    # Path to save plot to.
+    PLOT_PATH: str = config[paths_section_name]['PLOT_PATH']
+
+    # Paths from where to load the values to plot.
+    PLOT_X_VALUES_PATH: str = config[paths_section_name]['PLOT_X_VALUES_PATH']
+    PLOT_Y_VALUES_PATH: str = config[paths_section_name]['PLOT_Y_VALUES_PATH']
+    PLOT_Z_VALUES_PATH: str = config[paths_section_name]['PLOT_Z_VALUES_PATH']
+
+    contourf_plot()
