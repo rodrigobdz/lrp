@@ -635,6 +635,7 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         Perturbation size: {self.perturbation_size}x{self.perturbation_size}
         Percentage flipped: {self._calculate_percentage_flipped()}%
         Perturbation mode: {self.perturb_mode}
+        Sorting objective: {self.sort_objective}
         Batch size: {self.batch_size}"""
         plt.title(title)
         plt.xlabel('Perturbation step')
