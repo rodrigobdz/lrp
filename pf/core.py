@@ -53,7 +53,7 @@ class PixelFlipping:
                  perturbation_size: int = 8,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
-                 objective: str = PixelFlippingObjectives.MoRF,
+                 sort_objective: str = PixelFlippingObjectives.MoRF,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
                  ) -> None:
         r"""Initialize PixelFlipping class.
@@ -64,7 +64,7 @@ class PixelFlipping:
                                     whereas a higher number to patches of size nxn.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
-        :param objective: Objective used to sort the order of the relevances for perturbation.
+        :param sort_objective: Objective used to sort the order of the relevances for perturbation.
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         """
         # Ensure perturbation size is a valid number.
@@ -96,7 +96,7 @@ Selected perturbation mode: {perturb_mode}""")
             self.logger.setLevel(logging.DEBUG)
 
         # Store perturbation objective
-        self.objective: str = objective
+        self.sort_objective: str = sort_objective
 
         # Store flipped input after perturbation.
         self.flipped_input_nchw: torch.Tensor
@@ -256,7 +256,7 @@ Selected perturbation mode: {perturb_mode}""")
             torch.Tensor, None, None
         ] = sort.flip_mask_generator(relevance_scores_nchw=relevance_scores_nchw,
                                      perturbation_size=self.perturbation_size,
-                                     objective=self.objective)
+                                     sort_objective=self.sort_objective)
 
         # Perturbation step 0 is the original input.
         # Shift perturbation step by one to start from 1.

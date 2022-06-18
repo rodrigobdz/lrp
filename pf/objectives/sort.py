@@ -28,11 +28,11 @@ DEVICE: torch.device = torch.device(
 
 def _argsort(patches_nmmpp: torch.Tensor,
              perturbation_size: int,
-             objective: str = PixelFlippingObjectives.MoRF) -> torch.Tensor:
+             sort_objective: str = PixelFlippingObjectives.MoRF) -> torch.Tensor:
     r"""Sort relevance scores in order defined by objective.
 
     :param patches_nmmpp: Patches in NMMPP format.
-    :param objective: Sorting order for relevance scores.
+    :param sort_objective: Sorting order for relevance scores.
 
     :returns: Sorted relevance scores as a tensor with N one-dimensional lists,
               one for each image in the batch of size and each list with m elements,
@@ -41,16 +41,17 @@ def _argsort(patches_nmmpp: torch.Tensor,
     # Controls the sorting order (ascending or descending).
     descending: bool
 
-    if objective == PixelFlippingObjectives.MoRF:
+    if sort_objective == PixelFlippingObjectives.MoRF:
         # Sort relevance scores in descending order.
         descending = True
-    elif objective == PixelFlippingObjectives.LRF:
+    elif sort_objective == PixelFlippingObjectives.LRF:
         # Sort relevance scores in ascending order.
         descending = False
-    elif objective == PixelFlippingObjectives.RANDOM:
+    elif sort_objective == PixelFlippingObjectives.RANDOM:
         pass
     else:
-        raise NotImplementedError(f'Objective {objective} not supported.')
+        raise NotImplementedError(
+            f'Sort objective {sort_objective} not supported.')
 
     # Sort relevance scores according to objective
     batch_size: int = utils.get_batch_size(input_nchw=patches_nmmpp)
@@ -72,7 +73,7 @@ def _argsort(patches_nmmpp: torch.Tensor,
     # Sort patches by their sum
     order_nm2: torch.Tensor
 
-    if objective == PixelFlippingObjectives.RANDOM:
+    if sort_objective == PixelFlippingObjectives.RANDOM:
         # Shuffle sum_patches_nm2
         # Source: https://discuss.pytorch.org/t/shuffling-a-tensor/25422/5
 
@@ -86,7 +87,7 @@ def _argsort(patches_nmmpp: torch.Tensor,
 
         return order_nm2
 
-    # Objectives: MoRF, LRF
+    # Sort objectives: MoRF, LRF
     order_nm2 = sum_patches_nm2.argsort(descending=descending)
     order_nm2.to(device=DEVICE)
 
@@ -169,18 +170,18 @@ def _create_flip_mask(order_nm_flat: torch.Tensor,
 
 def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
                         perturbation_size: int,
-                        objective: str) -> Generator[torch.Tensor, None, None]:
+                        sort_objective: str) -> Generator[torch.Tensor, None, None]:
     r"""Create masks with pixel(s) selected for flipping.
 
     :param relevance_scores_nchw: Relevance scores in NCHW format.
     :param perturbation_size: Size of the region to flip.
-    :param objective: Objective to use for sorting the relevance scores.
+    :param sort_objective: Objective to use for sorting the relevance scores.
     A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
 
     :raises ValueError: If relevance scores are not in square format.
 
     :yields: Mask in N1HW (1-channel) format to flip pixels/patches input in order specified
-    by objective.
+    by sort objective.
     """
     batch_size: int = utils.get_batch_size(input_nchw=relevance_scores_nchw)
     height, width = utils.get_height_width(relevance_scores_nchw)
@@ -207,7 +208,7 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
     # 2. Sort patches by their sum
     order_nm_flat: torch.Tensor = _argsort(patches_nmmpp,
                                            perturbation_size,
-                                           objective=objective).to(device=DEVICE)
+                                           sort_objective=sort_objective).to(device=DEVICE)
 
     # Loop over patches to remove.
     for patch_index in range(max_num_patches):
