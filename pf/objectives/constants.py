@@ -13,4 +13,4 @@ __status__ = 'Development'
 class PixelFlippingObjectives:  # pylint: disable=too-few-public-methods
     r"""Objectives for Pixel-Flipping Algorithm."""
 
-    MORF: str = 'Most Relevant First'
+    MoRF: str = 'Most Relevant First'
