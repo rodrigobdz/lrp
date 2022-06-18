@@ -11,18 +11,20 @@ __status__ = 'Development'
 import argparse
 from configparser import ConfigParser, ExtendedInterpolation
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
 
 import numpy
-import torch
 from matplotlib import pyplot as plt
 
-from lrp import rules
 
-if __name__ == "__main__":
+def parse_arguments() -> ConfigParser:
+    r"""Read configuration file passed as argument.
 
-    # Read configuration file passed as argument.
-    config = ConfigParser(interpolation=ExtendedInterpolation())
+    :return: ConfigParser object with configuration file contents.
+    """
+    # Use private variable to avoid pylint warning about redefinition of outside variable.
+    _config = ConfigParser(interpolation=ExtendedInterpolation())
+
+    # Define argument parser
     parser = argparse.ArgumentParser(description='Specify the path to the configuration file.',
                                      epilog='For more information,'
                                      ' review the batch_lrp_pf.py script')
@@ -32,6 +34,8 @@ if __name__ == "__main__":
                         ' with parameters for experiments',
                         required=True)
     parsed_args: argparse.Namespace = parser.parse_args()
+
+    # Access parsed arguments
     config_file_path: Path = parsed_args.config_file
 
     # Ensure that the configuration file exists.
@@ -40,75 +44,55 @@ if __name__ == "__main__":
             f'Configuration file {config_file_path.absolute()} does not exist.')
 
     # pylint: disable=pointless-statement
-    config.read(config_file_path)
+    _config.read(config_file_path)
     # pylint: enable=pointless-statement
 
-    param_section_name: str = 'PARAMETERS'
-    plots_section_name: str = 'PLOTS'
+    return _config
 
-    BATCH_SIZE: int = config.getint(param_section_name,
-                                    'BATCH_SIZE')
-    PERTURBATION_STEPS: int = config.getint(param_section_name,
-                                            'PERTURBATION_STEPS')
-    PERTURBATION_SIZE: int = config.getint(param_section_name,
-                                           'PERTURBATION_SIZE')
+
+if __name__ == "__main__":
+    config: ConfigParser = parse_arguments()
 
     # Path to dir where the results should be stored.
     # Directories will be created, if they don't already exist.
     EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
 
+    plots_section_name: str = 'PLOTS'
+
+    # Title and axis labels for the plots.
     TITLE: str = config[plots_section_name]['TITLE']
     X_LABEL: str = config[plots_section_name]['X_LABEL']
     Y_LABEL: str = config[plots_section_name]['Y_LABEL']
+
+    # Path to save plot to.
     PLOT_PATH: str = config[plots_section_name]['PLOT_PATH']
 
-    experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
-    auc_list: List[str] = list(
-        experiment_parent_path.glob('**/batch-*-area-under-the-curve.npy')
-    )
-    rule_layer_map_list: List[str] = list(
-        experiment_parent_path.glob('**/batch-*-lrp-rule-layer-map.npy')
-    )
+    # Paths from where to load the values to plot.
+    PLOT_X_VALUES_PATH: str = config[plots_section_name]['PLOT_X_VALUES_PATH']
+    PLOT_Y_VALUES_PATH: str = config[plots_section_name]['PLOT_Y_VALUES_PATH']
+    PLOT_Z_VALUES_PATH: str = config[plots_section_name]['PLOT_Z_VALUES_PATH']
 
-    if len(auc_list) != len(rule_layer_map_list):
-        raise ValueError(f'Number of AUC files ({len(auc_list)}) does not match '
-                         f'number of rule layer maps ({len(rule_layer_map_list)})')
-
-    x_values: List[float] = []
-    y_values: List[float] = []
-
-    for rule_layer_map_path in rule_layer_map_list:
-        rule_layer_map: List[
-            Tuple[
-                List[str], rules.LrpRule,
-                Dict[str, Union[torch.Tensor, float]]
-            ]
-        ]
-        rule_layer_map = numpy.load(file=rule_layer_map_path,
-                                    allow_pickle=True)
-        # TODO: Add support for different LRP composite rules.
-        # Current order of rule in rule_layer_map:
-        # lrp.rules.LrpZBoxRule
-        # lrp.rules.LrpGammaRule
-        # lrp.rules.LrpGammaRule
-        # lrp.rules.LrpGammaRule
-        gamma_one: float = rule_layer_map[1][2].get('gamma')
-        gamma_two: float = rule_layer_map[2][2].get('gamma')
-
-        x_values.append(gamma_one)
-        y_values.append(gamma_two)
-
-    z_values: List[float] = []
-
-    for auc_file in auc_list:
-        z_values.append(numpy.load(file=auc_file,
-                                   allow_pickle=True).item())
+    # Load the values to plot.
+    print(f'Importing x, y and z values for plot from files:\n'
+          f'x: {PLOT_X_VALUES_PATH}\n'
+          f'y: {PLOT_Y_VALUES_PATH}\n'
+          f'z: {PLOT_Z_VALUES_PATH}\n')
+    x_values: numpy.ndarray = numpy.load(file=PLOT_X_VALUES_PATH,
+                                         allow_pickle=True)
+    y_values: numpy.ndarray = numpy.load(file=PLOT_Y_VALUES_PATH,
+                                         allow_pickle=True)
+    z_values: numpy.ndarray = numpy.load(file=PLOT_Z_VALUES_PATH,
+                                         allow_pickle=True)
 
     plt.tricontourf(x_values, y_values, z_values)
 
+    # Set title and axis labels.
     plt.title(TITLE)
     plt.xlabel(X_LABEL)
     plt.ylabel(Y_LABEL)
+
+    # Enable color bar on the side to explain contour levels.
     plt.colorbar()
 
+    # Save plot to file.
     plt.savefig(fname=PLOT_PATH, facecolor='w')
