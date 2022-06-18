@@ -35,10 +35,6 @@ from pf.core import PixelFlipping
 from pf.decorators import timer
 from pf.perturbation_modes.constants import PerturbModes
 
-DEVICE: torch.device = torch.device(
-    "cuda:0" if torch.cuda.is_available() else "cpu"
-)
-
 
 def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter) -> List[
         Tuple[
