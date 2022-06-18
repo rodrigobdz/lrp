@@ -468,7 +468,8 @@ def run_experiments() -> None:
     Helpers.create_directories_if_not_exists(EXPERIMENT_ROOT,
                                              INDIVIDUAL_RESULTS_DIR,
                                              TORCH_OBJECTS_DIR,
-                                             NUMPY_OBJECTS_DIR)
+                                             NUMPY_OBJECTS_DIR,
+                                             PLOT_ROOT)
 
     Helpers.save_settings()
 
@@ -506,6 +507,63 @@ def run_experiments() -> None:
             break
 
 
+def aggregate_results_for_plot():
+    r"""Aggregate results for plotting and save to file."""
+    experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
+
+    # Files containing x and y values
+    rule_layer_map_list: List[str] = list(
+        experiment_parent_path.glob('**/batch-*-lrp-rule-layer-map.npy')
+    )
+    # Files containing z values
+    auc_list: List[str] = list(
+        experiment_parent_path.glob('**/batch-*-area-under-the-curve.npy')
+    )
+
+    # Sanity check that the number of AUCs and rule-layer maps match
+    if len(auc_list) != len(rule_layer_map_list):
+        raise ValueError(f'Number of AUC files ({len(auc_list)}) does not match '
+                         f'number of rule layer maps ({len(rule_layer_map_list)})')
+
+    x_values: List[float] = []
+    y_values: List[float] = []
+
+    for rule_layer_map_path in rule_layer_map_list:
+        rule_layer_map: List[
+            Tuple[
+                List[str], rules.LrpRule,
+                Dict[str, Union[torch.Tensor, float]]
+            ]
+        ]
+        rule_layer_map = numpy.load(file=rule_layer_map_path,
+                                    allow_pickle=True)
+        # TODO: Add support for different LRP composite rules.
+        # Current order of rule in rule_layer_map:
+        # lrp.rules.LrpZBoxRule
+        # lrp.rules.LrpGammaRule
+        # lrp.rules.LrpGammaRule
+        # lrp.rules.LrpGammaRule
+        gamma_one: float = rule_layer_map[1][2].get('gamma')
+        gamma_two: float = rule_layer_map[2][2].get('gamma')
+
+        x_values.append(gamma_one)
+        y_values.append(gamma_two)
+
+    z_values: List[float] = []
+
+    for auc_file in auc_list:
+        z_values.append(numpy.load(file=auc_file,
+                                   allow_pickle=True).item())
+
+    print('Saving aggregated results (x, y and z values) to file')
+    numpy.save(file=PLOT_X_VALUES_PATH,
+               arr=x_values)
+    numpy.save(file=PLOT_Y_VALUES_PATH,
+               arr=y_values)
+    numpy.save(file=PLOT_Z_VALUES_PATH,
+               arr=z_values)
+
+
 if __name__ == "__main__":
     args_parser: CommandLine = CommandLine()
     parsed_args: argparse.Namespace = args_parser.parse_arguments()
@@ -528,6 +586,7 @@ if __name__ == "__main__":
     lrp_section_name: str = 'LRP'
     pf_section_name: str = 'PIXEL_FLIPPING'
     data_section_name: str = 'DATA'
+    paths_section_name: str = 'PATHS'
 
     BATCH_SIZE: int = config.getint(data_section_name,
                                     'BATCH_SIZE')
@@ -549,10 +608,17 @@ if __name__ == "__main__":
             f'Model {MODEL} is not supported. Only vgg16 is supported.')
 
     # Workspace constants
-    DATASET_ROOT: str = config['PATHS']['DATASET_ROOT']
+    DATASET_ROOT: str = config[paths_section_name]['DATASET_ROOT']
+
     # Directories to be created (if they don't already exist)
-    EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
+    EXPERIMENT_PARENT_ROOT: str = config[paths_section_name]['EXPERIMENT_PARENT_ROOT']
+    PLOT_ROOT: str = config[paths_section_name]['PLOT_ROOT']
     EXPERIMENT_ROOT: str = f'{EXPERIMENT_PARENT_ROOT}/experiment-id-{EXPERIMENT_ID}'
+
+    # Derivated workspace constants
+    INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
+    TORCH_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/pytorch-objects'
+    NUMPY_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/numpy-objects'
 
     # Experiment parameters
     NUMBER_OF_BATCHES: int = config.getint(data_section_name,
@@ -571,19 +637,14 @@ if __name__ == "__main__":
     NUMBER_OF_HYPERPARAMETER_VALUES: int = config.getint(lrp_section_name,
                                                          'NUMBER_OF_HYPERPARAMETER_VALUES')
 
-    # Total number of experiments will be this number squared.
+    # Total number of experiments should be this number squared.
     # TOTAL_NUMBER_OF_EXPERIMENTS: int = NUMBER_OF_HYPERPARAMETER_VALUES ** 2
     TOTAL_NUMBER_OF_EXPERIMENTS: int = config.getint(lrp_section_name,
                                                      'TOTAL_NUMBER_OF_EXPERIMENTS')
 
     if EXPERIMENT_ID < 0 or EXPERIMENT_ID >= TOTAL_NUMBER_OF_EXPERIMENTS:
         raise ValueError(
-            f'Experiment ID {EXPERIMENT_ID} is out of range [0-{TOTAL_NUMBER_OF_EXPERIMENTS}].')
-
-    # Derivated workspace constants
-    INDIVIDUAL_RESULTS_DIR: str = f'{EXPERIMENT_ROOT}/individual-results'
-    TORCH_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/pytorch-objects'
-    NUMPY_OBJECTS_DIR: str = f'{EXPERIMENT_ROOT}/numpy-objects'
+            f'Experiment ID {EXPERIMENT_ID} is out of range [0-{TOTAL_NUMBER_OF_EXPERIMENTS - 1}].')
 
     # PyTorch constants
     SEED: int = 0
@@ -592,10 +653,10 @@ if __name__ == "__main__":
     )
 
     # Model parameters
-    VGG16_IMAGE_DIM: int = 224
+    IMAGE_DIMENSION: int = 224
     CHANNELS: int = 3
-    HEIGHT: int = VGG16_IMAGE_DIM
-    WIDTH: int = VGG16_IMAGE_DIM
+    HEIGHT: int = IMAGE_DIMENSION
+    WIDTH: int = IMAGE_DIMENSION
     INPUT_SHAPE: Tuple[int, int, int, int] = (BATCH_SIZE,
                                               CHANNELS,
                                               HEIGHT,
@@ -603,7 +664,18 @@ if __name__ == "__main__":
 
     # Plotting parameters
     DPI: float = 150
+
     # Toggle for plt.show() for each figure
     SHOW_PLOT: bool = False
 
+    # Paths from where to load the values to plot.
+    PLOT_X_VALUES_PATH: str = config[paths_section_name]['PLOT_X_VALUES_PATH']
+    PLOT_Y_VALUES_PATH: str = config[paths_section_name]['PLOT_Y_VALUES_PATH']
+    PLOT_Z_VALUES_PATH: str = config[paths_section_name]['PLOT_Z_VALUES_PATH']
+
     run_experiments()
+
+    # Check if this experiment is the last one.
+    if EXPERIMENT_ID == TOTAL_NUMBER_OF_EXPERIMENTS - 1:
+        # Aggregate results for plot and save to file.
+        aggregate_results_for_plot()
