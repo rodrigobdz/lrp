@@ -225,10 +225,18 @@ class Helpers:
         plt.close()
 
         for image_index in range(BATCH_SIZE):
-            # Plot image comparison for each image in batch to be able to save to file.
+            # Plot either the currently flipped input or the penultimate flipped input
+            # to avoid plotting a gray image, which corresponds to the last flipping step.
+            plot_flipped_input_before_last_step: bool = False
+            flipped_input_nchw: torch.Tensor = pf_instance.flipped_input_nchw
+
+            if torch.is_tensor(pf_instance.flipped_input_nchw_before_last_step):
+                flipped_input_nchw = pf_instance.flipped_input_nchw_before_last_step
+                plot_flipped_input_before_last_step = True
+                # Plot image comparison for each image in batch to be able to save to file.
             original_input_1chw: torch.Tensor = pf_instance.original_input_nchw[
                 image_index].unsqueeze(dim=0)
-            flipped_input_1chw: torch.Tensor = pf_instance.flipped_input_nchw[
+            flipped_input_1chw: torch.Tensor = flipped_input_nchw[
                 image_index].unsqueeze(dim=0)
             relevance_scores_1chw: torch.Tensor = pf_instance.relevance_scores_nchw[
                 image_index].unsqueeze(dim=0)
@@ -238,6 +246,7 @@ class Helpers:
             pf.plot.plot_image_comparison(batch_size=1,
                                           original_input_nchw=original_input_1chw.cpu(),
                                           flipped_input_nchw=flipped_input_1chw.cpu(),
+                                          before_last_step=plot_flipped_input_before_last_step,
                                           relevance_scores_nchw=relevance_scores_1chw.cpu(),
                                           acc_flip_mask_nhw=acc_flip_mask_1hw.cpu(),
                                           perturbation_size=pf_instance.perturbation_size,
@@ -409,7 +418,8 @@ def run_pixel_flipping_experiment(lrp_instance: LRP,
     """
     pf_instance: PixelFlipping = PixelFlipping(perturbation_steps=PERTURBATION_STEPS,
                                                perturbation_size=PERTURBATION_SIZE,
-                                               perturb_mode=PerturbModes.INPAINTING)
+                                               perturb_mode=PerturbModes.INPAINTING,
+                                               sort_objective=SORT_OBJECTIVE)
     pf_input_nchw: torch.Tensor = lrp_instance.input_nchw.clone().detach()
     pf_relevance_scores_nchw: torch.Tensor = lrp_instance.relevance_scores_nchw.clone().detach()
 
@@ -616,6 +626,7 @@ if __name__ == "__main__":
                                             'PERTURBATION_STEPS')
     PERTURBATION_SIZE: int = config.getint(pf_section_name,
                                            'PERTURBATION_SIZE')
+    SORT_OBJECTIVE: str = config[pf_section_name]['SORT_OBJECTIVE']
 
     SAMPLING_RANGE_START: float = config.getfloat(lrp_section_name,
                                                   'SAMPLING_RANGE_START')
