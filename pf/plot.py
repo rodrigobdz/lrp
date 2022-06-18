@@ -61,6 +61,7 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int],
 def plot_image_comparison(batch_size: int,
                           original_input_nchw: torch.Tensor,
                           flipped_input_nchw: torch.Tensor,
+                          before_last_step: bool,
                           relevance_scores_nchw: torch.Tensor,
                           acc_flip_mask_nhw: torch.Tensor,
                           perturbation_size: int,
@@ -70,6 +71,8 @@ def plot_image_comparison(batch_size: int,
     :param batch_size: Batch size of the input images.
     :param original_input_nchw: Original input images.
     :param flipped_input_nchw: Flipped input images.
+    :param before_last_step: Whether the flipped input is plotted before the last step
+                             of the perturbation.
     :param relevance_scores_nchw: Relevance scores of the pixels that were flipped.
     :param acc_flip_mask_nhw: Mask of pixels that were flipped.
     :param perturbation_size: Size of the perturbation.
@@ -106,7 +109,8 @@ def plot_image_comparison(batch_size: int,
 
         # Rotate ticks on x axis to make them readable.
         # FIXME: Only works for last image in grid.
-        plt.xticks(rotation=80)
+        plt.xticks(rotation=80, fontsize=9)
+        plt.yticks(fontsize=9)
         # Turn on grid for selected heatmaps.
         for heatmap_idx in [1]:
             # Show grid to distinguish patches from each other in perturbed regions plot.
@@ -138,6 +142,11 @@ def plot_image_comparison(batch_size: int,
         y_position: int = -10
         size: int = 12
 
+        # Add extra leading whitespace to center multiline text.
+        flipped_input_title: str = '    Flipped input'
+        if before_last_step:
+            flipped_input_title += '\n(penultimate step)'
+
         # Add captions.
         axes[0][0].text(x=x_position,
                         y=y_position,
@@ -146,7 +155,7 @@ def plot_image_comparison(batch_size: int,
 
         axes[0][1].text(x=x_position,
                         y=y_position,
-                        s='Flipped Input',
+                        s=flipped_input_title,
                         size=size)
 
         axes[1][0].text(x=x_position,

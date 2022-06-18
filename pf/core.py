@@ -95,6 +95,9 @@ Selected perturbation mode: {perturb_mode}""")
         # Store flipped input after perturbation.
         self.flipped_input_nchw: torch.Tensor
 
+        # Store flipped input before last perturbation step (for visualization only).
+        self.flipped_input_nchw_before_last_step: Optional[torch.Tensor]
+
         # Store min. and max. values of tensor in case of perturbation mode random.
         # Otherwise these remain uninitialized.
         self._low: Optional[float]
@@ -472,6 +475,8 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
         self.acc_flip_mask_nhw: torch.Tensor = torch.logical_or(
             self.acc_flip_mask_nhw, mask_nhw)
 
+        # Flip pixels according to perturbation mode selected if current perturbation step is not
+        # the last one.
         if perturbation_step != self.max_perturbation_steps:
             # Flip pixels with respective perturbation technique
             if self.perturb_mode == PerturbModes.RANDOM:
@@ -504,8 +509,13 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
                 raise NotImplementedError(
                     f'Perturbation mode \'{self.perturb_mode}\' not implemented yet.')
 
-        # Last perturbation step (flip all pixels to constant value)
+        # Last perturbation step.
+        # Flip all pixels to constant value equivalent to gray color.
         else:
+            # Last perturbation step.
+            # Store flipped input before it becomes a gray image (def. last perturbation step).
+            self.flipped_input_nchw_before_last_step = flipped_input_nchw.detach().clone()
+
             mask_nchw = mask_n1hw.expand(flipped_input_nchw.shape)
             midpoint: float = (self._low + self._high)/2
             flipped_input_nchw[mask_nchw] = midpoint
@@ -647,9 +657,19 @@ of number of patches flipped in all steps {number_of_flips_per_step_arr.sum()}."
 
         :param show_plot: If True, show the plot.
         """
+        # Default value for flipped input to plot.
+        flipped_input_nchw: torch.Tensor = self.flipped_input_nchw
+        plot_flipped_input_before_last_step: bool = False
+
+        # If flipped input before last perturbation step is available, plot it.
+        if torch.is_tensor(self.flipped_input_nchw_before_last_step):
+            plot_flipped_input_before_last_step = True
+            flipped_input_nchw = self.flipped_input_nchw_before_last_step
+
         plot.plot_image_comparison(batch_size=self.batch_size,
                                    original_input_nchw=self.original_input_nchw.cpu(),
-                                   flipped_input_nchw=self.flipped_input_nchw.cpu(),
+                                   flipped_input_nchw=flipped_input_nchw.cpu(),
+                                   before_last_step=plot_flipped_input_before_last_step,
                                    relevance_scores_nchw=self.relevance_scores_nchw.cpu(),
                                    acc_flip_mask_nhw=self.acc_flip_mask_nhw.cpu(),
                                    perturbation_size=self.perturbation_size,
