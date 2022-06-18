@@ -38,14 +38,19 @@ def _argsort(patches_nmmpp: torch.Tensor,
               one for each image in the batch of size and each list with m elements,
               m is # relevance scores for each image. Shape is (N, m).
     """
-    if objective != PixelFlippingObjectives.MoRF:
-        raise NotImplementedError(f'Objective {objective} not supported.')
-
     # Controls the sorting order (ascending or descending).
-    # Set default value to descending—i.e., most relevant first.
-    descending: bool = True
+    descending: bool
 
-    # TODO: Important. Add switch case to implement the user's selected objective.
+    if objective == PixelFlippingObjectives.MoRF:
+        # Sort relevance scores in descending order.
+        descending = True
+    elif objective == PixelFlippingObjectives.LRF:
+        # Sort relevance scores in ascending order.
+        descending = False
+    elif objective == PixelFlippingObjectives.RANDOM:
+        pass
+    else:
+        raise NotImplementedError(f'Objective {objective} not supported.')
 
     # Sort relevance scores according to objective
     batch_size: int = utils.get_batch_size(input_nchw=patches_nmmpp)
@@ -65,7 +70,24 @@ def _argsort(patches_nmmpp: torch.Tensor,
     sum_patches_nm2.to(device=DEVICE)
 
     # Sort patches by their sum
-    order_nm2: torch.Tensor = sum_patches_nm2.argsort(descending=descending)
+    order_nm2: torch.Tensor
+
+    if objective == PixelFlippingObjectives.RANDOM:
+        # Shuffle sum_patches_nm2
+        # Source: https://discuss.pytorch.org/t/shuffling-a-tensor/25422/5
+
+        # Get random indices for elements in sum_patches_nm2
+        idx = torch.randperm(n=sum_patches_nm2.nelement(), device=DEVICE)
+
+        # View indices as shape of sum_patches_nm2.
+        # order_nm2 will be used to shuffle sum_patches_nm2 in the order specified (random).
+        order_nm2 = idx.view_as(sum_patches_nm2)
+        order_nm2.to(device=DEVICE)
+
+        return order_nm2
+
+    # Objectives: MoRF, LRF
+    order_nm2 = sum_patches_nm2.argsort(descending=descending)
     order_nm2.to(device=DEVICE)
 
     return order_nm2
@@ -146,11 +168,13 @@ def _create_flip_mask(order_nm_flat: torch.Tensor,
 
 
 def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
-                        perturbation_size: int) -> Generator[torch.Tensor, None, None]:
+                        perturbation_size: int,
+                        objective: str) -> Generator[torch.Tensor, None, None]:
     r"""Create masks with pixel(s) selected for flipping.
 
     :param relevance_scores_nchw: Relevance scores in NCHW format.
     :param perturbation_size: Size of the region to flip.
+    :param objective: Objective to use for sorting the relevance scores.
     A size of 1 corresponds to single pixels, whereas a higher number to patches of size nxn.
 
     :raises ValueError: If relevance scores are not in square format.
@@ -183,7 +207,7 @@ def flip_mask_generator(relevance_scores_nchw: torch.Tensor,
     # 2. Sort patches by their sum
     order_nm_flat: torch.Tensor = _argsort(patches_nmmpp,
                                            perturbation_size,
-                                           objective=PixelFlippingObjectives.MoRF).to(device=DEVICE)
+                                           objective=objective).to(device=DEVICE)
 
     # Loop over patches to remove.
     for patch_index in range(max_num_patches):

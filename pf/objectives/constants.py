@@ -14,3 +14,5 @@ class PixelFlippingObjectives:  # pylint: disable=too-few-public-methods
     r"""Objectives for Pixel-Flipping Algorithm."""
 
     MoRF: str = 'Most Relevant First'
+    LRF: str = 'Least Relevant First'
+    RANDOM: str = 'RANDOM'

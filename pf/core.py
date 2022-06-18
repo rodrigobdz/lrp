@@ -33,6 +33,7 @@ from . import plot, sanity_checks, utils
 from .decorators import timer
 from .metrics import area_under_the_curve
 from .objectives import sort
+from .objectives.constants import PixelFlippingObjectives
 from .perturbation_modes.constants import PerturbModes
 from .perturbation_modes.inpainting.flip import flip_inpainting
 from .perturbation_modes.random.flip import flip_random
@@ -52,6 +53,7 @@ class PixelFlipping:
                  perturbation_size: int = 8,
                  verbose: bool = False,
                  perturb_mode: str = PerturbModes.INPAINTING,
+                 objective: str = PixelFlippingObjectives.MoRF,
                  ran_num_gen: Optional[RandomNumberGenerator] = None,
                  ) -> None:
         r"""Initialize PixelFlipping class.
@@ -62,6 +64,7 @@ class PixelFlipping:
                                     whereas a higher number to patches of size nxn.
         :param verbose: Whether to print debug messages.
         :param perturb_mode: Perturbation technique to decide how to replace flipped values.
+        :param objective: Objective used to sort the order of the relevances for perturbation.
         :param ran_num_gen: Random number generator to use. Only available with PerturbModes.RANDOM.
         """
         # Ensure perturbation size is a valid number.
@@ -91,6 +94,9 @@ Selected perturbation mode: {perturb_mode}""")
 
         if verbose:
             self.logger.setLevel(logging.DEBUG)
+
+        # Store perturbation objective
+        self.objective: str = objective
 
         # Store flipped input after perturbation.
         self.flipped_input_nchw: torch.Tensor
@@ -248,8 +254,9 @@ Selected perturbation mode: {perturb_mode}""")
         # Contains N one-dimensional lists of relevance scores with m elements. Shape (N, m).
         self._flip_mask_generator: Generator[
             torch.Tensor, None, None
-        ] = sort.flip_mask_generator(relevance_scores_nchw,
-                                     self.perturbation_size)
+        ] = sort.flip_mask_generator(relevance_scores_nchw=relevance_scores_nchw,
+                                     perturbation_size=self.perturbation_size,
+                                     objective=self.objective)
 
         # Perturbation step 0 is the original input.
         # Shift perturbation step by one to start from 1.
