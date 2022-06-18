@@ -96,7 +96,7 @@ Selected perturbation mode: {perturb_mode}""")
         self.flipped_input_nchw: torch.Tensor
 
         # Store flipped input before last perturbation step (for visualization only).
-        self.flipped_input_nchw_before_last_step: Optional[torch.Tensor]
+        self.flipped_input_nchw_before_last_step: Optional[torch.Tensor] = None
 
         # Store min. and max. values of tensor in case of perturbation mode random.
         # Otherwise these remain uninitialized.
