@@ -35,16 +35,28 @@ def plot_number_of_flips_per_step(number_of_flips_per_step_arr: List[int],
     # FIXME: Calculate offset for text annotations dynamically.
     # This is a hack to show annotations on the plot, optimized for 28 perturbation
     # steps (hard-coded).
-    offsets_by_perturbation_step: numpy.ndarray = numpy.linspace(start=0,
-                                                                 stop=0.9,
-                                                                 num=max_perturbation_steps+1,
-                                                                 endpoint=True)
+    offsets_by_perturbation_step_x: numpy.ndarray = numpy.logspace(start=-3,
+                                                                   stop=0.02,
+                                                                   num=max_perturbation_steps,
+                                                                   endpoint=True)
+    offsets_by_perturbation_step_x = numpy.append(arr=offsets_by_perturbation_step_x,
+                                                  values=[0.3])
+    offsets_by_perturbation_step_y: numpy.ndarray = numpy.logspace(start=-1.4,
+                                                                   stop=0.3,
+                                                                   num=max_perturbation_steps,
+                                                                   endpoint=True)
+    offsets_by_perturbation_step_y = numpy.append(arr=offsets_by_perturbation_step_y,
+                                                  values=[10.])
+
     # Add offset to avoid overlapping markers with function values.
-    offset: float = offsets_by_perturbation_step[current_perturbation_step]
+    offset_x: float = offsets_by_perturbation_step_x[current_perturbation_step]
+    offset_y: float = offsets_by_perturbation_step_y[current_perturbation_step]
     # Annotate plot with number of steps as text next to each marker.
     for idx, val in enumerate(number_of_flips_per_step_arr):
         plt.annotate(text=val,
-                     xy=(idx-(offset*0.5), val+(offset*15)))
+                     xy=(idx - offset_x,
+                         val + offset_y)
+                     )
 
     plt.xticks(xticks)
     plt.title(f'Total number of flips: {sum(number_of_flips_per_step_arr)}')
