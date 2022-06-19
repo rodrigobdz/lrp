@@ -15,4 +15,4 @@ class PixelFlippingObjectives:  # pylint: disable=too-few-public-methods
 
     MoRF: str = 'Most Relevant First'
     LRF: str = 'Least Relevant First'
-    RANDOM: str = 'RANDOM'
+    RANDOM: str = 'Random'
