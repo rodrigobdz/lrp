@@ -78,11 +78,12 @@ def _argsort(patches_nmmpp: torch.Tensor,
         # Source: https://discuss.pytorch.org/t/shuffling-a-tensor/25422/5
 
         # Get random indices for elements in sum_patches_nm2
-        idx = torch.randperm(n=sum_patches_nm2.nelement(), device=DEVICE)
+        # Get number of elements excluding the batch dimension
+        idx = torch.randperm(n=sum_patches_nm2.shape[1], device=DEVICE)
 
         # View indices as shape of sum_patches_nm2.
         # order_nm2 will be used to shuffle sum_patches_nm2 in the order specified (random).
-        order_nm2 = idx.view_as(sum_patches_nm2)
+        order_nm2 = idx.expand(sum_patches_nm2.shape)
         order_nm2.to(device=DEVICE)
 
         return order_nm2
