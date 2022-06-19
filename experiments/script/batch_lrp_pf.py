@@ -36,18 +36,119 @@ from pf.decorators import timer
 from pf.perturbation_modes.constants import PerturbModes
 
 
-def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter) -> List[
+def _get_rule_layer_map_by_experiment_id(model: torch.nn.Module) -> List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
         ]]:
     r"""Get rule layer map by experiment id.
 
-    :param filter_by_layer_index_type: Layer filter
+    :param model: Model to get rule layer map for.
     :param experiment_id: Experiment id
 
     :return: Rule layer map
     """
+    LOGGER.info("Experiment ID: %s",
+                str(EXPERIMENT_ID))
+    LOGGER.info("Progress: %s/%s",
+                str(EXPERIMENT_ID + 1),
+                str(TOTAL_NUMBER_OF_EXPERIMENTS))
+    LOGGER.info('Hyperparameters for model %s:', str(MODEL))
+
+    # Init layer filter
+    target_types: Tuple[type] = (Linear, AvgPool)
+    filter_by_layer_index_type: LayerFilter = LayerFilter(model)
+    filter_by_layer_index_type.set_target_types(target_types)
+
+    if EXP_NAME_SHORT == ExperimentShortNames.DECREASING_GAMMA:
+        return _get_rule_layer_map_of_decreasing_gamma(layer_filter=filter_by_layer_index_type)
+    elif EXP_NAME_SHORT == ExperimentShortNames.LRP_TUTORIAL:
+        return _get_rule_layer_map_of_lrp_tutorial(layer_filter=filter_by_layer_index_type)
+    else:
+        raise ValueError(f'''Unknown experiment name: {EXP_NAME_SHORT}.
+Check available experiment names in definition of class ExperimentShortNames.''')
+
+
+def _get_rule_layer_map_of_lrp_tutorial(layer_filter: LayerFilter) -> List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]]:
+    r"""Get rule layer map of experiment with id 'lrp-tutorial'.
+
+    :param layer_filter: Layer filter
+
+    :return: Rule layer map
+    """
+    # Decreasing gamma permutations
+
+    # Low and high parameters for zB-rule
+    low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
+        torch.zeros(*INPUT_SHAPE)
+    )
+    high: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
+        torch.ones(*INPUT_SHAPE)
+    )
+
+    # Hyperparameter values for each experiment
+    # Manually add zero because log(0) = -inf
+    epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
+                                             stop=SAMPLING_RANGE_END,
+                                             num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
+    epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
+
+    gammas: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
+                                           stop=SAMPLING_RANGE_END,
+                                           num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
+    gammas = numpy.concatenate((numpy.array([0.0]), gammas))
+
+    # Compute all permutations between gammas and epsilons
+    hyperparam_permutations: List[Tuple[float, float]] = [
+        (gam, eps) for gam in gammas for eps in epsilons
+    ]
+    if TOTAL_NUMBER_OF_EXPERIMENTS != len(hyperparam_permutations):
+        raise ValueError(f'Total number of experiments is {TOTAL_NUMBER_OF_EXPERIMENTS} but '
+                         f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
+
+    gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
+
+    LOGGER.info("\tgamma (Layers: 1-16): %s",
+                str(gamma))
+    LOGGER.info("\tepsilon (Layers: 17-30): %s",
+                str(epsilon))
+
+    rule_layer_map: List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]
+    ]
+
+    rule_layer_map = [
+        (layer_filter(lambda n: n == 0),
+         LrpZBoxRule, {'low': low, 'high': high}),
+        (layer_filter(lambda n: 1 <= n <= 16), LrpGammaRule, {'gamma': gamma}),
+        (layer_filter(lambda n: 17 <= n <= 30),
+         LrpEpsilonRule, {'epsilon': epsilon}),
+        (layer_filter(lambda n: 31 <= n), LrpZeroRule, {}),
+    ]
+
+    return rule_layer_map
+
+
+def _get_rule_layer_map_of_decreasing_gamma(layer_filter: LayerFilter) -> List[
+        Tuple[
+            List[str], rules.LrpRule,
+            Dict[str, Union[torch.Tensor, float]]
+        ]]:
+    r"""Get rule layer map of experiment with id 'decr-gamma'.
+
+    :param layer_filter: Layer filter
+
+    :return: Rule layer map
+    """
+    # Decreasing gamma permutations
+
     # Low and high parameters for zB-rule
     low: torch.Tensor = lrp.norm.ImageNetNorm.normalize(
         torch.zeros(*INPUT_SHAPE)
@@ -63,30 +164,6 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
                                            num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     gammas = numpy.concatenate((numpy.array([0.0]), gammas))
 
-    # Composite LRP permutations
-    #
-    # epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
-    #                                          stop=SAMPLING_RANGE_END,
-    #                                          num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
-    # epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
-
-    # # Compute all permutations between gammas and epsilons
-    # hyperparam_permutations: List[Tuple[float, float]] = [
-    #     (gam, eps) for gam in gammas for eps in epsilons
-    # ]
-
-    # if TOTAL_NUMBER_OF_EXPERIMENTS != len(hyperparam_permutations):
-    #     raise ValueError(f'Total number of experiments is {TOTAL_NUMBER_OF_EXPERIMENTS} but '
-    #                      f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
-
-    # gamma, epsilon = hyperparam_permutations[EXPERIMENT_ID]
-    # print(f'Experiment ID: {EXPERIMENT_ID}. '
-    #       f'Progress: {EXPERIMENT_ID + 1}/{TOTAL_NUMBER_OF_EXPERIMENTS}'
-    #       f', gamma: {gamma}'
-    #       f', epsilon: {epsilon}')
-
-    # Decreasing gamma permutations
-
     # Compute all permutations between gammas and epsilons
     hyperparam_permutations: List[Tuple[float, float]] = [
         (gamma_one, gamma_two) for gamma_one in gammas for gamma_two in gammas
@@ -96,15 +173,10 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
                          f'{len(hyperparam_permutations)} hyperparameter permutations were found.')
 
     gamma_one, gamma_two = hyperparam_permutations[EXPERIMENT_ID]
-    LOGGER.info("Experiment ID: %s",
-                str(EXPERIMENT_ID))
-    LOGGER.info("Progress: %s/%s",
-                str(EXPERIMENT_ID + 1),
-                str(TOTAL_NUMBER_OF_EXPERIMENTS))
-    LOGGER.info('Hyperparameters for model %s:', str(MODEL))
-    LOGGER.info("\tgamma_one (Layers: 11-17): %s",
+
+    LOGGER.info("\tgamma (Layers: 11-17): %s",
                 str(gamma_one))
-    LOGGER.info("\tgamma_two (Layers: 18-24): %s",
+    LOGGER.info("\tgamma (Layers: 18-24): %s",
                 str(gamma_two))
 
     rule_layer_map: List[
@@ -115,17 +187,24 @@ def _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type: LayerFilter
     ]
 
     rule_layer_map = [
-        (filter_by_layer_index_type(lambda n: n == 0), LrpZBoxRule,
+        (layer_filter(lambda n: n == 0), LrpZBoxRule,
          {'low': low, 'high': high}),
-        (filter_by_layer_index_type(lambda n: 1 <= n <= 17), LrpGammaRule,
+        (layer_filter(lambda n: 1 <= n <= 17), LrpGammaRule,
          {'gamma': gamma_one}),
-        (filter_by_layer_index_type(lambda n: 18 <= n <= 24), LrpGammaRule,
+        (layer_filter(lambda n: 18 <= n <= 24), LrpGammaRule,
          {'gamma': gamma_two}),
-        (filter_by_layer_index_type(lambda n: 25 <= n <= 31), LrpGammaRule,
+        (layer_filter(lambda n: 25 <= n <= 31), LrpGammaRule,
          {'gamma': 0})
     ]
 
     return rule_layer_map
+
+
+class ExperimentShortNames:  # pylint: disable=too-few-public-methods
+    r"""Constants for experiment names (identifiers)."""
+
+    DECREASING_GAMMA: str = 'decr-gamma'
+    LRP_TUTORIAL: str = 'lrp-tutorial'
 
 
 class Helpers:
@@ -382,17 +461,12 @@ def run_lrp_experiment(image_batch: torch.Tensor,
     model: torch.nn.Module = torchvision.models.vgg16(pretrained=True)
     model.eval().to(device=DEVICE)
 
-    # Init layer filter
-    vgg16_target_types: Tuple[type, type] = (Linear, AvgPool)
-    filter_by_layer_index_type: LayerFilter = LayerFilter(model)
-    filter_by_layer_index_type.set_target_types(vgg16_target_types)
-
     rule_layer_map: List[
         Tuple[
             List[str], rules.LrpRule,
             Dict[str, Union[torch.Tensor, float]]
         ]
-    ] = _get_rule_layer_map_by_experiment_id(filter_by_layer_index_type=filter_by_layer_index_type)
+    ] = _get_rule_layer_map_by_experiment_id(model=model)
 
     lrp_instance: LRP = LRP(model)
     lrp_instance.convert_layers(rule_layer_map)
@@ -635,6 +709,7 @@ if __name__ == "__main__":
 
     # Experiment parameters
     MODEL: str = config[experiments_section_name]['MODEL']
+    EXP_NAME_SHORT: str = config[experiments_section_name]['EXP_NAME_SHORT']
 
     if MODEL != 'vgg16':
         raise ValueError(
