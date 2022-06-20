@@ -35,6 +35,10 @@ from pf.core import PixelFlipping
 from pf.decorators import timer
 from pf.perturbation_modes.constants import PerturbModes
 
+# These functions at the top are the functions that need to be
+# modified to support different composites:
+#   _get_rule_layer_map_by_experiment_id
+#   aggregate_results_for_plot
 
 def _get_rule_layer_map_by_experiment_id(model: torch.nn.Module) -> List[
         Tuple[
@@ -62,11 +66,86 @@ def _get_rule_layer_map_by_experiment_id(model: torch.nn.Module) -> List[
 
     if EXP_NAME_SHORT == ExperimentShortNames.DECREASING_GAMMA:
         return _get_rule_layer_map_of_decreasing_gamma(layer_filter=filter_by_layer_index_type)
-    elif EXP_NAME_SHORT == ExperimentShortNames.LRP_TUTORIAL:
+
+    if EXP_NAME_SHORT == ExperimentShortNames.LRP_TUTORIAL:
         return _get_rule_layer_map_of_lrp_tutorial(layer_filter=filter_by_layer_index_type)
-    else:
-        raise ValueError(f'''Unknown experiment name: {EXP_NAME_SHORT}.
+
+    raise ValueError(f'''Unknown experiment name: {EXP_NAME_SHORT}.
 Check available experiment names in definition of class ExperimentShortNames.''')
+
+
+def aggregate_results_for_plot():
+    r"""Aggregate results for plotting and save to file."""
+    experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
+
+    # Files containing x and y values
+    rule_layer_map_list: List[str] = list(
+        experiment_parent_path.glob('**/batch-*-lrp-rule-layer-map.npy')
+    )
+    # Files containing z values
+    auc_list: List[str] = list(
+        experiment_parent_path.glob('**/batch-*-area-under-the-curve.npy')
+    )
+
+    # Sanity check that the number of AUCs and rule-layer maps match
+    if len(auc_list) != len(rule_layer_map_list):
+        raise ValueError(f'Number of AUC files ({len(auc_list)}) does not match '
+                         f'number of rule layer maps ({len(rule_layer_map_list)})')
+
+    x_values: List[float] = []
+    y_values: List[float] = []
+
+    for rule_layer_map_path in rule_layer_map_list:
+        rule_layer_map: List[
+            Tuple[
+                List[str], rules.LrpRule,
+                Dict[str, Union[torch.Tensor, float]]
+            ]
+        ]
+        rule_layer_map = numpy.load(file=rule_layer_map_path,
+                                    allow_pickle=True)
+
+        x_val: float
+        y_val: float
+
+        if EXP_NAME_SHORT == ExperimentShortNames.DECREASING_GAMMA:
+            # Order of rule in rule_layer_map:
+            # lrp.rules.LrpZBoxRule
+            # lrp.rules.LrpGammaRule
+            # lrp.rules.LrpGammaRule
+            # lrp.rules.LrpGammaRule
+            x_val = rule_layer_map[1][2]['gamma']
+            y_val = rule_layer_map[2][2].get('gamma')
+
+        elif EXP_NAME_SHORT == ExperimentShortNames.LRP_TUTORIAL:
+            # Order of rule in rule_layer_map:
+            # lrp.rules.LrpZBoxRule
+            # lrp.rules.LrpGammaRule
+            # lrp.rules.LrpEpsiloinRule
+            # lrp.rules.LrpZeroRule
+            x_val = rule_layer_map[1][2]['gamma']
+            y_val = rule_layer_map[2][2].get('epsilon')
+        else:
+            raise ValueError(f'''Unknown experiment name: {EXP_NAME_SHORT}.
+Check available experiment names in definition of class ExperimentShortNames.''')
+
+        # Save x and y values for plotting
+        x_values.append(x_val)
+        y_values.append(y_val)
+
+    z_values: List[float] = []
+
+    for auc_file in auc_list:
+        z_values.append(numpy.load(file=auc_file,
+                                   allow_pickle=True).item())
+
+    LOGGER.debug('Saving aggregated results (x, y and z values) to file')
+    numpy.save(file=PLOT_X_VALUES_PATH,
+               arr=x_values)
+    numpy.save(file=PLOT_Y_VALUES_PATH,
+               arr=y_values)
+    numpy.save(file=PLOT_Z_VALUES_PATH,
+               arr=z_values)
 
 
 def _get_rule_layer_map_of_lrp_tutorial(layer_filter: LayerFilter) -> List[
@@ -596,63 +675,6 @@ def run_experiments() -> None:
             LOGGER.info('Done. %s batches processed.',
                         str(my_batch_index + 1))
             break
-
-
-def aggregate_results_for_plot():
-    r"""Aggregate results for plotting and save to file."""
-    experiment_parent_path: Path = Path(EXPERIMENT_PARENT_ROOT)
-
-    # Files containing x and y values
-    rule_layer_map_list: List[str] = list(
-        experiment_parent_path.glob('**/batch-*-lrp-rule-layer-map.npy')
-    )
-    # Files containing z values
-    auc_list: List[str] = list(
-        experiment_parent_path.glob('**/batch-*-area-under-the-curve.npy')
-    )
-
-    # Sanity check that the number of AUCs and rule-layer maps match
-    if len(auc_list) != len(rule_layer_map_list):
-        raise ValueError(f'Number of AUC files ({len(auc_list)}) does not match '
-                         f'number of rule layer maps ({len(rule_layer_map_list)})')
-
-    x_values: List[float] = []
-    y_values: List[float] = []
-
-    for rule_layer_map_path in rule_layer_map_list:
-        rule_layer_map: List[
-            Tuple[
-                List[str], rules.LrpRule,
-                Dict[str, Union[torch.Tensor, float]]
-            ]
-        ]
-        rule_layer_map = numpy.load(file=rule_layer_map_path,
-                                    allow_pickle=True)
-        # TODO: Add support for different LRP composite rules.
-        # Current order of rule in rule_layer_map:
-        # lrp.rules.LrpZBoxRule
-        # lrp.rules.LrpGammaRule
-        # lrp.rules.LrpGammaRule
-        # lrp.rules.LrpGammaRule
-        gamma_one: float = rule_layer_map[1][2].get('gamma')
-        gamma_two: float = rule_layer_map[2][2].get('gamma')
-
-        x_values.append(gamma_one)
-        y_values.append(gamma_two)
-
-    z_values: List[float] = []
-
-    for auc_file in auc_list:
-        z_values.append(numpy.load(file=auc_file,
-                                   allow_pickle=True).item())
-
-    LOGGER.debug('Saving aggregated results (x, y and z values) to file')
-    numpy.save(file=PLOT_X_VALUES_PATH,
-               arr=x_values)
-    numpy.save(file=PLOT_Y_VALUES_PATH,
-               arr=y_values)
-    numpy.save(file=PLOT_Z_VALUES_PATH,
-               arr=z_values)
 
 
 if __name__ == "__main__":
