@@ -40,6 +40,7 @@ from pf.perturbation_modes.constants import PerturbModes
 #   _get_rule_layer_map_by_experiment_id
 #   aggregate_results_for_plot
 
+
 def _get_rule_layer_map_by_experiment_id(model: torch.nn.Module) -> List[
         Tuple[
             List[str], rules.LrpRule,
@@ -61,8 +62,8 @@ def _get_rule_layer_map_by_experiment_id(model: torch.nn.Module) -> List[
 
     # Init layer filter
     target_types: Tuple[type] = (Linear, AvgPool)
-    filter_by_layer_index_type: LayerFilter = LayerFilter(model)
-    filter_by_layer_index_type.set_target_types(target_types)
+    filter_by_layer_index_type: LayerFilter = LayerFilter(model=model,
+                                                          target_types=target_types)
 
     if EXP_NAME_SHORT == ExperimentShortNames.DECREASING_GAMMA:
         return _get_rule_layer_map_of_decreasing_gamma(layer_filter=filter_by_layer_index_type)

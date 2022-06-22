@@ -1,5 +1,4 @@
-r"""Filter layers before rules are mapped.
-"""
+r"""Filter layers before rules are mapped."""
 
 # pylint: disable=duplicate-code
 __author__ = 'Rodrigo Bermudez Schettino (TU Berlin)'
@@ -17,29 +16,28 @@ import torch
 from lrp.zennit.core import collect_leaves
 
 
-class LayerFilter:
+class LayerFilter:  # pylint: disable=too-few-public-methods
     r"""Filter the layers by layer index and type."""
 
-    def __init__(self, model: torch.nn.Module) -> None:
+    def __init__(self, model: torch.nn.Module, target_types: Tuple[type]) -> None:
         r"""Build a filter for the given model.
 
         :param model: Model to filter layers from
+        :param target_types: Types of layers to filter
         """
         # Collect all layers by name
         self.name_lookup: Dict[str, torch.nn.Module] = {
             module: name for name, module in model.named_modules()}
+
         # Model layers in sequential order
         self.layers: List[Tuple[int, torch.nn.Module]] = list(
             enumerate(collect_leaves(model)))
 
-    def set_target_types(self, target_types: Tuple[type]) -> None:
-        r"""Set the types of layers to filter.
-
-        :param target_types: Types of layers to filter
-        """
+        # Types of layers to filter
         self.target_types = target_types
 
-    def __call__(self, cond: Callable[[int], bool], target_types: Optional[Tuple[type]] = None) -> List[str]:
+    def __call__(self, cond: Callable[[int], bool],
+                 target_types: Optional[Tuple[type]] = None) -> List[str]:
         r"""Filter layers by layer index and type.
 
         :param cond: Function to filter layers by layer index
@@ -50,4 +48,5 @@ class LayerFilter:
         # Use default target types if not specified
         allowed_types = target_types or self.target_types
 
-        return [self.name_lookup[module] for n, module in self.layers if cond(n) and isinstance(module, allowed_types)]
+        return [self.name_lookup[module] for n, module in self.layers
+                if cond(n) and isinstance(module, allowed_types)]
