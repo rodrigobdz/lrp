@@ -171,15 +171,15 @@ def _get_rule_layer_map_of_lrp_tutorial(layer_filter: LayerFilter) -> List[
 
     # Hyperparameter values for each experiment
     # Manually add zero because log(0) = -inf
-    epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
-                                             stop=SAMPLING_RANGE_END,
-                                             num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
-    epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
-
     gammas: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
                                            stop=SAMPLING_RANGE_END,
                                            num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
     gammas = numpy.concatenate((numpy.array([0.0]), gammas))
+
+    epsilons: numpy.ndarray = numpy.logspace(start=SAMPLING_RANGE_START,
+                                             stop=SAMPLING_RANGE_END,
+                                             num=NUMBER_OF_HYPERPARAMETER_VALUES - 1)
+    epsilons = numpy.concatenate((numpy.array([0.0]), epsilons))
 
     # Compute all permutations between gammas and epsilons
     hyperparam_permutations: List[Tuple[float, float]] = [
