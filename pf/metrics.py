@@ -20,9 +20,9 @@ def area_under_the_curve(class_prediction_scores: Union[List[float], numpy.ndarr
 
     The AUC score is not bounded between 0 and 1.
 
-    :param y: List of Y values.
+    :param class_prediction_scores: List of class prediction scores.
 
     :return: Area under the curve.
     """
-    x: numpy.ndarray = numpy.arange(0, len(class_prediction_scores))
-    return numpy.round_(sklearn.metrics.auc(x=x, y=class_prediction_scores), decimals=2)
+    x_values: numpy.ndarray = numpy.arange(0, len(class_prediction_scores))
+    return sklearn.metrics.auc(x=x_values, y=class_prediction_scores)

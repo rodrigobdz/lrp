@@ -70,6 +70,10 @@ def contourf_plot():
     z_values: numpy.ndarray = numpy.load(file=PLOT_Z_VALUES_PATH,
                                          allow_pickle=True)
 
+    # If AUC_SCORE_DECIMALS is not set to -1 (skip rounding), round the values in array.
+    if AUC_SCORE_DECIMALS != -1:
+        z_values = numpy.round(z_values, decimals=AUC_SCORE_DECIMALS)
+
     # Plot the values.
     plt.tricontourf(x_values, y_values, z_values)
 
@@ -99,6 +103,8 @@ if __name__ == "__main__":
     TITLE: str = config[plots_section_name]['TITLE']
     X_LABEL: str = config[plots_section_name]['X_LABEL']
     Y_LABEL: str = config[plots_section_name]['Y_LABEL']
+    AUC_SCORE_DECIMALS: str = config.getint(plots_section_name,
+                                            'AUC_SCORE_DECIMALS')
 
     # Path to save plot to.
     PLOT_PATH: str = config[paths_section_name]['PLOT_PATH']
