@@ -132,8 +132,9 @@ Check available experiment names in definition of class ExperimentShortNames.'''
     z_values: List[float] = []
 
     for auc_file in auc_list:
-        z_values.append(numpy.load(file=auc_file,
-                                   allow_pickle=True).item())
+        auc_score: float = numpy.load(file=auc_file,
+                                      allow_pickle=True).item()
+        z_values.append(auc_score)
 
     LOGGER.debug('Saving aggregated results (x, y and z values) to file')
     numpy.save(file=PLOT_X_VALUES_PATH,
