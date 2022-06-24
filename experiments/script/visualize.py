@@ -52,11 +52,17 @@ def parse_arguments() -> ConfigParser:
 
 def contourf_plot():
     r"""Generate contourf plot from experiment results."""
-    # Load the values to plot.
+    # Format comments for copy-pasting into Python terminal. Useful for debugging.
     print(f'Importing x, y and z values for plot from files:\n'
-          f'x: {PLOT_X_VALUES_PATH}\n\n'
-          f'y: {PLOT_Y_VALUES_PATH}\n\n'
-          f'z: {PLOT_Z_VALUES_PATH}\n\n')
+          f"x_path = '{PLOT_X_VALUES_PATH}'\n\n"
+          f"y_path = '{PLOT_Y_VALUES_PATH}'\n\n"
+          f"z_path = '{PLOT_Z_VALUES_PATH}'\n\n"
+          f"# Load as: \n\n"
+          f"x = numpy.load(x_path, allow_pickle=True)\n\n"
+          f"y = numpy.load(y_path, allow_pickle=True)\n\n"
+          f"z = numpy.load(z_path, allow_pickle=True)\n\n")
+
+    # Load the values to plot.
     x_values: numpy.ndarray = numpy.load(file=PLOT_X_VALUES_PATH,
                                          allow_pickle=True)
     y_values: numpy.ndarray = numpy.load(file=PLOT_Y_VALUES_PATH,

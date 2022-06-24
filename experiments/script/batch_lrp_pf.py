@@ -53,11 +53,6 @@ def _get_rule_layer_map_by_experiment_id(model: torch.nn.Module) -> List[
 
     :return: Rule layer map
     """
-    LOGGER.info("Experiment ID: %s",
-                str(EXPERIMENT_ID))
-    LOGGER.info("Progress: %s/%s",
-                str(EXPERIMENT_ID + 1),
-                str(TOTAL_NUMBER_OF_EXPERIMENTS))
     LOGGER.info('Hyperparameters for model %s:', str(MODEL))
 
     # Init layer filter
@@ -115,7 +110,7 @@ def aggregate_results_for_plot():
             # lrp.rules.LrpGammaRule
             # lrp.rules.LrpGammaRule
             # lrp.rules.LrpGammaRule
-            x_val = rule_layer_map[1][2]['gamma']
+            x_val = rule_layer_map[1][2].get('gamma')
             y_val = rule_layer_map[2][2].get('gamma')
 
         elif EXP_NAME_SHORT == ExperimentShortNames.LRP_TUTORIAL:
@@ -124,7 +119,7 @@ def aggregate_results_for_plot():
             # lrp.rules.LrpGammaRule
             # lrp.rules.LrpEpsiloinRule
             # lrp.rules.LrpZeroRule
-            x_val = rule_layer_map[1][2]['gamma']
+            x_val = rule_layer_map[1][2].get('gamma')
             y_val = rule_layer_map[2][2].get('epsilon')
         else:
             raise ValueError(f'''Unknown experiment name: {EXP_NAME_SHORT}.
@@ -643,10 +638,17 @@ def run_experiments() -> None:
 
     Helpers.save_settings()
 
+    LOGGER.info("Progress: %s/%s",
+                str(EXPERIMENT_ID + 1),
+                str(TOTAL_NUMBER_OF_EXPERIMENTS))
+
+    LOGGER.info('Experiment: %s', str(EXP_NAME_SHORT))
+    LOGGER.info("Experiment ID: %s",
+                str(EXPERIMENT_ID))
+    LOGGER.info('Batch size = %s', str(BATCH_SIZE))
+
     LOGGER.debug('Setting manual seed in PyTorch to %s', str(SEED))
     torch.manual_seed(SEED)
-
-    LOGGER.info('Batch size = %s', str(BATCH_SIZE))
 
     my_dataloader: torch.utils.data.DataLoader = imagenet_data_loader(root=DATASET_ROOT,
                                                                       batch_size=BATCH_SIZE,
