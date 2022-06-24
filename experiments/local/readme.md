@@ -34,7 +34,15 @@ All commands listed in this guide should be run **locally** (not cluster) from t
 
    ```sh
    # Run multiple batches of experiments
-   fish ./experiments/local/script/run-lrp-pf.fish ./experiments/local/local.config
+   time fish ./experiments/local/script/run-lrp-pf.fish ./experiments/local/local.config
+   ```
+
+1. Generate plots from results
+
+   Plots are automatically generated using the fish script but if you want to manually re-generate them:
+
+   ```sh
+   time ./venv/bin/python3 ./experiments/script/visualize.py --config-file ./experiments/local/local.config
    ```
 
 ## Credits
