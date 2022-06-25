@@ -18,7 +18,11 @@ echo "Creating directory to archive past log files under $ARCHIVE_PATH, if it do
 mkdir -p "$ARCHIVE_PATH"
 
 echo "Archiving past log files ($LOG_PATH/*.log) under $ARCHIVE_PATH"
-mv "$LOG_PATH"/*.log "$ARCHIVE_PATH"
+# Check if any files need to be archived
+# Source: https://stackoverflow.com/a/6364244
+if ls "$LOG_PATH"/*.log >/dev/null 2>&1; then
+  mv "$LOG_PATH"/*.log "$ARCHIVE_PATH"
+fi
 
 echo "Submit experiment jobs. Enabling verbose mode using bash opt xtrace."
 set -o xtrace
