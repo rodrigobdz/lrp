@@ -10,7 +10,7 @@ set -o nounset
 echo "Build project"
 
 echo "Deleting old builds in $(pwd)/dist"
-ls -l dist/*
+ls -l dist/
 rm -rf dist/*
 
 echo "Executing python3 -m build"
