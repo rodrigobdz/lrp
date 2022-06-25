@@ -95,6 +95,9 @@ Update build on cluster:
 
 # cluster
 
+# non-interactive
+/home/rodrigo/experiments/cluster/script/submit-cluster-jobs
+
 # interactive
 qlogin -l cuda=1
 source /home/rodrigo/experiments/cluster/script/setup && python3 ./experiments/script/batch_lrp_pf.py --experiment-id 0 --config-file ./experiments/cluster/cluster.config
