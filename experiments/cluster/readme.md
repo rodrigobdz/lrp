@@ -60,10 +60,6 @@ All commands listed in this guide should be run on execution nodes on the **clus
    Non-interactive jobs:
 
    ```sh
-   # Make script executable
-   chmod +x /home/rodrigo/experiments/cluster/script/submit-cluster-jobs
-
-   # Run experiments
    /home/rodrigo/experiments/cluster/script/submit-cluster-jobs
    ```
 
@@ -100,7 +96,7 @@ Update build on cluster:
 # cluster
 
 # non-interactive
-chmod +x /home/rodrigo/experiments/cluster/script/submit-cluster-jobs && /home/rodrigo/experiments/cluster/script/submit-cluster-jobs
+/home/rodrigo/experiments/cluster/script/submit-cluster-jobs
 
 # interactive
 qlogin -l cuda=1
