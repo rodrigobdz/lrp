@@ -17,11 +17,11 @@ cd "$LOG_PATH"
 echo "Creating directory to archive past log files under $ARCHIVE_PATH, if it does not exist"
 mkdir -p "$ARCHIVE_PATH"
 
-echo "Archiving past log files ($LOG_PATH/job-array-*) under $ARCHIVE_PATH"
+echo "Archiving past log files ($LOG_PATH/lrppf.*) under $ARCHIVE_PATH"
 # Check if any files need to be archived
 # Source: https://stackoverflow.com/a/6364244
-if ls "$LOG_PATH"/job-array-* >/dev/null 2>&1; then
-  mv "$LOG_PATH"/job-array-* "$ARCHIVE_PATH"
+if ls "$LOG_PATH"/lrppf.* >/dev/null 2>&1; then
+  mv "$LOG_PATH"/lrppf.* "$ARCHIVE_PATH"
 fi
 
 echo "Submit experiment jobs. Enabling verbose mode using bash opt xtrace."
