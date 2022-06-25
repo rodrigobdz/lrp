@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy
 from matplotlib import pyplot as plt
+from matplotlib import ticker
 
 
 def parse_arguments() -> ConfigParser:
@@ -74,8 +75,29 @@ def contourf_plot():
     if AUC_SCORE_DECIMALS != -1:
         z_values = numpy.round(z_values, decimals=AUC_SCORE_DECIMALS)
 
+    # Dynamically set the frequency of ticks on the z-axis.
+    optional_arguments: dict = {}
+
+    print(f'Z values for contourf plot:\n{z_values}\n')
+
+    # Calculate standard deviation of z values to use as measure to prevent excessively
+    # fine-grained contourf plots.
+    z_std_dev: float = numpy.std(z_values)
+    print(f'Standard deviation of Z values: {z_std_dev}\n')
+
+    # In case the standard deviation is too small, treat all AUC scores as equal.
+    if z_std_dev <= 0.01:
+        print('Standard deviation of Z values is too small.\n'
+              'Setting all AUC scores to equal.')
+        # Set a value which is close to zero but not zero to avoid error:
+        #   "Filled contours require at least 2 levels.".
+        optional_arguments = {'locator': ticker.MultipleLocator(base=0.5)}
+
     # Plot the values.
-    plt.tricontourf(x_values, y_values, z_values)
+    plt.tricontourf(x_values,
+                    y_values,
+                    z_values,
+                    **optional_arguments)
 
     # Set title and axis labels.
     plt.title(TITLE)
@@ -83,7 +105,8 @@ def contourf_plot():
     plt.ylabel(Y_LABEL)
 
     # Enable color bar on the side to explain contour levels.
-    plt.colorbar()
+    colorbar: plt.colorbar.Colorbar = plt.colorbar()
+    colorbar.ax.set_ylabel('Area Under the Curve (AUC)')
 
     # Save plot to file.
     plt.savefig(fname=PLOT_PATH, facecolor='w')
