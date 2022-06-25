@@ -37,4 +37,4 @@ run_experiment {}' ::: (seq 0 (math "$TOTAL_NUMBER_OF_EXPERIMENTS" - 1))
 # https://stackoverflow.com/a/19883639
 and echo
 and echo "Generate plots from experiment results"
-and time ./venv/bin/python3 ./experiments/script/visualize.py --config-file ./experiments/local/local.config
+and time ./venv/bin/python3 ./experiments/script/visualize.py --config-file "$CONFIG_FILE_PATH"
