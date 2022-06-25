@@ -8,7 +8,15 @@ set -o pipefail
 set -o nounset
 
 _rsync_to_cluster() {
-  local opts=(--archive --compress --partial --progress --human-readable --verbose)
+  local opts=(
+    --archive
+    --compress
+    --partial
+    --progress
+    --human-readable
+    --verbose
+    --exclude=.DS_Store
+  )
   local src="$1"
   local dst="$2"
   local file_description="$3"
