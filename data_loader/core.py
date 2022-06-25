@@ -10,6 +10,7 @@ __status__ = 'Development'
 # pylint: enable=duplicate-code
 
 
+import multiprocessing
 import random
 from typing import List, Optional, Union
 
@@ -22,8 +23,8 @@ import lrp.norm
 # Turn on multi-process data loading by setting the number of workers
 # to a non-zero positive integer value.
 #
-# Cluster only supports 2 workers. A warning is shown if the number of workers is larger.
-DATA_LOADER_NUM_WORKERS: int = 2
+# Set number of workers to number of cores.
+DATA_LOADER_NUM_WORKERS: int = multiprocessing.cpu_count()
 
 
 def _seed_worker(_: int) -> None:
