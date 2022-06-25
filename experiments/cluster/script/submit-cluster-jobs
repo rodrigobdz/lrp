@@ -17,6 +17,9 @@ cd "$LOG_PATH"
 echo "Creating directory to archive past log files under $ARCHIVE_PATH, if it does not exist"
 mkdir -p "$ARCHIVE_PATH"
 
+echo "Archiving past log files ($LOG_PATH/*.log) under $ARCHIVE_PATH"
+mv "$LOG_PATH"/*.log "$ARCHIVE_PATH"
+
 echo "Submit experiment jobs. Enabling verbose mode using bash opt xtrace."
 set -o xtrace
 qsub -m esa -M r.bermudezschettino@campus.tu-berlin.de /home/rodrigo/experiments/cluster/script/run-lrp-pf.sh
