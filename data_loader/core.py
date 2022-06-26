@@ -22,7 +22,7 @@ import lrp.norm
 # Turn on multi-process data loading by setting the number of workers
 # to a non-zero positive integer value.
 # TODO: Set value dynamically.
-DATA_LOADER_NUM_WORKERS: int = 4
+DATA_LOADER_NUM_WORKERS: int = 2
 
 
 def _seed_worker(_: int) -> None:
