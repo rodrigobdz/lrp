@@ -73,7 +73,7 @@ EOF
 
   echo "Create tar file ${EXPERIMENT_BASENAME}.tar.gz with results."
   # [c]reate a g[z]ipped archive from a directory using relative paths
-  tar czf "${EXPERIMENT_BASENAME}.tar.gz" --directory "$EXPERIMENT_BASENAME" .
+  tar czfv "${EXPERIMENT_BASENAME}.tar.gz" --directory "$EXPERIMENT_BASENAME" .
 
   echo "Tar file located under ${EXPERIMENT_DIRNAME}/${EXPERIMENT_BASENAME}.tar.gz"
 '
