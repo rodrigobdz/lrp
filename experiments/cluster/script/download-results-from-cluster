@@ -8,7 +8,12 @@ set -o nounset
 
 remote_setup() {
   echo
-  echo "Prepare results for optimal transfer"
+  echo "Prepare results for optimal transfer on cluster"
+
+  ssh ml '
+  set -o errexit
+  set -o pipefail
+  set -o nounset
 
   # Python script to parse config file on cluster and return EXPERIMENT_PARENT_ROOT value as string.
   read_config_var_script=$(
@@ -20,11 +25,11 @@ remote_setup() {
 import sys
 from configparser import ConfigParser, ExtendedInterpolation
 
-path: str = './experiments/cluster/cluster.config'
+path: str = "./experiments/cluster/cluster.config"
 
 config = ConfigParser(interpolation=ExtendedInterpolation())
 config.read(path);
-EXPERIMENT_PARENT_ROOT: str = config['PATHS']['EXPERIMENT_PARENT_ROOT']
+EXPERIMENT_PARENT_ROOT: str = config["PATHS"]["EXPERIMENT_PARENT_ROOT"]
 
 # Return string from python script without error code.
 # https://stackoverflow.com/a/11901135
@@ -32,7 +37,7 @@ sys.stderr.write(EXPERIMENT_PARENT_ROOT)
 EOF
   )
   # Disable warning that variable is unused. False-positive because it is used in the SSH cmd below.
-  local -r read_config_var_script
+  readonly read_config_var_script
 
   # Demo of how variables are assigned:
   #
@@ -45,7 +50,7 @@ EOF
 
   # Redirect stderr to stdout to get the variable.
   # https://stackoverflow.com/a/11901135
-  EXPERIMENT_PARENT_ROOT=$(./venv/bin/python3 -c "$read_config_var_script" 2>&1 >/dev/null)
+  EXPERIMENT_PARENT_ROOT=$(python3 -c "$read_config_var_script" 2>&1 >/dev/null)
   readonly EXPERIMENT_PARENT_ROOT
 
   echo "Define derivated variables from EXPERIMENT_PARENT_ROOT"
@@ -59,7 +64,10 @@ EOF
   EXPERIMENT_DIRNAME=$(dirname "$EXPERIMENT_PARENT_ROOT")
   readonly EXPERIMENT_DIRNAME
 
-  ssh ml -o SendEnv=EXPERIMENT_PARENT_ROOT -o SendEnv=EXPERIMENT_BASENAME -o SendEnv=EXPERIMENT_DIRNAME '
+  echo "EXPERIMENT_PARENT_ROOT: $EXPERIMENT_PARENT_ROOT"
+  echo "EXPERIMENT_BASENAME: $EXPERIMENT_BASENAME"
+  echo "EXPERIMENT_DIRNAME: $EXPERIMENT_DIRNAME"
+
   echo "Change directory to the parent directory of the directory containing the results."
   cd "$EXPERIMENT_DIRNAME"
 
