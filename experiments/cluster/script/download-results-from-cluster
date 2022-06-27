@@ -89,7 +89,7 @@ transfer_results() {
   echo "Transfer experiment logs from cluster to local machine"
 
   set +o xtrace
-  rsync --archive --compress --verbose --human-readable --progress --exclude=archive ml:"$src_path" "$target_path"
+  rsync --archive --compress --verbose --human-readable --progress --exclude=archive ml:"$src_path" "$target_path/"
   set -o xtrace
 
   src_path="${EXPERIMENT_DIRNAME}/${EXPERIMENT_BASENAME}.tar.gz"
@@ -98,7 +98,7 @@ transfer_results() {
   echo "Transfer experiment results from cluster to local machine"
 
   set +o xtrace
-  rsync --archive --compress --verbose --human-readable --progress ml:"$src_path" "$target_path"
+  rsync --archive --compress --verbose --human-readable --progress ml:"$src_path" "$target_path/"
   set -o xtrace
 }
 
