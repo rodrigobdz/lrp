@@ -14,7 +14,7 @@
 #$ -l mem_free=16G    # request 16GB of free memory
 #$ -q all.q           # submit jobs to queue named all.q (general queue)
 #$ -cwd               # execute in current working directory
-#$ -t 1-100           # start multiple instances with identified SGE_TASK_ID from 1 to n
+#$ -t 1-256           # start multiple instances with identified SGE_TASK_ID from 1 to n
 #                     # upper bound of -t should be equal to TOTAL_NUMBER_OF_EXPERIMENTS in *.config
 #
 # Submit jobs to cluster using qsub
@@ -49,7 +49,7 @@ source /home/rodrigo/experiments/cluster/script/setup
 time python3 /home/rodrigo/experiments/script/batch_lrp_pf.py --experiment-id "$EXPERIMENT_ID" --config-file /home/rodrigo/experiments/cluster/cluster.config
 
 # After last experiment, generate plots from aggregated results.
-if [ "$SGE_TASK_ID" -eq 100 ]; then
+if [ "$SGE_TASK_ID" -eq 256 ]; then
   echo
   echo "Generate plots from experiment results"
   time python3 /home/rodrigo/experiments/script/visualize.py --config-file /home/rodrigo/experiments/cluster/cluster.config
