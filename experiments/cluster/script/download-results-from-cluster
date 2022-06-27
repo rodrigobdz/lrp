@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Transfer experiment results from cluster to local machine
+# Transfer experiment results from cluster to local machine.
+# Assumes that local version of cluster.config is identical to the one on the cluster.
 
 set -o errexit
 set -o pipefail
@@ -10,6 +11,7 @@ remote_setup() {
   echo
   echo "Prepare results for optimal transfer on cluster"
 
+  # Cluster does not accept SendEnv options, therefore the duplicated code to define env vars.
   ssh ml '
   set -o errexit
   set -o pipefail
@@ -68,14 +70,25 @@ EOF
   echo "EXPERIMENT_BASENAME: $EXPERIMENT_BASENAME"
   echo "EXPERIMENT_DIRNAME: $EXPERIMENT_DIRNAME"
 
-  echo "Change directory to the parent directory of the directory containing the results."
-  cd "$EXPERIMENT_DIRNAME"
+  echo "Change directory to the parent directory of the directory containing the results: $EXPERIMENT_PARENT_ROOT"
+  cd "$EXPERIMENT_PARENT_ROOT"
 
-  echo "Create tar file ${EXPERIMENT_BASENAME}.tar.gz with results."
+  src_path="/home/rodrigo/log"
+
+  echo "Include experiment logs from $src_path in experiments folder $EXPERIMENT_PARENT_ROOT"
+
+  set +o xtrace
+  rsync --archive --compress --verbose --human-readable --progress --exclude=archive "$src_path" "$EXPERIMENT_PARENT_ROOT/"
+  set -o xtrace
+
+  echo "Removing $EXPERIMENT_PARENT_ROOT/${EXPERIMENT_BASENAME}-plot.tar.gz, if it exists"
+  rm -f "${EXPERIMENT_PARENT_ROOT}/${EXPERIMENT_BASENAME}-plot.tar.gz"
+
+  echo "Create tar file ${EXPERIMENT_BASENAME}-plot.tar.gz with results."
   # [c]reate a g[z]ipped archive from a directory using relative paths
-  tar czfv "${EXPERIMENT_BASENAME}.tar.gz" --directory "$EXPERIMENT_BASENAME" .
+  tar czfv "${EXPERIMENT_BASENAME}-plot.tar.gz" log plot
 
-  echo "Tar file located under ${EXPERIMENT_DIRNAME}/${EXPERIMENT_BASENAME}.tar.gz"
+  echo "Tar file located under ${EXPERIMENT_PARENT_ROOT}/${EXPERIMENT_BASENAME}-plot.tar.gz"
 '
 }
 
@@ -83,19 +96,66 @@ transfer_results() {
   local src_path
   local target_path
 
-  src_path='/home/rodrigo/logs'
+  # Duplicate code as above. Defines EXPERIMENT_PARENT_ROOT, EXPERIMENT_BASENAME,
+  # and EXPERIMENT_DIRNAME locally. Snippet in previous function defined these vars on the cluaster.
+
+  # Python script to parse config file on cluster and return EXPERIMENT_PARENT_ROOT value as string.
+  read_config_var_script=$(
+    cat <<EOF
+#!/usr/bin/env python3
+#
+# Read value of EXPERIMENT_PARENT_ROOT from config file.
+
+import sys
+from configparser import ConfigParser, ExtendedInterpolation
+
+path: str = "./experiments/cluster/cluster.config"
+
+config = ConfigParser(interpolation=ExtendedInterpolation())
+config.read(path);
+EXPERIMENT_PARENT_ROOT: str = config["PATHS"]["EXPERIMENT_PARENT_ROOT"]
+
+# Return string from python script without error code.
+# https://stackoverflow.com/a/11901135
+sys.stderr.write(EXPERIMENT_PARENT_ROOT)
+EOF
+  )
+  # Disable warning that variable is unused. False-positive because it is used in the SSH cmd below.
+  readonly read_config_var_script
+
+  # Demo of how variables are assigned:
+  #
+  # # Given:
+  # EXPERIMENT_PARENT_ROOT=/home/rodrigo/experiment-results/2022-06-20/cluster/vgg16-decr-gamma-batch-size-4-total-experiments-16
+  #
+  # # Derivated variables
+  # EXPERIMENT_BASENAME=/home/rodrigo/experiment-results/2022-06-20/cluster
+  # EXPERIMENT_DIRNAME=vgg16-decr-gamma-batch-size-4-total-experiments-16
+
+  # Redirect stderr to stdout to get the variable.
+  # https://stackoverflow.com/a/11901135
+  EXPERIMENT_PARENT_ROOT=$(python3 -c "$read_config_var_script" 2>&1 >/dev/null)
+  readonly EXPERIMENT_PARENT_ROOT
+
+  echo "Define derivated variables from EXPERIMENT_PARENT_ROOT"
+
+  # Calculate directory name from absolute path.
+  # basename removes leading directory portions from path.
+  EXPERIMENT_BASENAME=$(basename "$EXPERIMENT_PARENT_ROOT")
+  readonly EXPERIMENT_BASENAME
+
+  # dirname calculates the parent directory of a given file or directory path.
+  EXPERIMENT_DIRNAME=$(dirname "$EXPERIMENT_PARENT_ROOT")
+  readonly EXPERIMENT_DIRNAME
+
+  echo "EXPERIMENT_PARENT_ROOT: $EXPERIMENT_PARENT_ROOT"
+  echo "EXPERIMENT_BASENAME: $EXPERIMENT_BASENAME"
+  echo "EXPERIMENT_DIRNAME: $EXPERIMENT_DIRNAME"
+
+  src_path="${EXPERIMENT_PARENT_ROOT}/${EXPERIMENT_BASENAME}-plot.tar.gz"
   target_path="$HOME/Downloads"
 
-  echo "Transfer experiment logs from cluster to local machine"
-
-  set +o xtrace
-  rsync --archive --compress --verbose --human-readable --progress --exclude=archive ml:"$src_path" "$target_path/"
-  set -o xtrace
-
-  src_path="${EXPERIMENT_DIRNAME}/${EXPERIMENT_BASENAME}.tar.gz"
-  target_path="$HOME/Downloads"
-
-  echo "Transfer experiment results from cluster to local machine"
+  echo "Transfer experiment results from cluster under $src_path to local machine $target_path"
 
   set +o xtrace
   rsync --archive --compress --verbose --human-readable --progress ml:"$src_path" "$target_path/"
