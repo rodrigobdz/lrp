@@ -83,7 +83,7 @@ transfer_results() {
   local src_path
   local target_path
 
-  src_path=
+  src_path='/home/rodrigo/logs'
   target_path="$HOME/Downloads"
 
   echo "Transfer experiment logs from cluster to local machine"
