@@ -287,6 +287,45 @@ class Helpers:
     r"""Encapsulate all helper functions."""
 
     @staticmethod
+    def log_experiment_parameters() -> None:
+        r"""Log experiment parameters to console."""
+        LOGGER.info("Progress: %s/%s",
+                    str(EXPERIMENT_ID + 1),
+                    str(TOTAL_NUMBER_OF_EXPERIMENTS))
+
+        LOGGER.info('Experiment: %s',
+                    str(EXP_NAME_SHORT))
+        LOGGER.info("Experiment ID: %s",
+                    str(EXPERIMENT_ID))
+        LOGGER.info("PyTorch device %s",
+                    str(DEVICE))
+        LOGGER.info("Data - Image classes %s",
+                    str(IMAGE_CLASSES))
+        LOGGER.info("LRP hyperparameter values per axis %s",
+                    str(NUMBER_OF_HYPERPARAMETER_VALUES))
+        LOGGER.info("LRP total hyperparameters %s",
+                    str(TOTAL_NUMBER_OF_EXPERIMENTS))
+        LOGGER.info("LRP sampling logspace range [0, 10**%s,..., 10**%s]",
+                    str(SAMPLING_RANGE_START),
+                    str(SAMPLING_RANGE_END))
+        LOGGER.info("Pixel-Flipping perturbation steps %s",
+                    str(PERTURBATION_STEPS))
+        LOGGER.info("Pixel-Flipping perturbation size %s",
+                    str(PERTURBATION_SIZE))
+        LOGGER.info("Pixel-Flipping sort objective %s (%s)",
+                    str(SORT_OBJECTIVE),
+                    str(SORT_OBJECTIVE_SHORT))
+        LOGGER.info("Pixel-Flipping perturbation size %s",
+                    str(PERTURBATION_SIZE))
+        LOGGER.info('Batch size = %s',
+                    str(BATCH_SIZE))
+        LOGGER.info('Number of batches = %s',
+                    str(NUMBER_OF_BATCHES))
+
+        LOGGER.debug('Setting manual seed in PyTorch to %s',
+                     str(SEED))
+
+    @staticmethod
     def create_directories_if_not_exists(*directories) -> None:
         r"""Create directories (if these don't already exist).
 
@@ -638,17 +677,7 @@ def run_experiments() -> None:
                                              PLOT_ROOT)
 
     Helpers.save_settings()
-
-    LOGGER.info("Progress: %s/%s",
-                str(EXPERIMENT_ID + 1),
-                str(TOTAL_NUMBER_OF_EXPERIMENTS))
-
-    LOGGER.info('Experiment: %s', str(EXP_NAME_SHORT))
-    LOGGER.info("Experiment ID: %s",
-                str(EXPERIMENT_ID))
-    LOGGER.info('Batch size = %s', str(BATCH_SIZE))
-
-    LOGGER.debug('Setting manual seed in PyTorch to %s', str(SEED))
+    Helpers.log_experiment_parameters()
     torch.manual_seed(SEED)
 
     my_dataloader: torch.utils.data.DataLoader = imagenet_data_loader(root=DATASET_ROOT,
@@ -727,6 +756,7 @@ if __name__ == "__main__":
     PERTURBATION_SIZE: int = config.getint(pf_section_name,
                                            'PERTURBATION_SIZE')
     SORT_OBJECTIVE: str = config[pf_section_name]['SORT_OBJECTIVE']
+    SORT_OBJECTIVE_SHORT: str = config[pf_section_name]['SORT_OBJECTIVE_SHORT']
 
     SAMPLING_RANGE_START: float = config.getfloat(lrp_section_name,
                                                   'SAMPLING_RANGE_START')
