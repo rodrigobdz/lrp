@@ -86,7 +86,7 @@ def contourf_plot():
     print(f'Standard deviation of Z values: {z_std_dev}\n')
 
     # In case the standard deviation is too small, treat all AUC scores as equal.
-    if z_std_dev <= 0.01:
+    if z_std_dev <= 0.1:
         print('Standard deviation of Z values is too small.\n'
               'Setting all AUC scores to equal.')
         # Set a value which is close to zero but not zero to avoid error:
