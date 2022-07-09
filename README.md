@@ -81,7 +81,7 @@ The package name refers to Layer-wise Relevance Propagation (LRP), Pixel Flippin
 
 ## Usage
 
-Refer to [demo.ipynb](demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
+Refer to [demo.ipynb](https://github.com/rodrigobdz/lrp/blob/main/demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
 
 ## Related Projects
 
