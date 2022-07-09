@@ -26,6 +26,19 @@ Lint all files manually:
  pre-commit run --all-files
 ```
 
+### Uploading to PyPI
+
+1. Configure PyPI credentials in `$HOME/.pypirc`
+
+1. Build and upload package
+
+   ```sh
+   ./script/build
+   ./script/upload
+   ```
+
+Full documentation [here](https://packaging.python.org/en/latest/tutorials/packaging-projects/).
+
 ## Credits
 
 - The structure of this readme is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme)
