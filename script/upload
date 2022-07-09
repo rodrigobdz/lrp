@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Upload Python package to PyPi using twine.
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Check if the package was built beforehand.
+if [ ! -d "dist" ]; then
+  echo "Run 'script/build' first."
+  exit 1
+fi
+
+echo "Uploading package to PyPi using twine..."
+python3 -m twine upload --repository testpypi dist/*
+# python3 -m twine upload dist/*
