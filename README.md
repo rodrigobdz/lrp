@@ -1,6 +1,6 @@
 # LRP
 
-[![PyPI Version](https://img.shields.io/pypi/v/lrp)](https://pypi.org/project/lrp_pf_auc/)
+[![PyPI Version](https://img.shields.io/pypi/v/lrp)](https://pypi.org/project/lrp-pf-auc/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](license)
 
 Implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
