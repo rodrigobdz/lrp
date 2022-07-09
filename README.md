@@ -6,6 +6,8 @@
 
 Implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
 
+Special thanks to Dr. Grégoire Montavon for his insights, which shaped the development of this project.
+
 ## Features
 
 Explainability:
@@ -77,11 +79,13 @@ python3 -m pip install lrp-pf-auc
 
 The PyPI distribution `lrp-pf-auc` provides the following two packages: `lrp` and `pf`.
 
-The package name refers to Layer-wise Relevance Propagation (LRP), Pixel Flipping (PF), and Area Under the Curve (AUC) respectively.
+The name `lrp-pf-auc` stands for Layer-wise Relevance Propagation (LRP), Pixel Flipping (PF), and Area Under the Curve (AUC) respectively.
 
 ## Usage
 
 Refer to [demo.ipynb](https://github.com/rodrigobdz/lrp/blob/main/demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
+
+Feel free to check out the Jupyter notebooks under [experiments/notebooks](https://github.com/rodrigobdz/lrp/tree/main/experiments/notebooks) for a chronological overview of the project.
 
 ## Related Projects
 
@@ -100,18 +104,18 @@ Cite as:
 
 - Plaintext:
 
-  > Rodrigo Bermúdez Schettino. (2022). rodrigobdz/lrp: v0.1.2 (v0.1.2). Zenodo. https://doi.org/10.5281/zenodo.6814117
+  > Rodrigo Bermúdez Schettino. (2022). rodrigobdz/lrp: v0.1.3 (v0.1.3). Zenodo. https://doi.org/10.5281/zenodo.6814117
 
 - BibTeX:
 
   ```text
   @software{rodrigo_bermudez_schettino_2022_6814117,
     author       = {Rodrigo Bermúdez Schettino},
-    title        = {rodrigobdz/lrp: v0.1.2},
+    title        = {rodrigobdz/lrp: v0.1.3},
     month        = jul,
     year         = 2022,
     publisher    = {Zenodo},
-    version      = {v0.1.2},
+    version      = {v0.1.3},
     doi          = {10.5281/zenodo.6814117},
     url          = {https://doi.org/10.5281/zenodo.6814117}
   }
@@ -120,6 +124,10 @@ Cite as:
 ## Credits
 
 - The structure of this readme is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme)
+
+- The `lrp` package uses [two customized files](https://github.com/rodrigobdz/lrp/tree/main/lrp/zennit) originally from [chr5tphr/zennit](https://github.com/chr5tphr/zennit).
+
+- The syntax for defining custom composites originates is inspired by [this discussion](https://github.com/chr5tphr/zennit/issues/76) on `zennit`'s repo.
 
 This implementation is based on insights from:
 
