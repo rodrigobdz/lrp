@@ -76,6 +76,8 @@ python3 -m pip install lrp-pf-auc
 
 The PyPI distribution `lrp-pf-auc` provides the following two packages: `lrp` and `pf`.
 
+The package name refers to Layer-wise Relevance Propagation (LRP), Pixel Flipping (PF), and Area Under the Curve (AUC) respectively.
+
 ## Usage
 
 Refer to [demo.ipynb](demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
