@@ -16,7 +16,7 @@ sudo ./script/bootstrap
 
 ## Usage
 
-Refer to [lrp.ipynb](./lrp.ipynb) for an example.
+Refer to [lrp.ipynb](lrp.ipynb) for an example.
 
 ### Lint
 

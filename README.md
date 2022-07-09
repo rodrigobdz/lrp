@@ -28,13 +28,13 @@ Quantitative Evaluation:
 **LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **inpainting** perturbation mode and sort objective **MoRF**.
 
 <p align="center" width="100%">
-    <img width="50%" src="./docs/images/castle-lrp-pf-auc-inpainting.png">
+    <img width="50%" src="docs/images/castle-lrp-pf-auc-inpainting.png">
 </p>
 
 Classification scores of castle image with **inpainting** perturbation mode
 
 <p align="center" width="100%">
-    <img width="50%" src="./docs/images/castle-pf-auc-inpainting.png">
+    <img width="50%" src="docs/images/castle-pf-auc-inpainting.png">
 </p>
 
 ---
@@ -46,13 +46,13 @@ Classification scores of castle image with **inpainting** perturbation mode
 **LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **random** perturbation mode and sort objective **MoRF**.
 
 <p align="center" width="100%">
-    <img width="50%" src="./docs/images/castle-lrp-pf-auc-random.png">
+    <img width="50%" src="docs/images/castle-lrp-pf-auc-random.png">
 </p>
 
 Classification scores of castle image with random perturbation mode
 
 <p align="center" width="100%">
-    <img width="50%" src="./docs/images/castle-pf-auc-random.png">
+    <img width="50%" src="docs/images/castle-pf-auc-random.png">
 </p>
 
 </p>
@@ -70,7 +70,7 @@ python3 -m pip install lrp
 
 ## Usage
 
-Refer to [demo.ipynb](./demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
+Refer to [demo.ipynb](demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
 
 ## Related Projects
 
