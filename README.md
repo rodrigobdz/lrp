@@ -92,6 +92,7 @@ Refer to [demo.ipynb](demo.ipynb) for an example of Layer-wise Relevance Propaga
   > Implementation of LRP-based methods in PyTorch
 - [`innvestigate`](https://github.com/albermax/innvestigate)-based LRP implementation: [moboehle/Pytorch-LRP](https://github.com/moboehle/Pytorch-LRP)
 - Caffe-based LRP implementation: [`lrp_toolbox`](https://github.com/sebastian-lapuschkin/lrp_toolbox)
+- Pixel-Flipping and Region Perturbation implementation: [understandable-machine-intelligence-lab/Quantus](https://github.com/understandable-machine-intelligence-lab/Quantus)
 
 ## Citation
 
