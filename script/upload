@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Upload Python package to PyPi using twine.
+# Upload Python package to PyPI using twine.
 
 set -o errexit
 set -o pipefail
@@ -12,6 +12,6 @@ if [ ! -d "dist" ]; then
   exit 1
 fi
 
-echo "Uploading package to PyPi using twine..."
+echo "Uploading package to PyPI using twine..."
 python3 -m twine upload --repository testpypi dist/*
 # python3 -m twine upload dist/*
