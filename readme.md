@@ -2,20 +2,25 @@
 
 Implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
 
-**Features:**
+## Features
+
+Explainability:
 
 - Layer-wise Relevance Propagation (LRP)
+
+Quantitative Evaluation:
+
 - Pixel Flipping (PF), also known as Region Perturbation (RP)
   - Perturbation modes:
     - inpainting
     - random
   - Sort objectives:
-    - most relevant first (MoRF),
-    - least relevant first (LRF),
+    - most relevant first (MoRF), also known as activation curve
+    - least relevant first (LRF), also known as pruning curve
     - random
-- AUC (Area Under the Curve)
+- AUC (Area Under the Curve), also known as AUAC (Area Under the Activation Curve) or AU-MSE (Area Under the Mean Squared Error Curve) depending on the sort objective
 
----
+### Showcase
 
 **LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **inpainting** perturbation mode and sort objective **MoRF**.
 
@@ -31,6 +36,10 @@ Classification scores of castle image with **inpainting** perturbation mode
 
 ---
 
+<details>
+<summary>PF perturbation mode random</summary>
+<p>
+
 **LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **random** perturbation mode and sort objective **MoRF**.
 
 <p align="center" width="100%">
@@ -42,6 +51,9 @@ Classification scores of castle image with random perturbation mode
 <p align="center" width="100%">
     <img width="50%" src="./docs/images/castle-pf-auc-random.png">
 </p>
+
+</p>
+</details>
 
 ## Requirements
 
