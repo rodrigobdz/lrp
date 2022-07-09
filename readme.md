@@ -1,38 +1,72 @@
 # LRP
 
-Implementation of Layer-wise Relevance Propagation (LRP) algorithm.
+Implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
+
+**Features:**
+
+- Layer-wise Relevance Propagation (LRP)
+- Pixel Flipping (PF), also known as Region Perturbation (RP)
+  - Perturbation modes:
+    - inpainting
+    - random
+  - Sort objectives:
+    - most relevant first (MoRF),
+    - least relevant first (LRF),
+    - random
+- AUC (Area Under the Curve)
+
+---
+
+**LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **inpainting** perturbation mode and sort objective **MoRF**.
+
+<p align="center" width="100%">
+    <img width="50%" src="./docs/images/castle-lrp-pf-auc-inpainting.png">
+</p>
+
+Classification scores of castle image with **inpainting** perturbation mode
+
+<p align="center" width="100%">
+    <img width="50%" src="./docs/images/castle-pf-auc-inpainting.png">
+</p>
+
+---
+
+**LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **random** perturbation mode and sort objective **MoRF**.
+
+<p align="center" width="100%">
+    <img width="50%" src="./docs/images/castle-lrp-pf-auc-random.png">
+</p>
+
+Classification scores of castle image with random perturbation mode
+
+<p align="center" width="100%">
+    <img width="50%" src="./docs/images/castle-pf-auc-random.png">
+</p>
 
 ## Requirements
 
 - `python3` >= 3.9
-- `pre-commit`
 
 ## Installation
 
-Install dependencies
-
-```sh
-sudo ./script/bootstrap
-```
-
 ## Usage
 
-Refer to [lrp.ipynb](./lrp.ipynb) for an example.
-
-### Lint
-
-Lint all files manually:
-
-```sh
- pre-commit run --all-files
-```
+Refer to [demo.ipynb](./demo.ipynb) for an example of Layer-wise Relevance Propagation (LRP), Pixel-Flipping (PF) and Area under the Curve (AUC).
 
 ## Related Projects
 
-- (Sequential) [gmontavon/lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) - Tutorial on how to implement LRP
-- (Forward-hook) [chr5tphr/zennit](https://github.com/chr5tphr/zennit) - Implementation of LRP-based methods in PyTorch
+- Sequential LRP implementation: [gmontavon/lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial)
+  > Tutorial on how to implement LRP
+- Updated version of `gmontavon/lrp-tutorial`: [rodrigobdz/lrp-tutorial](https://git.tu-berlin.de/rodrigobdz/lrp-tutorial)
+- Forward-hook LRP implementation: [chr5tphr/zennit](https://github.com/chr5tphr/zennit)
+  > Implementation of LRP-based methods in PyTorch
+- [`innvestigate`](https://github.com/albermax/innvestigate)-based LRP implementation: [moboehle/Pytorch-LRP](https://github.com/moboehle/Pytorch-LRP)
+
+## Citation
 
 ## Credits
+
+- The structure of this readme is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme)
 
 This implementation is based on insights from:
 
@@ -49,8 +83,6 @@ This implementation is based on insights from:
   > PloS ONE 10 (7), e0130140, 2015
 
 - [ECML/PKDD 2020 Tutorial: Explainable AI for Deep Networks: Basics and Extensions (Part 3)](http://heatmapping.org/slides/2020_ECML_3.pdf)
-
-- The structure of this readme is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme)
 
 ## License
 
