@@ -13,7 +13,7 @@ if [ ! -d "dist" ]; then
 fi
 
 echo "Uploading package to PyPI using twine..."
-# python3 -m twine upload dist/*
+python3 -m twine upload dist/*
 
 # TestPyPI repository
-python3 -m twine upload --repository testpypi dist/*
+# python3 -m twine upload --repository testpypi dist/*
