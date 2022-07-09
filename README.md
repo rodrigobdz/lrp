@@ -1,5 +1,6 @@
 # LRP
 
+[![DOI](https://zenodo.org/badge/432443018.svg)](https://zenodo.org/badge/latestdoi/432443018)
 [![PyPI Version](https://img.shields.io/pypi/v/lrp-pf-auc)](https://pypi.org/project/lrp-pf-auc/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](license)
 
