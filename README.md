@@ -1,6 +1,6 @@
 # LRP
 
-[![PyPI Version](https://img.shields.io/pypi/v/lrp)](https://pypi.org/project/lrp/)
+[![PyPI Version](https://img.shields.io/pypi/v/lrp)](https://pypi.org/project/lrp_pf_auc/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](license)
 
 Implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
@@ -71,8 +71,10 @@ Classification scores of castle image with random perturbation mode
 ## Installation
 
 ```sh
-python3 -m pip install lrp
+python3 -m pip install lrp-pf-auc
 ```
+
+The PyPI distribution `lrp-pf-auc` provides the following two packages: `lrp` and `pf`.
 
 ## Usage
 
