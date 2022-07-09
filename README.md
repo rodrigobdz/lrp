@@ -28,13 +28,19 @@ Quantitative Evaluation:
 **LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **inpainting** perturbation mode and sort objective **MoRF**.
 
 <p align="center" width="100%">
-    <img width="50%" src="docs/images/castle-lrp-pf-auc-inpainting.png">
+    <img width="65%" src="https://github.com/rodrigobdz/lrp/blob/main/docs/images/castle-lrp-pf-auc-inpainting.png?raw=true">
 </p>
 
 Classification scores of castle image with **inpainting** perturbation mode
 
 <p align="center" width="100%">
-    <img width="50%" src="docs/images/castle-pf-auc-inpainting.png">
+    <img width="65%" src="https://github.com/rodrigobdz/lrp/blob/main/docs/images/castle-pf-auc-inpainting.png?raw=true">
+</p>
+
+Number of simultaneous flips per perturbation step during Pixel-Flipping.
+
+<p align="center" width="100%">
+    <img width="65%" src="https://github.com/rodrigobdz/lrp/blob/main/docs/images/castle-pf-perturbation-steps.png?raw=true">
 </p>
 
 ---
@@ -46,13 +52,13 @@ Classification scores of castle image with **inpainting** perturbation mode
 **LRP** ([lrp-tutorial](https://git.tu-berlin.de/gmontavon/lrp-tutorial) composite) and **PF** with **random** perturbation mode and sort objective **MoRF**.
 
 <p align="center" width="100%">
-    <img width="50%" src="docs/images/castle-lrp-pf-auc-random.png">
+    <img width="65%" src="https://github.com/rodrigobdz/lrp/blob/main/docs/images/castle-lrp-pf-auc-random.png?raw=true">
 </p>
 
 Classification scores of castle image with random perturbation mode
 
 <p align="center" width="100%">
-    <img width="50%" src="docs/images/castle-pf-auc-random.png">
+    <img width="65%" src="https://github.com/rodrigobdz/lrp/blob/main/docs/images/castle-pf-auc-random.png?raw=true">
 </p>
 
 </p>
