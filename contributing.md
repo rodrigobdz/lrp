@@ -6,6 +6,15 @@ The following sections will help you set up your development environment and get
 
 - `pre-commit`>=2.19.0
 
+Changes have been tested with the following dependency versions:
+
+- `numpy>=1.21.4`
+- `matplotlib>=3.5.2`
+- `opencv-contrib-python-headless>=4.5.4.60`
+- `scikit-learn>=1.0.2`
+- `torch>=1.10.0`
+- `torchvision>=0.11.1`
+
 ## Installation
 
 Install dependencies
