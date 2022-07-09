@@ -96,7 +96,26 @@ Refer to [demo.ipynb](demo.ipynb) for an example of Layer-wise Relevance Propaga
 
 ## Citation
 
-Rodrigo Bermúdez Schettino. (2022). rodrigobdz/lrp: v0.1.1 (v0.1.1). Zenodo. https://doi.org/10.5281/zenodo.6813990
+Cite as:
+
+- Plaintext:
+
+  > Rodrigo Bermúdez Schettino. (2022). rodrigobdz/lrp: v0.1.2 (v0.1.2). Zenodo. https://doi.org/10.5281/zenodo.6813990
+
+- BibTeX:
+
+  ```text
+  @software{rodrigo_bermudez_schettino_2022_6813990,
+    author       = {Rodrigo Bermúdez Schettino},
+    title        = {rodrigobdz/lrp: v0.1.2},
+    month        = jul,
+    year         = 2022,
+    publisher    = {Zenodo},
+    version      = {v0.1.2},
+    doi          = {10.5281/zenodo.6813990},
+    url          = {https://doi.org/10.5281/zenodo.6813990}
+  }
+  ```
 
 ## Credits
 
