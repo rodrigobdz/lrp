@@ -90,6 +90,7 @@ Refer to [demo.ipynb](demo.ipynb) for an example of Layer-wise Relevance Propaga
 - Forward-hook LRP implementation: [chr5tphr/zennit](https://github.com/chr5tphr/zennit)
   > Implementation of LRP-based methods in PyTorch
 - [`innvestigate`](https://github.com/albermax/innvestigate)-based LRP implementation: [moboehle/Pytorch-LRP](https://github.com/moboehle/Pytorch-LRP)
+- Caffe-based LRP implementation: [`lrp_toolbox`](https://github.com/sebastian-lapuschkin/lrp_toolbox)
 
 ## Citation
 
