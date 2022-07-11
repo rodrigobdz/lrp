@@ -125,6 +125,8 @@ Cite as:
 
 - The structure of this readme is based on [minimal-readme](https://github.com/rodrigobdz/minimal-readme)
 
+- Scripts follow [Personal Shell Style Guide](https://github.com/rodrigobdz/styleguide-sh)
+
 - The `lrp` package uses [two customized files](https://github.com/rodrigobdz/lrp/tree/main/lrp/zennit) originally from [chr5tphr/zennit](https://github.com/chr5tphr/zennit).
 
 - The syntax for defining custom composites is inspired by [this discussion](https://github.com/chr5tphr/zennit/issues/76) on `zennit`'s repo.
