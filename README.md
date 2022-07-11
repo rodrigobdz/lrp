@@ -1,10 +1,10 @@
-# LRP
+# Layer-Wise Relevance Propagation
 
 [![DOI](https://zenodo.org/badge/432443018.svg)](https://zenodo.org/badge/latestdoi/432443018)
 [![PyPI Version](https://img.shields.io/pypi/v/lrp-pf-auc)](https://pypi.org/project/lrp-pf-auc/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](license)
 
-Implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
+PyTorch implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
 
 Special thanks to Dr. Grégoire Montavon for his insights, which shaped the development of this project.
 
