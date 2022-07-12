@@ -104,18 +104,18 @@ Cite as:
 
 - Plaintext:
 
-  > Rodrigo Bermúdez Schettino. (2022). rodrigobdz/lrp: v0.1.3 (v0.1.3). Zenodo. https://doi.org/10.5281/zenodo.6814441
+  > Rodrigo Bermúdez Schettino. (2022). rodrigobdz/lrp: v0.1.5 (v0.1.5). Zenodo. https://doi.org/10.5281/zenodo.6814441
 
 - BibTeX:
 
   ```text
   @software{rodrigo_bermudez_schettino_2022_6814441,
     author       = {Rodrigo Bermúdez Schettino},
-    title        = {rodrigobdz/lrp: v0.1.3},
+    title        = {rodrigobdz/lrp: v0.1.5},
     month        = jul,
     year         = 2022,
     publisher    = {Zenodo},
-    version      = {v0.1.3},
+    version      = {v0.1.5},
     doi          = {10.5281/zenodo.6814441},
     url          = {https://doi.org/10.5281/zenodo.6814441}
   }
