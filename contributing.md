@@ -39,6 +39,14 @@ Lint all files manually:
 
 1. Configure PyPI credentials in `$HOME/.pypirc`
 
+1. Bump version in [setup.cfg](https://github.com/rodrigobdz/lrp/blob/main/setup.cfg#L3)
+
+1. Bump version in [README.md](https://github.com/rodrigobdz/lrp/commit/c27003dd669c3e6a34af1f3e864dbe22a0b562c4)
+
+1. Create GitHub release. [Example](https://github.com/rodrigobdz/lrp/releases/tag/v0.1.5)
+
+1. Update zenodo links in [README.md](https://github.com/rodrigobdz/lrp/commit/d19163f140c80075911ebb2b5234030a312ab4f8)
+
 1. Build and upload package
 
    ```sh
