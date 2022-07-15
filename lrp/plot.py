@@ -47,15 +47,17 @@ def _show(imgs: Sequence) -> None:
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
 
 
-def grid_plot_imagenet(img_nchw_rgb: torch.Tensor) -> None:
+
+def grid_plot_imagenet(img_nchw_rgb: torch.Tensor, nrow: int = 8) -> None:
     r"""Plot a grid of images in NCHW format and RGB color format with ImageNet mean and
     standard deviance.
 
     :param img_nchw_rgb: Images to plot.
     """
     # Create grid with batch of images.
-    grid: torch.Tensor = torchvision.utils.make_grid(
-        lrp.norm.ImageNetNorm.inverse_normalize(img_nchw_rgb)
+    grid: torch.Tensor = torchvision.utils.make_grid(tensor=lrp.norm.ImageNetNorm.inverse_normalize(
+        img_nchw_rgb),
+        nrow=nrow
     )
     # Plot image grid
     _show(grid)
