@@ -1,0 +1,10 @@
+@software{rodrigo_bermudez_schettino_2022_6821295,
+  author       = {Rodrigo Bermúdez Schettino},
+  title        = {rodrigobdz/lrp: v0.1.6},
+  month        = jul,
+  year         = 2022,
+  publisher    = {Zenodo},
+  version      = {v0.1.6},
+  doi          = {10.5281/zenodo.6821295},
+  url          = {https://doi.org/10.5281/zenodo.6821295}
+}
