@@ -4,7 +4,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/lrp-pf-auc)](https://pypi.org/project/lrp-pf-auc/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](license)
 
-PyTorch implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively.
+PyTorch implementation of Layer-wise Relevance Propagation (LRP) algorithm together with quantitative evaluation metrics to compare heatmap explanations objectively part of master's thesis [_In-Depth Hyperparameter Selection For Layer-Wise Relevance Propagation_](https://zenodo.org/record/6972407#.YvAikS8Rr0o) at TU Berlin.
 
 Special thanks to Dr. Grégoire Montavon for his insights, which shaped the development of this project.
 
